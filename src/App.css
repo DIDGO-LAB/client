@@ -1,3 +1,8 @@
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* 브라우저 자체 스크롤바 제거 */
+}
 
 #root {
   background-color: #FFFEFB;
@@ -14,9 +19,10 @@
   position: relative;
   width: 1920px;
   height: 1080px;
-  
-  transform: scale(0.6); /* 화면 크기 조절 */ 
+  flex-shrink: 0;
+
+  /* 핵심: 화면 크기에 맞춰서 비율 유지하며 축소 */
+  /* 창 너비가 1920보다 작거나, 높이가 1080보다 작으면 그에 맞춰 scale 계산 */
+  transform: scale(calc(min(100vw / 1920, 100vh / 1080) * 0.6)); 
   transform-origin: center;
-  
-  flex-shrink: 0; 
 }
