@@ -1,0 +1,22 @@
+
+#root {
+  background-color: #FFFEFB;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* 스크롤 절대 방지 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.App {
+  /* 1920x1080 비율... */
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  
+  transform: scale(0.6); /* 화면 크기 조절 */ 
+  transform-origin: center;
+  
+  flex-shrink: 0; 
+}
