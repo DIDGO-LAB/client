@@ -36,6 +36,20 @@
     white-space: nowrap;
 }
 
+.intro-sub-text {
+    position: absolute; 
+    color: rgba(0,0,0,0.35);
+    font-family: "Anonymous Pro";
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    
+    justify-content: center;
+    margin: 0; 
+    white-space: nowrap;
+}
+
 .intro_select-button {
     position: absolute; 
     border-radius: 32px;
@@ -67,6 +81,10 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
+}
+
+.intro-submit-button:hover {
+    background: rgba(205, 239, 126, 1);
 }
 
 .intro-back-button {

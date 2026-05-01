@@ -33,7 +33,7 @@ function GenderSelect({ onNext, onPrev }) {
       <button 
         className="intro_select-button" 
         style={{ left: '373px', top: '529px', width: '543px', height: '166px',
-                 border: selectedGender === "남성" ? "5px solid #CDEF7E" : "5px solid rgba(0, 0, 0, 0.25)" }}
+                 backgroundColor: selectedGender === "남성" ? "rgba(251, 243, 196, 0.3)" : "#FFFFFE" }}
         onClick={() => setSelectedGender("남성")}
       >
         <span className="intro-button-text">남성</span>
@@ -43,7 +43,7 @@ function GenderSelect({ onNext, onPrev }) {
       <button 
         className="intro_select-button" 
         style={{ left: '1003px', top: '529px', width: '543px', height: '166px',
-                 border: selectedGender === "여성" ? "5px solid #CDEF7E" : "5px solid rgba(0, 0, 0, 0.25)" }}
+                 backgroundColor: selectedGender === "여성" ? " rgba(251, 243, 196, 0.3)" : "#FFFFFE" }}
         onClick={() => setSelectedGender("여성")}
       >
         <span className="intro-button-text">여성</span>

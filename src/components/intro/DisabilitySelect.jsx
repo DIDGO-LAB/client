@@ -34,7 +34,7 @@ function DisabilitySelect({ onNext, onPrev }) {
       <button 
         className="intro_select-button" 
         style={{ left: '373px', top: '529px', width: '543px', height: '166px',
-          border: selectedDisability === "정신적 장애" ? "5px solid #CDEF7E" : "5px solid rgba(0, 0, 0, 0.25)"
+          backgroundColor: selectedDisability === "정신적 장애" ? " rgba(251, 243, 196, 0.3)" : "#FFFFFE"
         }}
         onClick={() => setSelectedDisability("정신적 장애")}
       >
@@ -45,7 +45,7 @@ function DisabilitySelect({ onNext, onPrev }) {
       <button 
         className="intro_select-button" 
         style={{ left: '1003px', top: '529px', width: '543px', height: '166px', 
-          border: selectedDisability === "신체적 장애" ? "5px solid #CDEF7E" : "5px solid rgba(0, 0, 0, 0.25)"
+          backgroundColor: selectedDisability === "신체적 장애" ? " rgba(251, 243, 196, 0.3)" : "#FFFFFE"
         }}
         onClick={() => setSelectedDisability("신체적 장애")}
       >

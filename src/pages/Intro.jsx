@@ -15,8 +15,9 @@ function Intro() {
     job: [],
     gender: [],
     userId: "",
-    name: "",
+    userName: "",
     password: "",
+    confirmPassword: "",
     birthDate: "",
     email: "",
   });
