@@ -6,13 +6,16 @@ import backArrow from '../../assets/back_arrow.png';
 
 function JobSelect({ onNext, onPrev }) {
   const [selectedJob, setSelectedJob] = useState("");
+  const [customJob, setCustomJob] = useState("");     // 직접 입력용
 
   const handleNextPage = () => {
-    if (!selectedJob.trim()) {
+    const finalJob = customJob.trim() !== "" ? customJob : selectedJob;
+
+    if (!finalJob.trim()) {
       alert("희망 직무를 선택하거나 입력해주세요.");
       return;
     }
-    onNext({ job: [selectedJob] });
+    onNext({ job: [finalJob] });
   };
 
   return (
