@@ -5,6 +5,7 @@ import DisabilitySelect from '../components/intro/DisabilitySelect';
 import JobSelect from '../components/intro/JobSelect';
 import GenderSelect from '../components/intro/GenderSelect';
 import SignupForm from '../components/intro/SignupForm';
+import Login from './Login';
 import '../components/intro/IntroStyles.css'; // 공통 스타일
 
 function Intro() {
@@ -27,7 +28,7 @@ function Intro() {
     setTotalData((prev) => ({ ...prev, ...newData }));
     
     if (newData.startType === "usedBefore") {
-      // 로그인 페이지로........... 하 setStep(어쩌구)
+      setStep(100)
     } else {
       setStep((prev) => prev + 1);
     }
@@ -35,6 +36,11 @@ function Intro() {
 
   // 뒤로가기
   const handlePrevStep = () => {
+    if (step === 100) {
+      setStep(1);
+      return;
+    }
+
     if (step > 1) {
         setStep((prev) => prev - 1);
     }
@@ -51,30 +57,18 @@ function Intro() {
   
 
     alert("회원가입이 완료되었습니다!");
+    setStep(100);
   };
 
   return (
     <div className="App"> {/* 우리가 만든 1920x1080 도화지 */}
-      {step === 1 && (
-        <StartTypeSelect onNext={handleNextPage} />
-      )}
+      {step === 1 && ( <StartTypeSelect onNext={handleNextPage} /> )}
+      {step === 2 && ( <DisabilitySelect onNext={handleNextPage} onPrev={handlePrevStep} /> )}
+      {step === 3 && ( <JobSelect onNext={handleNextPage} onPrev={handlePrevStep} /> )}
+      {step === 4 && ( <GenderSelect onNext={handleNextPage} onPrev={handlePrevStep} /> )}
+      {step === 5 && ( <SignupForm onNext={handleFinalSubmit} onPrev={handlePrevStep} /> )}
 
-      {step === 2 && (
-        <DisabilitySelect onNext={handleNextPage} onPrev={handlePrevStep} />
-      )}
-      
-      {step === 3 && (
-        <JobSelect onNext={handleNextPage} onPrev={handlePrevStep} />
-      )}
-      
-      {step === 4 && (
-        <GenderSelect onNext={handleNextPage} onPrev={handlePrevStep} />
-      )}
-            
-      {step === 5 && (
-        <SignupForm onNext={handleFinalSubmit} onPrev={handlePrevStep} />
-      )}
-
+      {step === 100 && ( <Login onPrev={handlePrevStep} /> )}
     </div>
   );
 }
