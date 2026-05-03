@@ -12,36 +12,31 @@ function ViewProfile({ userData, onEditClick, onPrev }) {
         </div>
 
         <div className="info-item" style={{ left: '146px', top: '173px' }}>
-          <span className="info-label">비밀번호</span>
-          <span className="info-value">{userData.password}</span>
-        </div>
-
-        <div className="info-item" style={{ left: '146px', top: '251px' }}>
           <span className="info-label">이름</span>
           <span className="info-value">{userData.userName}</span>
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '329px' }}>
+        <div className="info-item" style={{ left: '146px', top: '251px' }}>
           <span className="info-label">생년월일</span>
           <span className="info-value">{userData.birthDate}</span>
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '407px' }}>
+        <div className="info-item" style={{ left: '146px', top: '329px' }}>
           <span className="info-label">성별</span>
           <span className="info-value">{userData.gender}</span>
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '485px' }}>
+        <div className="info-item" style={{ left: '146px', top: '407px' }}>
           <span className="info-label">이메일</span>
           <span className="info-value">{userData.email}</span>
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '563px' }}>
+        <div className="info-item" style={{ left: '146px', top: '485px' }}>
           <span className="info-label">장애유형</span>
           <span className="info-value">{userData.disability}</span>
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '641px' }}>
+        <div className="info-item" style={{ left: '146px', top: '563px' }}>
           <span className="info-label">희망직무</span>
           <span className="info-value">{userData.job}</span>
         </div>

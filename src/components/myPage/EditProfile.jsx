@@ -3,11 +3,10 @@ import { useState } from 'react';
 import './myPageStyles.css';
 import backArrow from '../../assets/back_arrow.png';
 
-function EditProfile({ userData, onSave, onPrev }) {
-  const jobOptions = ['사무직', '단순노무직'];
+function EditProfile({ userData, onSave, onPrev, isSaving = false }) {
+  const jobOptions = ['사무직', '단순 노무직'];
   const initialJob = userData.job || '';
   const [formData, setFormData] = useState({
-    password: userData.password || '',
     email: userData.email || '',
     disability: userData.disability || '',
     job: jobOptions.includes(initialJob) ? initialJob : '',
@@ -32,14 +31,13 @@ function EditProfile({ userData, onSave, onPrev }) {
   const handleSave = () => {
     const finalJob = formData.customJob.trim() || formData.job;
 
-    if (!formData.password.trim() || !formData.email.trim() || !formData.disability.trim() || !finalJob.trim()) {
-      alert('비밀번호, 이메일, 장애유형, 희망직무를 모두 입력해주세요.');
+    if (!formData.email.trim() || !formData.disability.trim() || !finalJob.trim()) {
+      alert('이메일, 장애유형, 희망직무를 모두 입력해주세요.');
       return;
     }
 
     onSave({
       ...userData,
-      password: formData.password,
       email: formData.email,
       disability: formData.disability,
       job: finalJob,
@@ -55,31 +53,21 @@ function EditProfile({ userData, onSave, onPrev }) {
         </div>
 
         <div className="info-item" style={{ left: '146px', top: '173px' }}>
-          <span className="info-label">비밀번호</span>
-          <input
-            type="password"
-            className="mypage-input-field"
-            value={formData.password}
-            onChange={(e) => handleChange('password', e.target.value)}
-          />
-        </div>
-
-        <div className="info-item" style={{ left: '146px', top: '251px' }}>
           <span className="info-label">이름</span>
           <span className="info-value">{userData.userName}</span>
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '329px' }}>
+        <div className="info-item" style={{ left: '146px', top: '251px' }}>
           <span className="info-label">생년월일</span>
           <span className="info-value">{userData.birthDate}</span>
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '407px' }}>
+        <div className="info-item" style={{ left: '146px', top: '329px' }}>
           <span className="info-label">성별</span>
           <span className="info-value">{userData.gender}</span>
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '485px' }}>
+        <div className="info-item" style={{ left: '146px', top: '407px' }}>
           <span className="info-label">이메일</span>
           <input
             type="email"
@@ -89,7 +77,7 @@ function EditProfile({ userData, onSave, onPrev }) {
           />
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '563px' }}>
+        <div className="info-item" style={{ left: '146px', top: '485px' }}>
           <span className="info-label">장애유형</span>
           <input
             className="mypage-input-field"
@@ -98,7 +86,7 @@ function EditProfile({ userData, onSave, onPrev }) {
           />
         </div>
 
-        <div className="info-item" style={{ left: '146px', top: '641px' }}>
+        <div className="info-item" style={{ left: '146px', top: '563px' }}>
           <span className="info-label">희망직무</span>
           <div className="mypage-job-field">
             <div className="mypage-job-options">
@@ -138,10 +126,11 @@ function EditProfile({ userData, onSave, onPrev }) {
       <button
         type="button"
         className="mypage-submit-button"
-        style={{ left: '1466px', top: '833px', width: '246px', height: '96px' }}
+        style={{ left: '1466px', top: '833px', width: '246px', height: '96px', opacity: isSaving ? 0.5 : 1 }}
         onClick={handleSave}
+        disabled={isSaving}
       >
-        <span className="mypage-button-text">저장</span>
+        <span className="mypage-button-text">{isSaving ? '저장 중...' : '저장'}</span>
       </button>
     </div>
   );
