@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
+import { authApi, tokenStorage } from './api';
 import Intro from './pages/Intro';
 import DisabilitySelect from './components/intro/DisabilitySelect';
 import JobSelect from './components/intro/JobSelect';
@@ -9,6 +10,17 @@ import Sidebar from './components/layout/Sidebar';
 import Login from './pages/Login';
 import Mainpage from './pages/Mainpage';
 import MyPage from './pages/MyPage';
+import { signupFormToApiPayload } from './utils/userProfile';
+
+const getApiErrorMessage = (error, fallback) => error?.message || fallback;
+
+function ProtectedRoute({ children }) {
+  if (!tokenStorage.getAccessToken()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
 
 function ComingSoonPage({ activeKey, title }) {
   return (
@@ -71,8 +83,16 @@ function IntroStepRoutes() {
         path="/signup"
         element={
           <SignupForm
-            onNext={(data) => {
-              console.log('회원가입 데이터:', { ...signupData, ...data });
+            onNext={async (data) => {
+              const completeData = { ...signupData, ...data };
+
+              try {
+                await authApi.signup(signupFormToApiPayload(completeData));
+              } catch (error) {
+                alert(getApiErrorMessage(error, '회원가입에 실패했습니다.'));
+                return;
+              }
+
               alert('회원가입이 완료되었습니다.');
               navigate('/login');
             }}
@@ -84,10 +104,38 @@ function IntroStepRoutes() {
         path="/login"
         element={<Login onPrev={() => navigate(-1)} onLogin={() => navigate('/main')} />}
       />
-      <Route path="/main" element={<Mainpage />} />
-      <Route path="/training" element={<ComingSoonPage activeKey="training" title="훈련" />} />
-      <Route path="/training-history" element={<ComingSoonPage activeKey="history" title="훈련이력" />} />
-      <Route path="/mypage" element={<MyPage onPrev={() => navigate('/main')} />} />
+      <Route
+        path="/main"
+        element={
+          <ProtectedRoute>
+            <Mainpage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training"
+        element={
+          <ProtectedRoute>
+            <ComingSoonPage activeKey="training" title="훈련" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training-history"
+        element={
+          <ProtectedRoute>
+            <ComingSoonPage activeKey="history" title="훈련이력" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mypage"
+        element={
+          <ProtectedRoute>
+            <MyPage onPrev={() => navigate('/main')} onAuthRequired={() => navigate('/login')} />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

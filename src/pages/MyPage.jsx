@@ -1,19 +1,43 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { userApi } from '../api';
 import ViewProfile from '../components/myPage/ViewProfile';
 import EditProfile from '../components/myPage/EditProfile';
+import { userEditToApiPayload, userFromApi } from '../utils/userProfile';
 
-function MyPage({ onPrev }) {
+function MyPage({ onPrev, onAuthRequired }) {
   const [isEdit, setIsEdit] = useState(false);
-  const [userData, setUserData] = useState({
-    userId: 'minkyeong123',
-    password: 'password123',
-    userName: '차민경',
-    birthDate: '2000-01-01',
-    gender: '여성',
-    email: 'test@test.com',
-    disability: '지체장애',
-    job: '사무직',
-  });
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    userApi
+      .getMe()
+      .then((response) => {
+        if (isMounted) {
+          setUserData(userFromApi(response));
+        }
+      })
+      .catch((error) => {
+        if (error?.status === 401 && onAuthRequired) {
+          onAuthRequired();
+          return;
+        }
+
+        alert(error?.message || '내 정보를 불러오지 못했습니다.');
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [onAuthRequired]);
 
   const handleBack = () => {
     if (isEdit) {
@@ -29,10 +53,35 @@ function MyPage({ onPrev }) {
     window.history.back();
   };
 
-  const handleSave = (newData) => {
-    setUserData(newData);
-    setIsEdit(false);
+  const handleSave = async (newData) => {
+    setIsSaving(true);
+
+    try {
+      await userApi.updateMe(userEditToApiPayload(newData));
+      const response = await userApi.getMe();
+      setUserData(userFromApi(response));
+      setIsEdit(false);
+    } catch (error) {
+      if (error?.status === 401 && onAuthRequired) {
+        onAuthRequired();
+        return;
+      }
+
+      alert(error?.message || '내 정보 수정에 실패했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading && !userData) {
+    return (
+      <div className="App">
+        <h1 style={{ position: 'absolute', left: '760px', top: '480px', fontSize: '48px' }}>
+          불러오는 중...
+        </h1>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -47,6 +96,7 @@ function MyPage({ onPrev }) {
           userData={userData}
           onSave={handleSave}
           onPrev={handleBack}
+          isSaving={isSaving}
         />
       )}
     </div>
