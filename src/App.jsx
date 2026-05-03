@@ -10,6 +10,17 @@ import Sidebar from './components/layout/Sidebar';
 import Login from './pages/Login';
 import Mainpage from './pages/Mainpage';
 import MyPage from './pages/MyPage';
+import {
+  SafetyResultPage,
+  SafetyScenarioPage,
+  SafetySessionPage,
+  SafetyTypePage,
+  SocialJobPage,
+  SocialResultPage,
+  SocialScenarioPage,
+  SocialSessionPage,
+  TrainingSelectPage,
+} from './pages/training/TrainingPages';
 import { signupFormToApiPayload } from './utils/userProfile';
 
 const getApiErrorMessage = (error, fallback) => error?.message || fallback;
@@ -118,7 +129,71 @@ function IntroStepRoutes() {
             path="/training"
             element={
               <ProtectedRoute>
-                <ComingSoonPage activeKey="training" title="훈련" />
+                <TrainingSelectPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/social/job"
+            element={
+              <ProtectedRoute>
+                <SocialJobPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/social/scenarios"
+            element={
+              <ProtectedRoute>
+                <SocialScenarioPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/social/session"
+            element={
+              <ProtectedRoute>
+                <SocialSessionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/social/result"
+            element={
+              <ProtectedRoute>
+                <SocialResultPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/safety/types"
+            element={
+              <ProtectedRoute>
+                <SafetyTypePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/safety/scenarios"
+            element={
+              <ProtectedRoute>
+                <SafetyScenarioPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/safety/session"
+            element={
+              <ProtectedRoute>
+                <SafetySessionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/safety/result"
+            element={
+              <ProtectedRoute>
+                <SafetyResultPage />
               </ProtectedRoute>
             }
           />
