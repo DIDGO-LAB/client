@@ -148,7 +148,9 @@ function IntroStepRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <IntroStepRoutes />
+      <div className="App">
+        <IntroStepRoutes />
+      </div>
     </BrowserRouter>
   );
 }

@@ -22,15 +22,17 @@ function Mainpage() {
       <Sidebar activeKey="main" />
 
       <main className="mainpage-content">
-        {featureCards.map((card) => (
-          <div key={card.label} className={`main-feature-box ${card.className}`}>
-            <span className="main-feature-label">{card.label}</span>
-          </div>
-        ))}
+        <div className="mainpage-board">
+          {featureCards.map((card) => (
+            <div key={card.label} className={`main-feature-box ${card.className}`}>
+              <span className="main-feature-label">{card.label}</span>
+            </div>
+          ))}
 
-        <GroundMark className="ground-mark-left" />
-        <GroundMark className="ground-mark-right" />
-        <GroundMark className="ground-mark-bottom" />
+          <GroundMark className="ground-mark-left" />
+          <GroundMark className="ground-mark-right" />
+          <GroundMark className="ground-mark-bottom" />
+        </div>
       </main>
     </>
   );
