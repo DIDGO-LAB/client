@@ -19,9 +19,7 @@ function Intro() {
   };
 
   return (
-    <div className="App">
-      <StartTypeSelect onNext={handleNextPage} />
-    </div>
+    <StartTypeSelect onNext={handleNextPage} />
   );
 }
 

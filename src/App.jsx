@@ -12,12 +12,12 @@ import MyPage from './pages/MyPage';
 
 function ComingSoonPage({ activeKey, title }) {
   return (
-    <div className="App">
+    <>
       <Sidebar activeKey={activeKey} />
       <main style={{ position: 'absolute', left: '516px', top: 0, width: '1404px', height: '1080px' }}>
         <h1 style={{ margin: '160px 0 0 140px', fontSize: '48px' }}>{title}</h1>
       </main>
-    </div>
+    </>
   );
 }
 
@@ -96,7 +96,9 @@ function IntroStepRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <IntroStepRoutes />
+      <div className="App">
+        <IntroStepRoutes />
+      </div>
     </BrowserRouter>
   );
 }
