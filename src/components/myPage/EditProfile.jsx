@@ -1,5 +1,5 @@
 // src/components/myPage/EditProfile.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './myPageStyles.css';
 import backArrow from '../../assets/back_arrow.png';
 

@@ -1,5 +1,4 @@
 // src/components/myPage/ViewProfile.jsx
-import React from 'react';
 import './myPageStyles.css';
 import backArrow from '../../assets/back_arrow.png';
 
