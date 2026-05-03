@@ -75,11 +75,11 @@ function MyPage({ onPrev, onAuthRequired }) {
 
   if (isLoading && !userData) {
     return (
-      <div className="App">
+      <>
         <h1 style={{ position: 'absolute', left: '760px', top: '480px', fontSize: '48px' }}>
           불러오는 중...
         </h1>
-      </div>
+      </>
     );
   }
 

@@ -18,7 +18,7 @@ function GroundMark({ className = '' }) {
 
 function Mainpage() {
   return (
-    <div className="App">
+    <>
       <Sidebar activeKey="main" />
 
       <main className="mainpage-content">
@@ -32,7 +32,7 @@ function Mainpage() {
         <GroundMark className="ground-mark-right" />
         <GroundMark className="ground-mark-bottom" />
       </main>
-    </div>
+    </>
   );
 }
 
