@@ -27,7 +27,7 @@ function Login({ onPrev, onLogin }) {
   };
 
   return (
-    <div className="App">
+    <>
       <h1
         className="login-main-text"
         style={{ left: '891px', top: '169px', width: '138px', textAlign: 'center' }}
@@ -67,7 +67,7 @@ function Login({ onPrev, onLogin }) {
       >
         <span className="login-button-text">로그인</span>
       </button>
-    </div>
+    </>
   );
 }
 
