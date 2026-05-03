@@ -118,9 +118,9 @@ function SignupForm({ onNext, onPrev }) {
         <span className="intro-button-text">완료</span>
       </button>
 
-      <h1 className="intro-sub-text" style={{ left: '533px', top: '906px', width: '853px', textAlign: 'center' }}>
+      <h6 className="intro-sub-text" style={{ left: '533px', top: '906px', width: '853px', textAlign: 'center' }}>
         딛고에 가입함으로써 딛고의 이용 약관 및 개인정보처리방침에 동의하게 됩니다.
-      </h1>
+      </h6>
 
     </div>
   );
