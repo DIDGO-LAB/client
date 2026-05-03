@@ -10,6 +10,8 @@ import Sidebar from './components/layout/Sidebar';
 import Login from './pages/Login';
 import Mainpage from './pages/Mainpage';
 import MyPage from './pages/MyPage';
+import SocialTraining from './pages/SocialTraining';
+import TrainMain from './pages/TrainMain';
 import { signupFormToApiPayload } from './utils/userProfile';
 
 const getApiErrorMessage = (error, fallback) => error?.message || fallback;
@@ -118,7 +120,15 @@ function IntroStepRoutes() {
             path="/training"
             element={
               <ProtectedRoute>
-                <ComingSoonPage activeKey="training" title="훈련" />
+                <TrainMain />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/social"
+            element={
+              <ProtectedRoute>
+                <SocialTraining />
               </ProtectedRoute>
             }
           />
@@ -148,9 +158,7 @@ function IntroStepRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="App">
-        <IntroStepRoutes />
-      </div>
+      <IntroStepRoutes />
     </BrowserRouter>
   );
 }
