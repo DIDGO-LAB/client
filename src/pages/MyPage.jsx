@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ViewProfile from '../components/myPage/ViewProfile';
 import EditProfile from '../components/myPage/EditProfile';
 

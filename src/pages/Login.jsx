@@ -1,9 +1,8 @@
-// src/pages/Login.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './Login.css';
 import backArrow from '../assets/back_arrow.png';
 
-function Login({ onPrev }) {
+function Login({ onPrev, onLogin }) {
   const [loginInfo, setLoginInfo] = useState({
     userId: '',
     password: '',
@@ -17,12 +16,18 @@ function Login({ onPrev }) {
   };
 
   const handleLogin = () => {
+    if (!loginInfo.userId.trim() || !loginInfo.password.trim()) {
+      alert('아이디와 비밀번호를 입력해주세요.');
+      return;
+    }
+
     console.log('로그인 시도 데이터:', loginInfo);
     alert(`${loginInfo.userId}님 환영합니다.`);
+    onLogin();
   };
 
   return (
-    <div>
+    <div className="App">
       <h1
         className="login-main-text"
         style={{ left: '891px', top: '169px', width: '138px', textAlign: 'center' }}
