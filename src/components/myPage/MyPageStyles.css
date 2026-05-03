@@ -1,0 +1,127 @@
+.mypage-submit-button {
+    position: absolute; 
+    border-radius: 32px;
+    border: 5px solid rgba(0, 0, 0, 0.25);
+    background: rgba(205, 239, 126, 0.25);
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.mypage-submit-button:hover {
+    background: rgba(205, 239, 126, 1);
+}
+
+.mypage-back-button {
+  position: absolute; 
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mypage-back-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* 이미지 비율 유지 */
+}
+
+.mypage-button-text {
+    color: #000;
+    font-family: "Anonymous Pro";
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.mypage-info-box {
+    position: absolute; 
+    border-radius: 32px;
+    border: 5px solid rgba(0, 0, 0, 0.25);
+    background: rgba(255, 255, 254, 1);
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.info-item { 
+    position: absolute; 
+    display: flex;
+    gap: 150px; /* 라벨과 데이터 사이의 간격 */
+    align-items: center;
+}
+
+.info-label { /* 정보 라벨 */
+    font-family: "Anonymous Pro";
+    font-weight: 700;
+    font-size: 40px;
+    color: #000;
+    width: 180px; /* 라벨 너비를 고정하면 세로 줄이 딱 맞아요! */
+}
+
+.info-value { /* 사용자 정보 */
+    font-family: "Anonymous Pro";
+    font-weight: 400;
+    font-size: 32px;
+    color: #666;
+}
+
+.mypage-input-field {
+    width: 531px;
+    height: 58px;
+    border-radius: 32px;
+    border: 5px solid rgba(0, 0, 0, 0.25);
+    background: #FFFFFE;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+    
+    /* 입력창 전용 설정 */
+    padding: 0 40px;     
+    font-family: "Anonymous Pro";
+    font-size: 32px; 
+    font-weight: 700;
+    outline: none;      
+    box-sizing: border-box;
+}
+
+.mypage-job-field {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.mypage-job-options {
+    display: flex;
+    gap: 12px;
+}
+
+.mypage-job-button {
+    height: 58px;
+    min-width: 132px;
+    padding: 0 18px;
+    border-radius: 32px;
+    border: 5px solid rgba(0, 0, 0, 0.25);
+    background: #FFFFFE;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    font-family: "Anonymous Pro";
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.mypage-job-button.selected {
+    background: rgba(205, 239, 126, 0.7);
+}
+
+.mypage-job-input {
+    width: 230px;
+    padding: 0 24px;
+    font-size: 24px;
+}
