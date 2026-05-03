@@ -1,0 +1,411 @@
+.social-training-step {
+  position: absolute;
+  inset: 0;
+  background: #fffefb;
+  color: #111;
+  font-family: "Anonymous Pro", sans-serif;
+}
+
+.social-training-step.is-clickable {
+  cursor: pointer;
+}
+
+.social-back-button {
+  position: absolute;
+  left: 139px;
+  top: 110px;
+  width: 75px;
+  height: 80px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.social-back-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.social-help-button {
+  position: absolute;
+  left: 1623px;
+  top: 80px;
+  width: 162px;
+  height: 139px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.social-help-button img,
+.social-mic-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.social-job-options {
+  position: absolute;
+  left: 353px;
+  top: 345px;
+  display: flex;
+  gap: 207px;
+}
+
+.social-choice-button {
+  width: 503px;
+  height: 390px;
+  border: 5px solid rgba(0, 0, 0, 0.25);
+  border-radius: 32px;
+  background: #fffefb;
+  font-size: 40px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.social-situation-intro {
+  position: absolute;
+  left: 248px;
+  top: 139px;
+  width: 673px;
+  height: 802px;
+  padding: 86px 70px;
+  border: 5px solid rgba(0, 0, 0, 0.25);
+  border-radius: 32px;
+  background: rgba(205, 239, 126, 0.25);
+  box-sizing: border-box;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.social-situation-intro p {
+  margin: 60px 0 0;
+  font-size: 40px;
+  line-height: 1.65;
+}
+
+.social-situation-list {
+  position: absolute;
+  left: 1024px;
+  top: 165px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.social-situation-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.social-situation-index {
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.social-situation-card {
+  width: 695px;
+  height: 197px;
+  border: 5px solid rgba(0, 0, 0, 0.25);
+  border-radius: 32px;
+  background: #fffefb;
+  box-shadow: 0 4px 3px rgba(0, 0, 0, 0.14);
+  font-size: 40px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.social-tutorial-box {
+  position: absolute;
+  left: 275px;
+  top: 63px;
+  width: fit-content;
+  min-width: 760px;
+  max-width: 1370px;
+  min-height: 170px;
+  height: auto;
+  padding: 47px 89px;
+  border: 5px solid rgba(0, 0, 0, 0.25);
+  border-radius: 32px;
+  background: #fffefb;
+  box-shadow: 0 4px 3px rgba(0, 0, 0, 0.14);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.social-instruction-box {
+  position: absolute;
+  left: 340px;
+  top: 63px;
+  width: fit-content;
+  min-width: 760px;
+  max-width: 1305px;
+  min-height: 170px;
+  height: auto;
+  padding: 47px 89px;
+  border: 5px solid rgba(0, 0, 0, 0.25);
+  border-radius: 32px;
+  background: #fffefb;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.social-sasoo-image {
+  position: absolute;
+  left: 20px;
+  top: 479px;
+  width: 739px;
+  height: 564px;
+  object-fit: contain;
+}
+
+.social-sasoo-image.is-speaking {
+  animation: social-speaking 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes social-speaking {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-5px);
+  }
+}
+
+.social-mic-button {
+  position: absolute;
+  width: 174px;
+  height: 171px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.social-mic-right {
+  left: 1645px;
+  top: 826px;
+}
+
+.social-chat-bubble {
+  position: absolute;
+  border-radius: 18px;
+  padding: 22px 32px;
+  box-sizing: border-box;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.social-conversation-log {
+  position: absolute;
+  left: 456px;
+  right: 128px;
+  top: 410px;
+  display: flex;
+  flex-direction: column;
+  gap: 41px;
+  pointer-events: none;
+}
+
+.social-conversation-log.is-compact {
+  left: 55px;
+  right: 55px;
+  top: 242px;
+  min-height: auto;
+  max-height: 430px;
+  gap: 24px;
+  overflow: hidden;
+}
+
+.social-message-bubble {
+  position: relative;
+  width: fit-content;
+  max-width: 900px;
+  min-height: 76px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+}
+
+.social-message-bubble.is-character {
+  align-self: flex-start;
+  background: #dbeeff;
+}
+
+.social-message-bubble.is-character::before {
+  content: "";
+  position: absolute;
+  left: -34px;
+  top: 28px;
+  width: 0;
+  height: 0;
+  border-top: 14px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-right: 36px solid #dbeeff;
+}
+
+.social-message-bubble.is-user {
+  align-self: flex-end;
+  background: #fffefb;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+}
+
+.social-message-bubble.is-user::before {
+  content: "";
+  position: absolute;
+  right: -34px;
+  top: 28px;
+  width: 0;
+  height: 0;
+  border-top: 14px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-left: 36px solid rgba(0, 0, 0, 0.08);
+}
+
+.social-message-bubble.is-user::after {
+  content: "";
+  position: absolute;
+  right: -29px;
+  top: 30px;
+  width: 0;
+  height: 0;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-left: 32px solid #fffefb;
+}
+
+.social-loading-note {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 52px;
+  margin: 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.social-result-chat {
+  position: absolute;
+  left: 248px;
+  top: 90px;
+  width: 892px;
+  height: 844px;
+  border: 5px solid rgba(0, 0, 0, 0.18);
+  border-radius: 32px;
+  background: #fffefb;
+}
+
+.social-result-tutorial {
+  position: absolute;
+  left: 55px;
+  top: 48px;
+  width: fit-content;
+  min-width: 420px;
+  max-width: 720px;
+  min-height: 132px;
+  height: auto;
+  padding: 18px 24px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+  background: #fffefb;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.social-score-panel {
+  position: absolute;
+  left: 1229px;
+  top: 90px;
+  width: 513px;
+  min-height: 844px;
+  padding: 24px;
+  border: 5px solid rgba(0, 0, 0, 0.18);
+  border-radius: 32px;
+  background: #fffefb;
+  box-sizing: border-box;
+}
+
+.social-score-badge {
+  width: 276px;
+  height: 152px;
+  margin: 0 auto 24px;
+  border-radius: 999px;
+  background: rgba(161, 216, 175, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  font-weight: 700;
+}
+
+.social-feedback-box {
+  position: relative;
+  margin-top: 18px;
+  min-height: 120px;
+  height: auto;
+  padding: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.14);
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 30px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.social-feedback-box p {
+  margin: 10px 0 0;
+}
+
+.social-feedback-character {
+  position: absolute;
+  right: 4px;
+  bottom: -6px;
+  width: 76px;
+  height: 65px;
+  object-fit: contain;
+}
+
+.social-restart-button {
+  width: 100%;
+  height: 54px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 8px;
+  background: #f2fbdc;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}

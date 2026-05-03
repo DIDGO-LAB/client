@@ -9,6 +9,8 @@ import Sidebar from './components/layout/Sidebar';
 import Login from './pages/Login';
 import Mainpage from './pages/Mainpage';
 import MyPage from './pages/MyPage';
+import SocialTraining from './pages/SocialTraining';
+import TrainMain from './pages/TrainMain';
 
 function ComingSoonPage({ activeKey, title }) {
   return (
@@ -85,7 +87,8 @@ function IntroStepRoutes() {
         element={<Login onPrev={() => navigate(-1)} onLogin={() => navigate('/main')} />}
       />
       <Route path="/main" element={<Mainpage />} />
-      <Route path="/training" element={<ComingSoonPage activeKey="training" title="훈련" />} />
+      <Route path="/training" element={<TrainMain />} />
+      <Route path="/training/social" element={<SocialTraining />} />
       <Route path="/training-history" element={<ComingSoonPage activeKey="history" title="훈련이력" />} />
       <Route path="/mypage" element={<MyPage onPrev={() => navigate('/main')} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
