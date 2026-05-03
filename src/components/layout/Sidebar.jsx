@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { authApi } from '../../api';
 import homeIcon from '../../assets/sidebar_home.png';
 import noteIcon from '../../assets/sidebar_note.png';
 import './Sidebar.css';
@@ -12,6 +13,16 @@ const navItems = [
 
 function Sidebar({ activeKey = 'main' }) {
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch (error) {
+      alert(error?.message || '로그아웃 요청에 실패했습니다. 다시 로그인해주세요.');
+    } finally {
+      navigate('/');
+    }
+  };
 
   return (
     <aside className="sidebar">
@@ -28,7 +39,7 @@ function Sidebar({ activeKey = 'main' }) {
           </button>
         ))}
 
-        <button type="button" className="sidebar-item" onClick={() => navigate('/intro/StartTypeSelect')}>
+        <button type="button" className="sidebar-item" onClick={handleLogout}>
           <img src={noteIcon} alt="" className="sidebar-custom-icon" />
           <span className="sidebar-label">로그아웃</span>
         </button>

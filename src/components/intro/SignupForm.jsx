@@ -11,6 +11,7 @@ function SignupForm({ onNext, onPrev }) {
     birthDate: '',
     email: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e, field) => {
     setFormData((prev) => ({
@@ -21,7 +22,7 @@ function SignupForm({ onNext, onPrev }) {
 
   const isAllFilled = Object.values(formData).every((value) => value.trim() !== '');
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isAllFilled) {
       alert('모든 정보를 입력해주세요.');
       return;
@@ -32,7 +33,13 @@ function SignupForm({ onNext, onPrev }) {
       return;
     }
 
-    onNext(formData);
+    setIsSubmitting(true);
+
+    try {
+      await onNext(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -115,13 +122,13 @@ function SignupForm({ onNext, onPrev }) {
           top: '840px',
           width: '246px',
           height: '96px',
-          opacity: isAllFilled ? 1 : 0.5,
-          cursor: isAllFilled ? 'pointer' : 'not-allowed',
+          opacity: isAllFilled && !isSubmitting ? 1 : 0.5,
+          cursor: isAllFilled && !isSubmitting ? 'pointer' : 'not-allowed',
         }}
         onClick={handleSubmit}
-        disabled={!isAllFilled}
+        disabled={!isAllFilled || isSubmitting}
       >
-        <span className="intro-button-text">완료</span>
+        <span className="intro-button-text">{isSubmitting ? '처리 중...' : '완료'}</span>
       </button>
 
       <h6 className="intro-sub-text" style={{ left: '533px', top: '906px', width: '853px', textAlign: 'center' }}>
