@@ -1,16 +1,17 @@
-# React + Vite
+# Didgo Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+장애인 구직자를 위한 기초 직업 훈련 웹 클라이언트입니다. 현재 사용자용 UI는 사회성 훈련, 안전훈련, 문서 이해 훈련, 훈련 이력 확인을 제공합니다.
 
-Currently, two official plugins are available:
+## Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm run dev
+npm run dev:mock
+npm run build
+npm run lint
+npm run test:api
+```
 
-## React Compiler
+## API Scope
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+훈련 API 범위는 `SOCIAL`, `SAFETY`, `DOCUMENT`입니다.

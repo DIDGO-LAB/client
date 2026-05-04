@@ -6,7 +6,7 @@ import './Mainpage.css';
 const featureCards = [
   { label: '사회와 친해지기', className: 'main-feature-social', path: '/training/social/job' },
   { label: '안전교육 가이드', className: 'main-feature-safety', path: '/training/safety/types' },
-  { label: '내용 쏙쏙 파악하기', className: 'main-feature-understand', path: '/training' },
+  { label: '내용 쏙쏙 파악하기', className: 'main-feature-understand', path: '/training/document' },
 ];
 
 function GroundMark({ className = '' }) {
