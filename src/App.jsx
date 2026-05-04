@@ -263,6 +263,14 @@ function IntroStepRoutes() {
             }
           />
           <Route
+            path="/training-history/:type/:sessionId"
+            element={
+              <ProtectedRoute>
+                <TrainingHistoryDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/mypage"
             element={
               <ProtectedRoute>

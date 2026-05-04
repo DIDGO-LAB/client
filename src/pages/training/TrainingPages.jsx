@@ -17,6 +17,12 @@ const socialJobs = [
 
 const getSocialJobLabel = (jobType) => socialJobs.find((job) => job.jobType === jobType)?.label || '사회성';
 
+const socialScoreTypeLabels = {
+  AI_EVALUATION: 'AI 평가',
+};
+
+const getSocialScoreTypeLabel = (scoreType) => socialScoreTypeLabels[scoreType] || 'AI 평가';
+
 const toDialogLogs = (dialogues) =>
   dialogues.map((dialogue, index) => ({
     turnNo: index + 1,
@@ -36,6 +42,8 @@ const safetyTypeLabels = {
   WORKPLACE_SAFETY: '경계 지키기',
   COMMUTE_SAFETY: '이동 안전',
 };
+
+const getSafetyTypeLabel = (category) => safetyTypeLabels[category] || '안전 대처';
 
 const documentLevelSubtitles = {
   1: '짧은 안내문에서 장소와 시간을 찾아요.',
@@ -498,7 +506,7 @@ export function SocialResultPage() {
             <div className="social-result-score">{result?.score ?? 90}점</div>
             <div className="social-result-feedback">
               <strong>AI 피드백</strong>
-              <p>{result?.feedback || '필요한 정보를 다시 확인하고 정리하는 흐름이 좋았습니다.'}</p>
+              <p>{result?.feedback?.summary || result?.feedbackSummary || result?.feedback || '필요한 정보를 다시 확인하고 정리하는 흐름이 좋았습니다.'}</p>
             </div>
             <div className="social-result-recommendation">
               <strong>추천 답변</strong>
@@ -1322,11 +1330,61 @@ export function TrainingHistoryListPage() {
 
   return (
     <TrainingShell fullScreen>
-      <PageHeader compact onBack={() => navigate('/training-history')} />
+      {selectedType !== 'DOCUMENT' && selectedType !== 'SOCIAL' && selectedType !== 'SAFETY' ? (
+        <PageHeader compact onBack={() => navigate('/training-history')} />
+      ) : null}
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadHistory} /> : null}
       {status === 'ready' && sessions.length === 0 ? <EmptyBlock message={`${selectedLabel} 훈련 이력이 없습니다.`} /> : null}
-      {status === 'ready' && sessions.length > 0 ? (
+      {status === 'ready' && selectedType === 'DOCUMENT' && sessions.length > 0 ? (
+        <DocumentHistoryList
+          sessions={sessions}
+          selectedSession={detailSession}
+          onBack={() => navigate('/training-history')}
+          onSelect={setSelectedSession}
+          onDetail={() =>
+            navigate(`/training-history/document/${detailSession.sessionId}`, {
+              state: {
+                session: detailSession,
+                type: selectedType,
+              },
+            })
+          }
+        />
+      ) : null}
+      {status === 'ready' && selectedType === 'SOCIAL' && sessions.length > 0 ? (
+        <SocialHistoryList
+          sessions={sessions}
+          selectedSession={detailSession}
+          onBack={() => navigate('/training-history')}
+          onSelect={setSelectedSession}
+          onDetail={() =>
+            navigate(`/training-history/social/${detailSession.sessionId}`, {
+              state: {
+                session: detailSession,
+                type: selectedType,
+              },
+            })
+          }
+        />
+      ) : null}
+      {status === 'ready' && selectedType === 'SAFETY' && sessions.length > 0 ? (
+        <SafetyHistoryList
+          sessions={sessions}
+          selectedSession={detailSession}
+          onBack={() => navigate('/training-history')}
+          onSelect={setSelectedSession}
+          onDetail={() =>
+            navigate(`/training-history/safety/${detailSession.sessionId}`, {
+              state: {
+                session: detailSession,
+                type: selectedType,
+              },
+            })
+          }
+        />
+      ) : null}
+      {status === 'ready' && selectedType !== 'DOCUMENT' && selectedType !== 'SOCIAL' && selectedType !== 'SAFETY' && sessions.length > 0 ? (
         <section className="history-list-shell">
           <div className="history-list" aria-label={`${selectedLabel} 훈련 이력`}>
             {sessions.map((session) => (
@@ -1365,10 +1423,44 @@ export function TrainingHistoryListPage() {
 export function TrainingHistoryDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { type: routeType, sessionId: routeSessionId } = useParams();
   const session = location.state?.session;
-  const selectedType = location.state?.type || session?.trainingType || 'SOCIAL';
+  const selectedType = routeType ? historyTypeMap[routeType] || 'SOCIAL' : location.state?.type || session?.trainingType || 'SOCIAL';
   const title = session?.scenarioTitle || session?.title || '시나리오 제목';
   const score = session?.score ?? session?.accuracyRate ?? 0;
+
+  if (selectedType === 'DOCUMENT') {
+    return (
+      <DocumentHistoryDetail
+        sessionId={Number(routeSessionId || session?.sessionId)}
+        summary={session}
+        onBack={() => navigate('/training-history/document')}
+        onRetry={() => navigate('/training/document')}
+      />
+    );
+  }
+
+  if (selectedType === 'SOCIAL') {
+    return (
+      <SocialHistoryDetail
+        sessionId={Number(routeSessionId || session?.sessionId)}
+        summary={session}
+        onBack={() => navigate('/training-history/social')}
+        onRetry={() => navigate('/training/social/job')}
+      />
+    );
+  }
+
+  if (selectedType === 'SAFETY') {
+    return (
+      <SafetyHistoryDetail
+        sessionId={Number(routeSessionId || session?.sessionId)}
+        summary={session}
+        onBack={() => navigate('/training-history/safety')}
+        onRetry={() => navigate('/training/safety/scenarios')}
+      />
+    );
+  }
 
   return (
     <TrainingShell fullScreen>
@@ -1394,6 +1486,619 @@ export function TrainingHistoryDetailPage() {
           <p>필요한 내용을 다시 확인하고 차분하게 이어서 진행하겠습니다.</p>
           <img src={characterImg} alt="" />
         </aside>
+      </section>
+    </TrainingShell>
+  );
+}
+
+function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail }) {
+  const latestSession = sessions[0];
+  const totalScore = sessions.reduce((sum, session) => sum + (session.score ?? session.accuracyRate ?? 0), 0);
+  const averageScore = Math.round(totalScore / sessions.length);
+  const totalCorrect = sessions.reduce((sum, session) => sum + (session.correctCount || 0), 0);
+  const totalQuestions = sessions.reduce((sum, session) => sum + (session.totalCount || 0), 0);
+  const [detail, setDetail] = useState(null);
+  const [detailStatus, setDetailStatus] = useState('loading');
+  const [detailError, setDetailError] = useState('');
+  const previewActions = detail?.actions?.slice(0, 2) || [];
+
+  const loadSelectedDetail = async () => {
+    if (!selectedSession?.sessionId) {
+      return;
+    }
+
+    setDetailStatus('loading');
+    setDetailError('');
+
+    try {
+      setDetail(await safetyTrainingApi.getSafetySessionDetail(selectedSession.sessionId));
+      setDetailStatus('ready');
+    } catch (requestError) {
+      setDetail(null);
+      setDetailError(getErrorMessage(requestError, '상세 기록을 불러오지 못했습니다.'));
+      setDetailStatus('error');
+    }
+  };
+
+  useEffect(() => {
+    loadSelectedDetail();
+  }, [selectedSession?.sessionId]);
+
+  return (
+    <section className="safety-history-shell">
+      <button className="safety-history-back" type="button" onClick={onBack} aria-label="훈련 이력 선택으로 돌아가기">
+        ←
+      </button>
+      <header className="safety-history-header">
+        <span>안전 대처 기록</span>
+        <h1>위험한 순간에 어떤 선택을 했는지 다시 봐요</h1>
+        <p>지난 안전 상황을 보며 잘 대처한 행동과 다음에 더 안전하게 선택할 행동을 확인할 수 있습니다.</p>
+      </header>
+
+      <div className="safety-history-summary">
+        <article>
+          <span>최근 점수</span>
+          <strong>{latestSession?.score ?? 0}점</strong>
+        </article>
+        <article>
+          <span>평균 점수</span>
+          <strong>{averageScore}점</strong>
+        </article>
+        <article>
+          <span>안전한 선택</span>
+          <strong>
+            {totalCorrect}/{totalQuestions || '-'}
+          </strong>
+        </article>
+      </div>
+
+      <div className="safety-history-layout">
+        <div className="safety-history-list" aria-label="안전 대처 훈련 기록">
+          {sessions.map((session) => {
+            const isSelected = selectedSession?.sessionId === session.sessionId;
+            return (
+              <button
+                className={`safety-history-card ${isSelected ? 'is-selected' : ''}`}
+                type="button"
+                key={session.sessionId}
+                onClick={() => onSelect(session)}
+              >
+                <div>
+                  <span>{formatHistoryDate(session.completedAt)}</span>
+                  <strong>{session.scenarioTitle || '안전 대처 훈련'}</strong>
+                  <p>{session.feedbackSummary || '위험한 상황에서 안전한 선택을 연습했습니다.'}</p>
+                </div>
+                <div className="safety-history-card-meta">
+                  <em>{getSafetyTypeLabel(session.category)}</em>
+                  <strong>{session.score ?? 0}점</strong>
+                  {session.totalCount ? <span>{session.correctCount ?? 0}/{session.totalCount}</span> : null}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <aside className="safety-history-preview">
+          <div className="safety-history-preview-score">
+            <span>{getSafetyTypeLabel(selectedSession?.category)}</span>
+            <strong>{detail?.score ?? selectedSession?.score ?? 0}점</strong>
+          </div>
+          <h2>{selectedSession?.scenarioTitle || detail?.title || '안전 대처 훈련'}</h2>
+          <p>{detail?.feedback?.summary || detail?.feedback || selectedSession?.feedbackSummary || '상세 기록에서 선택한 행동을 확인해 보세요.'}</p>
+
+          {detailStatus === 'loading' ? <div className="safety-history-preview-state">상세 기록을 불러오는 중입니다.</div> : null}
+          {detailStatus === 'error' ? (
+            <div className="safety-history-preview-state is-error">
+              <span>{detailError}</span>
+              <button type="button" onClick={loadSelectedDetail}>
+                다시 불러오기
+              </button>
+            </div>
+          ) : null}
+          {detailStatus === 'ready' ? (
+            <>
+              {detail?.latestSceneImageUrl ? (
+                <img className="safety-history-preview-image" src={detail.latestSceneImageUrl} alt={detail.latestSceneImageAlt || ''} />
+              ) : null}
+              {previewActions.length > 0 ? (
+                <div className="safety-history-preview-actions">
+                  {previewActions.map((action) => (
+                    <div className={action.correct ? 'is-correct' : 'is-wrong'} key={action.sceneId}>
+                      <span>{action.correct ? '안전한 선택' : '다시 볼 선택'}</span>
+                      <p>{action.selectedChoice || action.situationText}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </>
+          ) : null}
+          <button className="safety-history-detail-button" type="button" onClick={onDetail}>
+            선택 행동 자세히 보기
+          </button>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+function SafetyHistoryDetail({ sessionId, summary, onBack, onRetry }) {
+  const [detail, setDetail] = useState(null);
+  const [status, setStatus] = useState(sessionId ? 'loading' : 'error');
+  const [error, setError] = useState(sessionId ? '' : '훈련 기록을 찾을 수 없습니다.');
+  const score = detail?.score ?? summary?.score ?? 0;
+  const correctCount = detail?.choiceSummary?.correctCount ?? summary?.correctCount ?? 0;
+  const totalCount = detail?.choiceSummary?.totalCount ?? summary?.totalCount ?? detail?.actions?.length ?? 0;
+  const actions = detail?.actions || [];
+  const feedbackSummary = detail?.feedback?.summary || detail?.feedback || summary?.feedbackSummary || '위험한 상황에서 안전한 선택을 연습했습니다.';
+  const feedbackDetail = detail?.feedback?.detailText || detail?.effectText || '상황을 다시 보며 어떤 행동이 안전했는지 확인해 보세요.';
+
+  const loadDetail = async () => {
+    if (!sessionId) {
+      setStatus('error');
+      setError('훈련 기록을 찾을 수 없습니다.');
+      return;
+    }
+
+    setStatus('loading');
+    setError('');
+
+    try {
+      setDetail(await safetyTrainingApi.getSafetySessionDetail(sessionId));
+      setStatus('ready');
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, '상세 기록을 불러오지 못했습니다.'));
+      setStatus('error');
+    }
+  };
+
+  useEffect(() => {
+    loadDetail();
+  }, [sessionId]);
+
+  return (
+    <TrainingShell fullScreen>
+      <section className="safety-history-detail-shell">
+        <button className="safety-history-back" type="button" onClick={onBack} aria-label="안전 대처 기록으로 돌아가기">
+          ←
+        </button>
+        <header className="safety-history-detail-header">
+          <span>{getSafetyTypeLabel(summary?.category)}</span>
+          <h1>{summary?.scenarioTitle || detail?.title || '안전 대처 훈련'}</h1>
+          <p>{feedbackSummary}</p>
+        </header>
+
+        {status === 'loading' ? <LoadingBlock /> : null}
+        {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
+        <div className="safety-history-detail-layout">
+          <aside className="safety-history-detail-score">
+            <div>
+              <strong>{score}</strong>
+              <span>점</span>
+            </div>
+            <p>
+              {totalCount}개 상황 중 {correctCount}개 안전 선택
+            </p>
+            {detail?.latestSceneImageUrl ? (
+              <img src={detail.latestSceneImageUrl} alt={detail.latestSceneImageAlt || ''} />
+            ) : null}
+          </aside>
+
+          <div className="safety-history-review">
+            <section className="safety-history-action-list" aria-label="지난 안전 선택">
+              {actions.length > 0 ? (
+                actions.map((action, index) => (
+                  <article className={`safety-history-action ${action.correct ? 'is-correct' : 'is-wrong'}`} key={action.sceneId}>
+                    <div className="safety-history-action-head">
+                      <span>{index + 1}</span>
+                      <em>{action.correct ? '안전한 선택' : '다시 볼 선택'}</em>
+                    </div>
+                    <h2>{action.situationText}</h2>
+                    <p>{action.selectedChoice || '선택 기록이 없습니다.'}</p>
+                  </article>
+                ))
+              ) : (
+                <div className="safety-history-empty-action">선택 기록을 불러오면 여기에 표시됩니다.</div>
+              )}
+            </section>
+
+            <section className="safety-history-coaching">
+              <article>
+                <span>AI 피드백</span>
+                <p>{feedbackSummary}</p>
+              </article>
+              <article>
+                <span>다음 연습 포인트</span>
+                <p>{feedbackDetail}</p>
+              </article>
+            </section>
+          </div>
+        </div>
+
+        <div className="safety-history-detail-actions">
+          <button className="secondary-action" type="button" onClick={onBack}>
+            목록으로
+          </button>
+          <button type="button" onClick={onRetry}>
+            다시 연습하기
+          </button>
+        </div>
+      </section>
+    </TrainingShell>
+  );
+}
+
+function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail }) {
+  const latestSession = sessions[0];
+  const totalScore = sessions.reduce((sum, session) => sum + (session.score ?? session.accuracyRate ?? 0), 0);
+  const averageScore = Math.round(totalScore / sessions.length);
+  const [detail, setDetail] = useState(null);
+  const [detailStatus, setDetailStatus] = useState('loading');
+  const [detailError, setDetailError] = useState('');
+  const previewLogs = detail?.dialogLogs?.slice(-3) || [];
+
+  const loadSelectedDetail = async () => {
+    if (!selectedSession?.sessionId) {
+      return;
+    }
+
+    setDetailStatus('loading');
+    setDetailError('');
+
+    try {
+      setDetail(await socialTrainingApi.getSocialSessionDetail(selectedSession.sessionId));
+      setDetailStatus('ready');
+    } catch (requestError) {
+      setDetail(null);
+      setDetailError(getErrorMessage(requestError, '상세 기록을 불러오지 못했습니다.'));
+      setDetailStatus('error');
+    }
+  };
+
+  useEffect(() => {
+    loadSelectedDetail();
+  }, [selectedSession?.sessionId]);
+
+  return (
+    <section className="social-history-shell">
+      <button className="social-history-back" type="button" onClick={onBack} aria-label="훈련 이력 선택으로 돌아가기">
+        ‹
+      </button>
+      <header className="social-history-header">
+        <span>사회성 훈련 기록</span>
+        <h1>상황별 대화 습관을 다시 확인해요</h1>
+        <p>지난 대화를 보며 잘한 표현, 다시 연습할 표현, 다음에 쓸 말을 한 화면에서 볼 수 있습니다.</p>
+      </header>
+
+      <div className="social-history-summary">
+        <article>
+          <span>최근 점수</span>
+          <strong>{latestSession?.score ?? 0}점</strong>
+        </article>
+        <article>
+          <span>평균 점수</span>
+          <strong>{averageScore}점</strong>
+        </article>
+        <article>
+          <span>훈련 횟수</span>
+          <strong>{sessions.length}회</strong>
+        </article>
+      </div>
+
+      <div className="social-history-layout">
+        <div className="social-history-list" aria-label="사회성 훈련 기록">
+          {sessions.map((session) => {
+            const isSelected = selectedSession?.sessionId === session.sessionId;
+            return (
+              <button
+                className={`social-history-card ${isSelected ? 'is-selected' : ''}`}
+                type="button"
+                key={session.sessionId}
+                onClick={() => onSelect(session)}
+              >
+                <div>
+                  <span>{formatHistoryDate(session.completedAt)}</span>
+                  <strong>{session.scenarioTitle || '사회성 훈련'}</strong>
+                  <p>{session.feedbackSummary}</p>
+                </div>
+                <div className="social-history-card-meta">
+                  <em>{getSocialScoreTypeLabel(session.scoreType)}</em>
+                  <strong>{session.score ?? 0}점</strong>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <aside className="social-history-preview">
+          <div className="social-history-preview-score">
+            <span>{getSocialScoreTypeLabel(detail?.scoreType)}</span>
+            <strong>{detail?.score ?? selectedSession?.score ?? 0}점</strong>
+          </div>
+          <h2>{selectedSession?.scenarioTitle || '사회성 훈련'}</h2>
+          <p>{detail?.feedback?.summary || selectedSession?.feedbackSummary || 'AI 피드백을 확인해 보세요.'}</p>
+          {detailStatus === 'loading' ? <div className="social-history-preview-state">상세 기록을 불러오는 중입니다.</div> : null}
+          {detailStatus === 'error' ? (
+            <div className="social-history-preview-state is-error">
+              <span>{detailError}</span>
+              <button type="button" onClick={loadSelectedDetail}>
+                다시 불러오기
+              </button>
+            </div>
+          ) : null}
+          {detailStatus === 'ready' ? (
+            <div className="social-history-preview-dialogues">
+              {previewLogs.map((log) => (
+                <div className={`social-history-bubble ${log.speaker === 'USER' ? 'is-user' : 'is-partner'}`} key={log.turnNo}>
+                  <span>{log.speaker === 'USER' ? '나' : '상대'}</span>
+                  {log.content}
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <button className="social-history-detail-button" type="button" onClick={onDetail}>
+            자세히 복습하기
+          </button>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+function SocialHistoryDetail({ sessionId, summary, onBack, onRetry }) {
+  const [detail, setDetail] = useState(null);
+  const [status, setStatus] = useState(sessionId ? 'loading' : 'error');
+  const [error, setError] = useState(sessionId ? '' : '훈련 기록을 찾을 수 없습니다.');
+  const score = detail?.score ?? summary?.score ?? summary?.accuracyRate ?? 0;
+  const logs = detail?.dialogLogs || [];
+
+  const loadDetail = async () => {
+    if (!sessionId) {
+      setStatus('error');
+      setError('훈련 기록을 찾을 수 없습니다.');
+      return;
+    }
+
+    setStatus('loading');
+    setError('');
+
+    try {
+      setDetail(await socialTrainingApi.getSocialSessionDetail(sessionId));
+      setStatus('ready');
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, '상세 기록을 불러오지 못했습니다.'));
+      setStatus('error');
+    }
+  };
+
+  useEffect(() => {
+    loadDetail();
+  }, [sessionId]);
+
+  return (
+    <TrainingShell fullScreen>
+      <section className="social-history-detail-shell">
+        <button className="social-history-back" type="button" onClick={onBack} aria-label="사회성 훈련 기록으로 돌아가기">
+          ‹
+        </button>
+        <header className="social-history-detail-header">
+          <span>{formatHistoryDate(summary?.completedAt)}</span>
+          <h1>{summary?.scenarioTitle || '사회성 훈련 복습'}</h1>
+          <p>{detail?.feedback?.summary || summary?.feedbackSummary || '지난 대화의 AI 피드백을 확인해 보세요.'}</p>
+        </header>
+
+        {status === 'loading' ? <LoadingBlock /> : null}
+        {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
+        <div className="social-history-detail-layout">
+          <aside className="social-history-detail-score">
+            <em>{getSocialScoreTypeLabel(detail?.scoreType)}</em>
+            <div>
+              <strong>{score}</strong>
+              <span>점</span>
+            </div>
+            <p>대화 {logs.length}턴 복습</p>
+          </aside>
+
+          <div className="social-history-review">
+            <section className="social-history-dialogue-list" aria-label="지난 대화 내용">
+              {logs.length > 0 ? (
+                logs.map((log) => (
+                  <article className={`social-history-detail-bubble ${log.speaker === 'USER' ? 'is-user' : 'is-partner'}`} key={log.turnNo}>
+                    <span>{log.speaker === 'USER' ? '내 말' : '상대방'}</span>
+                    <p>{log.content}</p>
+                  </article>
+                ))
+              ) : (
+                <div className="social-history-empty-dialogue">대화 기록을 불러오면 여기에 표시됩니다.</div>
+              )}
+            </section>
+
+            <section className="social-history-coaching">
+              <article>
+                <span>AI 피드백</span>
+                <p>{detail?.feedback?.summary || summary?.feedbackSummary || '상황에 맞는 표현을 차분하게 이어갔습니다.'}</p>
+              </article>
+              <article>
+                <span>상세 코칭</span>
+                <p>{detail?.feedback?.detailText || '대화 내용을 다시 보며 어떤 표현이 좋았는지 확인해 보세요.'}</p>
+              </article>
+            </section>
+          </div>
+        </div>
+
+        <div className="social-history-detail-actions">
+          <button className="secondary-action" type="button" onClick={onBack}>
+            목록으로
+          </button>
+          <button type="button" onClick={onRetry}>
+            다시 연습하기
+          </button>
+        </div>
+      </section>
+    </TrainingShell>
+  );
+}
+
+function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail }) {
+  const latestSession = sessions[0];
+  const totalScore = sessions.reduce((sum, session) => sum + (session.score ?? session.accuracyRate ?? 0), 0);
+  const averageScore = Math.round(totalScore / sessions.length);
+  const totalCorrect = sessions.reduce((sum, session) => sum + (session.correctCount || 0), 0);
+  const totalQuestions = sessions.reduce((sum, session) => sum + (session.totalCount || 0), 0);
+
+  return (
+    <section className="document-history-shell">
+      <button className="document-history-back" type="button" onClick={onBack} aria-label="훈련 기록 선택으로 돌아가기">
+        ←
+      </button>
+      <header className="document-history-header">
+        <span>문서 이해 기록</span>
+        <h1>어떤 문서를 잘 읽었는지 확인해요</h1>
+        <p>지난 문제를 다시 보며 자주 틀린 문서 유형과 필요한 정보를 찾는 연습을 이어갈 수 있습니다.</p>
+      </header>
+      <div className="document-history-summary">
+        <article>
+          <span>최근 점수</span>
+          <strong>{latestSession?.score ?? 0}점</strong>
+        </article>
+        <article>
+          <span>평균 점수</span>
+          <strong>{averageScore}점</strong>
+        </article>
+        <article>
+          <span>누적 정답</span>
+          <strong>
+            {totalCorrect}/{totalQuestions}
+          </strong>
+        </article>
+      </div>
+      <div className="document-history-list" aria-label="문서 이해 훈련 기록">
+        {sessions.map((session) => {
+          const isSelected = selectedSession?.sessionId === session.sessionId;
+          return (
+            <button
+              className={`document-history-card ${isSelected ? 'is-selected' : ''}`}
+              type="button"
+              key={session.sessionId}
+              onClick={() => onSelect(session)}
+            >
+              <div>
+                <span>{formatHistoryDate(session.completedAt)}</span>
+                <strong>{session.scenarioTitle || '문서 이해 훈련'}</strong>
+                <p>{session.feedbackSummary}</p>
+              </div>
+              <div className="document-history-card-meta">
+                <em>{session.playedLevel || 1}단계</em>
+                <strong>{session.score ?? 0}점</strong>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <button className="document-history-detail-button" type="button" onClick={onDetail}>
+        선택한 기록 자세히 보기
+      </button>
+    </section>
+  );
+}
+
+function DocumentHistoryDetail({ sessionId, summary, onBack, onRetry }) {
+  const [detail, setDetail] = useState(null);
+  const [status, setStatus] = useState(sessionId ? 'loading' : 'error');
+  const [error, setError] = useState(sessionId ? '' : '훈련 기록을 찾을 수 없습니다.');
+  const score = detail?.score ?? summary?.score ?? 0;
+  const correctCount = detail?.answerSummary?.correctCount ?? summary?.correctCount ?? 0;
+  const totalCount = detail?.answerSummary?.totalCount ?? summary?.totalCount ?? 0;
+  const answers = detail?.answers || [];
+  const message =
+    score >= 80
+      ? '문서의 핵심 정보를 잘 찾았습니다.'
+      : score >= 60
+        ? '문서 속 시간, 장소, 해야 할 일을 다시 확인해 보세요.'
+        : '짧은 문장부터 천천히 읽고 답을 찾는 연습이 필요합니다.';
+
+  const loadDetail = async () => {
+    if (!sessionId) {
+      setStatus('error');
+      setError('훈련 기록을 찾을 수 없습니다.');
+      return;
+    }
+
+    setStatus('loading');
+    setError('');
+
+    try {
+      setDetail(await documentTrainingApi.getDocumentSessionDetail(sessionId));
+      setStatus('ready');
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, '상세 기록을 불러오지 못했습니다.'));
+      setStatus('error');
+    }
+  };
+
+  useEffect(() => {
+    loadDetail();
+  }, [sessionId]);
+
+  return (
+    <TrainingShell fullScreen>
+      <section className="document-history-detail-shell">
+        <button className="document-result-back" type="button" onClick={onBack}>
+          ←
+        </button>
+        <header className="document-history-detail-header">
+          <span>문서 이해 상세 기록</span>
+          <h1>{summary?.scenarioTitle || '문서 이해 훈련'}</h1>
+          <p>{message}</p>
+        </header>
+        {status === 'loading' ? <LoadingBlock /> : null}
+        {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
+        <div className="document-history-detail-layout">
+          <aside className="document-history-detail-score">
+            <div>
+              <strong>{score}</strong>
+              <span>점</span>
+            </div>
+            <p>
+              {totalCount}문제 중 {correctCount}문제 정답
+            </p>
+            <em>{summary?.playedLevel || 1}단계</em>
+          </aside>
+          {answers.length > 0 ? (
+            <div className="document-history-answer-list">
+              {answers.map((answer, index) => (
+                <article className={`document-history-answer ${answer.correct ? 'is-correct' : 'is-wrong'}`} key={answer.questionId}>
+                  <div className="document-history-answer-head">
+                    <span>{index + 1}</span>
+                    <em>문제</em>
+                    <strong>{answer.correct ? '정답' : '복습 필요'}</strong>
+                  </div>
+                  <h2>{answer.questionText}</h2>
+                  <dl>
+                    <div>
+                      <dt>내가 고른 답</dt>
+                      <dd>{answer.userAnswer || '-'}</dd>
+                    </div>
+                    <div>
+                      <dt>정답</dt>
+                      <dd>{answer.correctAnswer || '-'}</dd>
+                    </div>
+                  </dl>
+                  <p>{answer.explanation}</p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <EmptyBlock message="상세 기록이 없습니다." />
+          )}
+        </div>
+        <div className="document-history-detail-actions">
+          <button type="button" onClick={onRetry}>
+            다시 연습하기
+          </button>
+          <button type="button" className="secondary-action" onClick={onBack}>
+            기록 목록
+          </button>
+        </div>
       </section>
     </TrainingShell>
   );
