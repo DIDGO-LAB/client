@@ -396,38 +396,463 @@ const buildSafetyResult = (choice, scene, score) => ({
   feedback: choice?.resultText || choice?.message || '선택 결과를 확인해 주세요.',
 });
 
-const documentQuestions = [
+const documentLevels = [
   {
-    questionId: 1,
-    title: '회의실 예약 안내',
-    documentText: '회의실 2번은 오후 3시에 사용할 수 있습니다. 사용 전에는 불을 끄고 문을 닫아 주세요.',
-    questionText: '오후 3시에 사용할 수 있는 회의실은 어디인가요?',
-    questionType: 'MULTIPLE_CHOICE',
-    choices: [
-      { choiceId: 10, choiceOrder: 1, text: '회의실 2번' },
-      { choiceId: 11, choiceOrder: 2, text: '창고' },
-      { choiceId: 12, choiceOrder: 3, text: '휴게실' },
-    ],
-    correctChoiceId: 10,
-    correctAnswer: '회의실 2번',
-    explanation: '문서에 회의실 2번을 오후 3시에 사용할 수 있다고 적혀 있습니다.',
+    level: 1,
+    title: '1단계',
+    subtitle: '짧은 안내문에서 장소와 시간을 찾아요.',
+    unlocked: true,
+    completed: true,
+    recommended: false,
   },
   {
-    questionId: 2,
-    title: '작업 안내문',
-    documentText: '복사한 서류는 종류별로 나누어 파란 파일에 넣습니다.',
-    questionText: '복사한 서류는 어디에 넣어야 하나요?',
-    questionType: 'MULTIPLE_CHOICE',
-    choices: [
-      { choiceId: 20, choiceOrder: 1, text: '책상 위' },
-      { choiceId: 21, choiceOrder: 2, text: '파란 파일' },
-      { choiceId: 22, choiceOrder: 3, text: '휴지통' },
-    ],
-    correctChoiceId: 21,
-    correctAnswer: '파란 파일',
-    explanation: '안내문에 파란 파일에 넣으라고 적혀 있습니다.',
+    level: 2,
+    title: '2단계',
+    subtitle: '업무 지시에서 해야 할 일을 골라요.',
+    unlocked: true,
+    completed: false,
+    recommended: true,
+  },
+  {
+    level: 3,
+    title: '3단계',
+    subtitle: '공지사항에서 날짜와 준비물을 확인해요.',
+    unlocked: false,
+    completed: false,
+    recommended: false,
+  },
+  {
+    level: 4,
+    title: '4단계',
+    subtitle: '금지사항과 주의사항을 구분해요.',
+    unlocked: false,
+    completed: false,
+    recommended: false,
+  },
+  {
+    level: 5,
+    title: '5단계',
+    subtitle: '여러 문장을 읽고 일의 순서를 정리해요.',
+    unlocked: false,
+    completed: false,
+    recommended: false,
   },
 ];
+
+const documentQuestionsByLevel = {
+  1: [
+    {
+      questionId: 101,
+      theme: 'ANNOUNCEMENT',
+      title: '회의실 사용 공지',
+      documentText: '오늘 오후 2시부터 4시까지 회의실 B는 고객사 미팅으로 사용합니다. 회의실 A와 C는 평소처럼 예약할 수 있습니다.',
+      questionText: '오후 2시부터 4시까지 사용할 수 없는 회의실은 어디인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 1010, choiceOrder: 1, text: '회의실 A' },
+        { choiceId: 1011, choiceOrder: 2, text: '회의실 B' },
+        { choiceId: 1012, choiceOrder: 3, text: '회의실 C' },
+      ],
+      correctChoiceId: 1011,
+      correctAnswer: '회의실 B',
+      explanation: '공지에 회의실 B가 오후 2시부터 4시까지 고객사 미팅으로 사용된다고 되어 있습니다.',
+    },
+    {
+      questionId: 102,
+      theme: 'MESSENGER',
+      title: '출근 후 확인 요청',
+      documentText: '지우님, 출근하면 먼저 안내 데스크에 놓인 방문자 명단을 확인하고, 빠진 이름이 있으면 저에게 알려 주세요.',
+      questionText: '출근하면 먼저 확인해야 하는 것은 무엇인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 1020, choiceOrder: 1, text: '방문자 명단' },
+        { choiceId: 1021, choiceOrder: 2, text: '점심 주문표' },
+        { choiceId: 1022, choiceOrder: 3, text: '우편 요금표' },
+      ],
+      correctChoiceId: 1020,
+      correctAnswer: '방문자 명단',
+      explanation: '메신저에 안내 데스크에 놓인 방문자 명단을 먼저 확인하라고 되어 있습니다.',
+    },
+    {
+      questionId: 103,
+      theme: 'MANUAL',
+      title: '프린터 용지 보충 방법',
+      documentText: '프린터 용지가 부족하면 A4 용지를 아래 칸에 넣습니다. 용지를 넣은 뒤에는 덮개를 닫고 확인 버튼을 누릅니다.',
+      questionText: 'A4 용지는 프린터의 어느 칸에 넣어야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 1030, choiceOrder: 1, text: '아래 칸' },
+        { choiceId: 1031, choiceOrder: 2, text: '위쪽 덮개 위' },
+        { choiceId: 1032, choiceOrder: 3, text: '출력물 받침대' },
+      ],
+      correctChoiceId: 1030,
+      correctAnswer: '아래 칸',
+      explanation: '매뉴얼에 A4 용지를 아래 칸에 넣는다고 적혀 있습니다.',
+    },
+    {
+      questionId: 104,
+      theme: 'ANNOUNCEMENT',
+      title: '탕비실 정리 안내',
+      documentText: '금요일 오후 5시 전까지 개인 컵은 이름표가 붙은 선반에 올려 주세요. 이름표가 없는 컵은 공용 컵 바구니에 넣습니다.',
+      questionText: '이름표가 붙은 개인 컵은 어디에 올려야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 1040, choiceOrder: 1, text: '이름표가 붙은 선반' },
+        { choiceId: 1041, choiceOrder: 2, text: '공용 컵 바구니' },
+        { choiceId: 1042, choiceOrder: 3, text: '회의실 책상' },
+      ],
+      correctChoiceId: 1040,
+      correctAnswer: '이름표가 붙은 선반',
+      explanation: '공지에 개인 컵은 이름표가 붙은 선반에 올리라고 되어 있습니다.',
+    },
+    {
+      questionId: 105,
+      theme: 'MESSENGER',
+      title: '택배 수령 메시지',
+      documentText: '오늘 도착한 택배는 총무팀 보관함에 넣어 주세요. 냉장 표시가 있는 택배만 탕비실 냉장고에 넣으면 됩니다.',
+      questionText: '냉장 표시가 없는 일반 택배는 어디에 넣어야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 1050, choiceOrder: 1, text: '총무팀 보관함' },
+        { choiceId: 1051, choiceOrder: 2, text: '탕비실 냉장고' },
+        { choiceId: 1052, choiceOrder: 3, text: '회의실 앞' },
+      ],
+      correctChoiceId: 1050,
+      correctAnswer: '총무팀 보관함',
+      explanation: '메시지에 일반 택배는 총무팀 보관함에 넣고, 냉장 표시 택배만 냉장고에 넣으라고 되어 있습니다.',
+    },
+  ],
+  2: [
+    {
+      questionId: 201,
+      theme: 'MANUAL',
+      title: '회의 자료 인쇄 절차',
+      documentText: '회의 자료는 흑백으로 12부 인쇄합니다. 인쇄가 끝나면 왼쪽 위를 스테이플러로 묶고 회의실 A 앞 테이블에 둡니다.',
+      questionText: '회의 자료는 몇 부 인쇄해야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 2010, choiceOrder: 1, text: '8부' },
+        { choiceId: 2011, choiceOrder: 2, text: '12부' },
+        { choiceId: 2012, choiceOrder: 3, text: '20부' },
+      ],
+      correctChoiceId: 2011,
+      correctAnswer: '12부',
+      explanation: '매뉴얼에 회의 자료를 흑백으로 12부 인쇄한다고 되어 있습니다.',
+    },
+    {
+      questionId: 202,
+      theme: 'ANNOUNCEMENT',
+      title: '사무용품 신청 마감',
+      documentText: '이번 달 사무용품 신청은 목요일 오후 3시에 마감됩니다. 필요한 물품은 신청서에 수량을 적어 총무팀에 제출해 주세요.',
+      questionText: '사무용품 신청은 언제 마감되나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 2020, choiceOrder: 1, text: '목요일 오후 3시' },
+        { choiceId: 2021, choiceOrder: 2, text: '금요일 오전 9시' },
+        { choiceId: 2022, choiceOrder: 3, text: '월요일 오후 6시' },
+      ],
+      correctChoiceId: 2020,
+      correctAnswer: '목요일 오후 3시',
+      explanation: '공지에 이번 달 사무용품 신청이 목요일 오후 3시에 마감된다고 적혀 있습니다.',
+    },
+    {
+      questionId: 203,
+      theme: 'MESSENGER',
+      title: '파일명 수정 요청',
+      documentText: '공유 폴더에 올린 견적서 파일명을 "거래처명_견적서_날짜" 형식으로 바꿔 주세요. 내용은 수정하지 않아도 됩니다.',
+      questionText: '무엇을 수정해야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 2030, choiceOrder: 1, text: '파일명' },
+        { choiceId: 2031, choiceOrder: 2, text: '견적서 내용' },
+        { choiceId: 2032, choiceOrder: 3, text: '폴더 이름' },
+      ],
+      correctChoiceId: 2030,
+      correctAnswer: '파일명',
+      explanation: '메신저에 파일명을 정해진 형식으로 바꾸고 내용은 수정하지 않아도 된다고 되어 있습니다.',
+    },
+    {
+      questionId: 204,
+      theme: 'MANUAL',
+      title: '방문객 응대 절차',
+      documentText: '방문객이 오면 이름과 방문 목적을 확인합니다. 확인 후 방문증을 건네고 담당자에게 도착 사실을 알립니다.',
+      questionText: '방문증을 건네기 전에 먼저 해야 할 일은 무엇인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 2040, choiceOrder: 1, text: '이름과 방문 목적 확인' },
+        { choiceId: 2041, choiceOrder: 2, text: '회의실 청소' },
+        { choiceId: 2042, choiceOrder: 3, text: '점심 메뉴 확인' },
+      ],
+      correctChoiceId: 2040,
+      correctAnswer: '이름과 방문 목적 확인',
+      explanation: '절차에는 방문객의 이름과 방문 목적을 확인한 뒤 방문증을 건넨다고 되어 있습니다.',
+    },
+    {
+      questionId: 205,
+      theme: 'MESSENGER',
+      title: '회의실 정리 요청',
+      documentText: '오후 교육이 끝나면 회의실 의자는 뒤쪽 벽으로 붙이고, 사용한 네임펜은 강사 책상 위 상자에 모아 주세요.',
+      questionText: '사용한 네임펜은 어디에 모아야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 2050, choiceOrder: 1, text: '강사 책상 위 상자' },
+        { choiceId: 2051, choiceOrder: 2, text: '회의실 뒤쪽 벽' },
+        { choiceId: 2052, choiceOrder: 3, text: '탕비실 서랍' },
+      ],
+      correctChoiceId: 2050,
+      correctAnswer: '강사 책상 위 상자',
+      explanation: '메시지에 사용한 네임펜을 강사 책상 위 상자에 모아 달라고 되어 있습니다.',
+    },
+  ],
+  3: [
+    {
+      questionId: 301,
+      theme: 'ANNOUNCEMENT',
+      title: '월말 재고 확인 공지',
+      documentText: '월말 재고 확인은 금요일 오전 10시에 시작합니다. 사무용품은 총무팀, 청소용품은 시설팀 양식에 각각 기록해 주세요.',
+      questionText: '사무용품 재고는 어느 팀 양식에 기록해야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 3010, choiceOrder: 1, text: '총무팀 양식' },
+        { choiceId: 3011, choiceOrder: 2, text: '시설팀 양식' },
+        { choiceId: 3012, choiceOrder: 3, text: '인사팀 양식' },
+      ],
+      correctChoiceId: 3010,
+      correctAnswer: '총무팀 양식',
+      explanation: '공지에 사무용품은 총무팀 양식에 기록하라고 되어 있습니다.',
+    },
+    {
+      questionId: 302,
+      theme: 'MESSENGER',
+      title: '자료 전달 방식 안내',
+      documentText: '오늘 회의 자료는 출력하지 말고 PDF로 변환해서 "마케팅_회의자료" 폴더에 올려 주세요. 파일명 앞에는 오늘 날짜를 붙여 주세요.',
+      questionText: '회의 자료는 어디에 올려야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 3020, choiceOrder: 1, text: '"마케팅_회의자료" 폴더' },
+        { choiceId: 3021, choiceOrder: 2, text: '개인 바탕화면' },
+        { choiceId: 3022, choiceOrder: 3, text: '프린터 출력함' },
+      ],
+      correctChoiceId: 3020,
+      correctAnswer: '"마케팅_회의자료" 폴더',
+      explanation: '메신저에 PDF로 변환해 "마케팅_회의자료" 폴더에 올리라고 되어 있습니다.',
+    },
+    {
+      questionId: 303,
+      theme: 'MANUAL',
+      title: '불량품 분류 기준',
+      documentText: '상품 포장지가 찢어졌거나 라벨이 잘못 붙은 상품은 불량품 바구니에 넣습니다. 단, 박스 모서리만 살짝 눌린 상품은 정상 상품으로 분류합니다.',
+      questionText: '정상 상품으로 분류하는 것은 무엇인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 3030, choiceOrder: 1, text: '박스 모서리만 살짝 눌린 상품' },
+        { choiceId: 3031, choiceOrder: 2, text: '포장지가 찢어진 상품' },
+        { choiceId: 3032, choiceOrder: 3, text: '라벨이 잘못 붙은 상품' },
+      ],
+      correctChoiceId: 3030,
+      correctAnswer: '박스 모서리만 살짝 눌린 상품',
+      explanation: '매뉴얼에 박스 모서리만 살짝 눌린 상품은 정상 상품으로 분류한다고 되어 있습니다.',
+    },
+    {
+      questionId: 304,
+      theme: 'ANNOUNCEMENT',
+      title: '근무복 세탁 공지',
+      documentText: '이번 주부터 근무복 세탁물은 수요일 오전까지 2층 세탁함에 넣어 주세요. 목요일 이후 제출한 세탁물은 다음 주에 처리됩니다.',
+      questionText: '이번 주에 처리되려면 세탁물을 언제까지 넣어야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 3040, choiceOrder: 1, text: '수요일 오전까지' },
+        { choiceId: 3041, choiceOrder: 2, text: '목요일 오후까지' },
+        { choiceId: 3042, choiceOrder: 3, text: '금요일 퇴근 후' },
+      ],
+      correctChoiceId: 3040,
+      correctAnswer: '수요일 오전까지',
+      explanation: '공지에 수요일 오전까지 넣어야 이번 주에 처리된다고 되어 있습니다.',
+    },
+    {
+      questionId: 305,
+      theme: 'MESSENGER',
+      title: '고객 응대 전달',
+      documentText: '오후 3시에 방문하는 고객님께는 회의실 C를 안내해 주세요. 담당자가 도착하기 전까지 생수 한 병도 준비해 주세요.',
+      questionText: '고객님께 안내해야 하는 회의실은 어디인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 3050, choiceOrder: 1, text: '회의실 C' },
+        { choiceId: 3051, choiceOrder: 2, text: '회의실 A' },
+        { choiceId: 3052, choiceOrder: 3, text: '교육실' },
+      ],
+      correctChoiceId: 3050,
+      correctAnswer: '회의실 C',
+      explanation: '메신저에 오후 3시 방문 고객에게 회의실 C를 안내하라고 되어 있습니다.',
+    },
+  ],
+  4: [
+    {
+      questionId: 401,
+      theme: 'MANUAL',
+      title: '개인정보 문서 처리 매뉴얼',
+      documentText: '주민등록번호나 연락처가 적힌 문서는 일반 쓰레기통에 버리지 않습니다. 필요한 내용 확인이 끝나면 문서 파쇄함에 넣습니다.',
+      questionText: '연락처가 적힌 문서는 어디에 넣어야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 4010, choiceOrder: 1, text: '문서 파쇄함' },
+        { choiceId: 4011, choiceOrder: 2, text: '일반 쓰레기통' },
+        { choiceId: 4012, choiceOrder: 3, text: '탕비실 서랍' },
+      ],
+      correctChoiceId: 4010,
+      correctAnswer: '문서 파쇄함',
+      explanation: '매뉴얼에 개인정보가 적힌 문서는 확인 후 문서 파쇄함에 넣으라고 되어 있습니다.',
+    },
+    {
+      questionId: 402,
+      theme: 'ANNOUNCEMENT',
+      title: '엘리베이터 점검 공지',
+      documentText: '오늘 오후 1시부터 3시까지 2호기 엘리베이터를 점검합니다. 점검 중에는 1호기 엘리베이터나 계단을 이용해 주세요.',
+      questionText: '점검 중 이용하면 안 되는 것은 무엇인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 4020, choiceOrder: 1, text: '2호기 엘리베이터' },
+        { choiceId: 4021, choiceOrder: 2, text: '1호기 엘리베이터' },
+        { choiceId: 4022, choiceOrder: 3, text: '계단' },
+      ],
+      correctChoiceId: 4020,
+      correctAnswer: '2호기 엘리베이터',
+      explanation: '공지에 오후 1시부터 3시까지 2호기 엘리베이터를 점검한다고 되어 있습니다.',
+    },
+    {
+      questionId: 403,
+      theme: 'MESSENGER',
+      title: '반품 상자 처리 요청',
+      documentText: '반품 상자는 송장 사진을 찍은 뒤 물류팀 앞 파란 카트에 올려 주세요. 새 상품 상자와 섞이지 않게 해 주세요.',
+      questionText: '반품 상자는 어디에 올려야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 4030, choiceOrder: 1, text: '물류팀 앞 파란 카트' },
+        { choiceId: 4031, choiceOrder: 2, text: '새 상품 진열대' },
+        { choiceId: 4032, choiceOrder: 3, text: '회의실 앞 테이블' },
+      ],
+      correctChoiceId: 4030,
+      correctAnswer: '물류팀 앞 파란 카트',
+      explanation: '메시지에 반품 상자는 송장 사진을 찍은 뒤 물류팀 앞 파란 카트에 올리라고 되어 있습니다.',
+    },
+    {
+      questionId: 404,
+      theme: 'MANUAL',
+      title: '민원 전화 기록 방법',
+      documentText: '고객 전화가 오면 이름, 연락처, 요청 내용을 기록합니다. 해결이 어려운 요청은 혼자 답하지 말고 팀장에게 전달합니다.',
+      questionText: '해결이 어려운 요청은 어떻게 해야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 4040, choiceOrder: 1, text: '팀장에게 전달하기' },
+        { choiceId: 4041, choiceOrder: 2, text: '혼자 아무 답이나 하기' },
+        { choiceId: 4042, choiceOrder: 3, text: '기록하지 않고 끊기' },
+      ],
+      correctChoiceId: 4040,
+      correctAnswer: '팀장에게 전달하기',
+      explanation: '매뉴얼에 해결이 어려운 요청은 혼자 답하지 말고 팀장에게 전달하라고 되어 있습니다.',
+    },
+    {
+      questionId: 405,
+      theme: 'ANNOUNCEMENT',
+      title: '보안 카드 재발급 공지',
+      documentText: '보안 카드를 분실한 직원은 즉시 총무팀에 신고해야 합니다. 신고 후 임시 출입증을 받아 당일만 사용할 수 있습니다.',
+      questionText: '보안 카드를 잃어버리면 먼저 해야 할 일은 무엇인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 4050, choiceOrder: 1, text: '총무팀에 신고하기' },
+        { choiceId: 4051, choiceOrder: 2, text: '그냥 퇴근하기' },
+        { choiceId: 4052, choiceOrder: 3, text: '다른 사람 카드 쓰기' },
+      ],
+      correctChoiceId: 4050,
+      correctAnswer: '총무팀에 신고하기',
+      explanation: '공지에 보안 카드를 분실하면 즉시 총무팀에 신고해야 한다고 되어 있습니다.',
+    },
+  ],
+  5: [
+    {
+      questionId: 501,
+      theme: 'MANUAL',
+      title: '전자세금계산서 확인 절차',
+      documentText: '전자세금계산서를 받으면 거래처명과 금액을 먼저 확인합니다. 금액이 주문서와 다르면 승인하지 말고 회계팀에 확인 요청을 보냅니다.',
+      questionText: '금액이 주문서와 다르면 어떻게 해야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 5010, choiceOrder: 1, text: '회계팀에 확인 요청 보내기' },
+        { choiceId: 5011, choiceOrder: 2, text: '바로 승인하기' },
+        { choiceId: 5012, choiceOrder: 3, text: '거래처명을 지우기' },
+      ],
+      correctChoiceId: 5010,
+      correctAnswer: '회계팀에 확인 요청 보내기',
+      explanation: '매뉴얼에 금액이 주문서와 다르면 승인하지 말고 회계팀에 확인 요청을 보내라고 되어 있습니다.',
+    },
+    {
+      questionId: 502,
+      theme: 'MESSENGER',
+      title: '긴급 납품 일정 변경',
+      documentText: '오늘 납품 예정이던 A상품은 거래처 요청으로 내일 오전 11시에 출고합니다. 대신 B상품 20개를 오늘 오후 4시까지 먼저 준비해 주세요.',
+      questionText: '오늘 오후 4시까지 먼저 준비해야 하는 것은 무엇인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 5020, choiceOrder: 1, text: 'B상품 20개' },
+        { choiceId: 5021, choiceOrder: 2, text: 'A상품 전량' },
+        { choiceId: 5022, choiceOrder: 3, text: '내일 출고 송장' },
+      ],
+      correctChoiceId: 5020,
+      correctAnswer: 'B상품 20개',
+      explanation: '메시지에 A상품은 내일 오전 11시에 출고하고, B상품 20개를 오늘 오후 4시까지 먼저 준비하라고 되어 있습니다.',
+    },
+    {
+      questionId: 503,
+      theme: 'ANNOUNCEMENT',
+      title: '근태 정정 신청 안내',
+      documentText: '출근 기록이 누락된 직원은 당일 오후 6시 전까지 근태 정정 신청서를 작성해야 합니다. 신청서에는 사유와 팀장 확인 서명이 필요합니다.',
+      questionText: '근태 정정 신청서에 꼭 필요한 것은 무엇인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 5030, choiceOrder: 1, text: '사유와 팀장 확인 서명' },
+        { choiceId: 5031, choiceOrder: 2, text: '점심 메뉴와 좌석 번호' },
+        { choiceId: 5032, choiceOrder: 3, text: '방문객 명단' },
+      ],
+      correctChoiceId: 5030,
+      correctAnswer: '사유와 팀장 확인 서명',
+      explanation: '공지에 신청서에는 사유와 팀장 확인 서명이 필요하다고 되어 있습니다.',
+    },
+    {
+      questionId: 504,
+      theme: 'MANUAL',
+      title: '고객 개인정보 메일 발송 기준',
+      documentText: '고객 연락처가 포함된 파일은 외부 메일로 보내지 않습니다. 꼭 전달해야 할 때는 비밀번호를 설정한 뒤 승인받은 공유 링크로 전달합니다.',
+      questionText: '고객 연락처가 포함된 파일을 꼭 전달해야 할 때 맞는 방법은 무엇인가요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 5040, choiceOrder: 1, text: '비밀번호 설정 후 승인받은 공유 링크로 전달' },
+        { choiceId: 5041, choiceOrder: 2, text: '개인 메일로 바로 전달' },
+        { choiceId: 5042, choiceOrder: 3, text: '단체 채팅방에 파일 올리기' },
+      ],
+      correctChoiceId: 5040,
+      correctAnswer: '비밀번호 설정 후 승인받은 공유 링크로 전달',
+      explanation: '매뉴얼에 비밀번호를 설정한 뒤 승인받은 공유 링크로 전달하라고 되어 있습니다.',
+    },
+    {
+      questionId: 505,
+      theme: 'MESSENGER',
+      title: '월간 보고서 최종 확인',
+      documentText: '월간 보고서에서 3페이지 매출 표만 다시 확인해 주세요. 표의 합계가 맞으면 파일명 뒤에 "_확인완료"를 붙여 저장하면 됩니다.',
+      questionText: '합계가 맞으면 파일명 뒤에 무엇을 붙여야 하나요?',
+      questionType: 'MULTIPLE_CHOICE',
+      choices: [
+        { choiceId: 5050, choiceOrder: 1, text: '_확인완료' },
+        { choiceId: 5051, choiceOrder: 2, text: '_삭제예정' },
+        { choiceId: 5052, choiceOrder: 3, text: '_개인보관' },
+      ],
+      correctChoiceId: 5050,
+      correctAnswer: '_확인완료',
+      explanation: '메시지에 표의 합계가 맞으면 파일명 뒤에 "_확인완료"를 붙여 저장하라고 되어 있습니다.',
+    },
+  ],
+};
+
+const documentQuestions = documentQuestionsByLevel[1];
 
 const historySessions = {
   SOCIAL: [
@@ -493,9 +918,10 @@ const historySessions = {
   ],
 };
 
-const publicDocumentQuestions = () =>
-  documentQuestions.map((question) => ({
+const publicDocumentQuestions = (questions = documentQuestions) =>
+  questions.map((question) => ({
     questionId: question.questionId,
+    theme: question.theme,
     title: question.title,
     documentText: question.documentText,
     questionText: question.questionText,
@@ -894,11 +1320,12 @@ export const setupMockApi = () => {
     return [
       200,
       wrappedTraining({
-        currentLevel: 1,
+        currentLevel: 2,
         highestUnlockedLevel: 2,
         lastPlayedLevel: 1,
         lastAccuracyRate: 100,
         lastAverageReactionMs: null,
+        levels: documentLevels,
       }),
     ];
   });
@@ -910,13 +1337,24 @@ export const setupMockApi = () => {
     }
 
     const payload = parseBody(config.data);
+    const level = payload.level || 1;
+    const levelInfo = documentLevels.find((item) => item.level === level);
+
+    if (!levelInfo || !levelInfo.unlocked) {
+      return [
+        403,
+        { success: false, error: { code: 'LEVEL_LOCKED', message: '아직 해금되지 않은 단계입니다.' } },
+      ];
+    }
+
+    const questions = documentQuestionsByLevel[level] || documentQuestionsByLevel[1];
     const sessionId = nextDocumentSessionId;
     nextDocumentSessionId += 1;
 
     mockDocumentSessions.set(sessionId, {
       sessionId,
-      level: payload.level || 1,
-      questions: documentQuestions,
+      level,
+      questions,
       score: 0,
     });
 
@@ -924,7 +1362,8 @@ export const setupMockApi = () => {
       200,
       wrappedTraining({
         sessionId,
-        questions: publicDocumentQuestions(),
+        level,
+        questions: publicDocumentQuestions(questions),
       }),
     ];
   });
@@ -1052,7 +1491,3 @@ export const setupMockApi = () => {
 
   return mockApi;
 };
-
-
-
-
