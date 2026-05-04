@@ -37,8 +37,19 @@ const safetyTypeLabels = {
   COMMUTE_SAFETY: '이동 안전',
 };
 
-const getSafetyCategoryInfo = (category) =>
-  safetyCategories.find((item) => item.category === category) || safetyCategories[0];
+const documentLevelSubtitles = {
+  1: '짧은 안내문에서 장소와 시간을 찾아요.',
+  2: '업무 지시에서 해야 할 일을 골라요.',
+  3: '공지사항에서 날짜와 준비물을 확인해요.',
+  4: '금지사항과 주의사항을 구분해요.',
+  5: '여러 문장을 읽고 일의 순서를 정리해요.',
+};
+
+const documentThemeLabels = {
+  ANNOUNCEMENT: '공지사항',
+  MANUAL: '매뉴얼',
+  MESSENGER: '메신저',
+};
 
 const trainingTypes = [
   {
@@ -621,7 +632,6 @@ export function SafetyScenarioPage() {
 export function SafetySessionPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const category = location.state?.category || 'COMMUTE_SAFETY';
   const scenarioId = location.state?.scenarioId;
   const [sessionId, setSessionId] = useState(null);
   const [scene, setScene] = useState(null);
@@ -792,6 +802,107 @@ export function SafetyResultPage() {
     </TrainingShell>
   );
 }
+
+function DocumentThemePreview({ question }) {
+  const theme = question?.theme || 'ANNOUNCEMENT';
+
+  if (theme === 'MANUAL') {
+    return (
+      <div className="document-theme-preview document-theme-manual">
+        <header>
+          <span />
+          <strong>업무 매뉴얼</strong>
+        </header>
+        <div className="manual-toolbar">
+          <span>파일</span>
+          <span>편집</span>
+          <span>보기</span>
+          <span>삽입</span>
+          <span>서식</span>
+          <em>100%</em>
+          <em>Noto Sans KR</em>
+          <em>11</em>
+        </div>
+        <div className="manual-document">
+          <aside>
+            <strong>문서 탭</strong>
+            <p>{question.title}</p>
+            <span>I. 목적</span>
+            <span>II. 적용 범위</span>
+            <span>III. 사용 방법</span>
+            <span>IV. 주의사항</span>
+          </aside>
+          <article>
+            <h3>{question.title}</h3>
+            <p>{question.documentText}</p>
+          </article>
+        </div>
+      </div>
+    );
+  }
+
+  if (theme === 'MESSENGER') {
+    return (
+      <div className="document-theme-preview document-theme-messenger">
+        <aside className="messenger-sidebar">
+          <strong>DIDGO COMPANY</strong>
+          <span>홈</span>
+          <span>공지사항</span>
+          <span className="is-active">업무 채팅</span>
+          <span>업무 매뉴얼</span>
+          <span>자료 공유</span>
+          <em>설정</em>
+        </aside>
+        <section className="messenger-list">
+          <header>
+            <strong>업무 채팅</strong>
+            <span>⌕</span>
+          </header>
+          <div className="messenger-empty">
+            <span>•••</span>
+            <strong>{question.title}</strong>
+          </div>
+        </section>
+        <section className="messenger-room">
+          <header>
+            <strong>업무 채팅</strong>
+            <span>⌕  ☎  ⋮</span>
+          </header>
+          <div className="messenger-bubble">
+            <strong>{question.title}</strong>
+            <p>{question.documentText}</p>
+          </div>
+          <footer>메시지 입력...</footer>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="document-theme-preview document-theme-announcement">
+      <header>
+        <strong>DIDGO COMPANY</strong>
+        <nav>
+          <span>회사소개</span>
+          <span>사업소개</span>
+          <span>인재채용</span>
+          <span>고객센터</span>
+        </nav>
+        <em>검색어를 입력하세요</em>
+      </header>
+      <div className="announcement-hero">
+        <strong>공지사항</strong>
+        <span>DIDGO 컴퍼니의 새로운 소식을 알려드립니다.</span>
+      </div>
+      <article>
+        <h3>{question.title}</h3>
+        <p>{question.documentText}</p>
+      </article>
+      <footer>DIDGO COMPANY</footer>
+    </div>
+  );
+}
+
 export function DocumentStartPage() {
   const navigate = useNavigate();
   const [progress, setProgress] = useState(null);
@@ -817,7 +928,22 @@ export function DocumentStartPage() {
 
   const currentLevel = progress?.currentLevel || 1;
   const highestLevel = progress?.highestUnlockedLevel || currentLevel;
-  const levels = Array.from({ length: Math.max(highestLevel, 1) }, (_, index) => index + 1);
+  const levels =
+    progress?.levels?.length > 0
+      ? progress.levels
+      : Array.from({ length: Math.max(highestLevel, 1) }, (_, index) => {
+          const level = index + 1;
+          return {
+            level,
+            subtitle:
+              level === currentLevel
+                ? '지금 이어서 진행하기 좋은 단계입니다.'
+                : documentLevelSubtitles[level] || '이전에 열어둔 단계를 다시 연습합니다.',
+            unlocked: level <= highestLevel,
+            recommended: level === currentLevel,
+          };
+        });
+  const unlockedLevelCount = levels.filter((levelInfo) => levelInfo.unlocked !== false).length;
 
   return (
     <TrainingShell fullScreen>
@@ -831,7 +957,7 @@ export function DocumentStartPage() {
         <section className="document-start-shell">
           <aside className="document-start-intro">
             <span>문서 이해 훈련</span>
-            <h2>읽고, 찾고, 확인하는 연습</h2>
+            <h2>읽고, 생각하는 연습</h2>
             <p>안내문에서 중요한 문장을 고르고 질문에 답하며 필요한 정보를 찾는 흐름을 익힙니다.</p>
             <div className="document-progress-card">
               <strong>{currentLevel}단계</strong>
@@ -841,23 +967,36 @@ export function DocumentStartPage() {
           <div className="document-level-panel">
             <header className="document-level-panel-header">
               <span>선택 가능한 단계</span>
-              <strong>{levels.length}개 단계</strong>
+              <strong>{unlockedLevelCount}/{levels.length}개 해금</strong>
             </header>
             <div className="option-grid document-level-grid">
-              {levels.map((level) => (
-                <button
-                  className={`option-card document-option ${level === currentLevel ? 'is-current' : ''}`}
-                  type="button"
-                  key={level}
-                  onClick={() => navigate('/training/document/session', { state: { level } })}
-                >
-                  <div className="document-option-copy">
-                    <strong>{level}단계</strong>
-                    <span>{level === currentLevel ? '지금 이어서 진행하기 좋은 단계입니다.' : '이전에 열어둔 단계를 다시 연습합니다.'}</span>
-                  </div>
-                  <em>{level === currentLevel ? '추천' : '복습'}</em>
-                </button>
-              ))}
+              {levels.map((levelInfo) => {
+                const level = levelInfo.level;
+                const isUnlocked = levelInfo.unlocked !== false;
+                const isRecommended = levelInfo.recommended || level === currentLevel;
+                return (
+                  <button
+                    className={`option-card document-option ${isRecommended ? 'is-current' : ''} ${
+                      isUnlocked ? '' : 'is-locked'
+                    }`}
+                    type="button"
+                    key={level}
+                    onClick={() => {
+                      if (isUnlocked) {
+                        navigate('/training/document/session', { state: { level } });
+                      }
+                    }}
+                    disabled={!isUnlocked}
+                    aria-disabled={!isUnlocked}
+                  >
+                    <div className="document-option-copy">
+                      <strong>{levelInfo.title || `${level}단계`}</strong>
+                      <span>{levelInfo.subtitle || documentLevelSubtitles[level] || '문서 내용을 차근차근 확인합니다.'}</span>
+                    </div>
+                    <em>{isUnlocked ? (isRecommended ? '추천' : '복습') : '잠김'}</em>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -872,6 +1011,7 @@ export function DocumentSessionPage() {
   const level = location.state?.level || 1;
   const [session, setSession] = useState(null);
   const [answers, setAnswers] = useState({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
 
@@ -883,6 +1023,7 @@ export function DocumentSessionPage() {
       const data = await documentTrainingApi.startDocumentSession({ level });
       setSession(data);
       setAnswers({});
+      setCurrentQuestionIndex(0);
       setStatus('ready');
     } catch (requestError) {
       setError(getErrorMessage(requestError, '문서 이해 훈련을 시작하지 못했습니다.'));
@@ -895,7 +1036,11 @@ export function DocumentSessionPage() {
   }, [level]);
 
   const questions = session?.questions || [];
+  const currentQuestion = questions[currentQuestionIndex];
+  const selectedChoiceId = currentQuestion ? answers[currentQuestion.questionId] : null;
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
   const allAnswered = questions.length > 0 && questions.every((question) => answers[question.questionId]);
+  const answeredCount = questions.filter((question) => answers[question.questionId]).length;
 
   const submitAnswers = async () => {
     if (!session?.sessionId || !allAnswered) {
@@ -925,51 +1070,94 @@ export function DocumentSessionPage() {
     }
   };
 
+  const goToNextQuestion = () => {
+    if (!currentQuestion || !selectedChoiceId || status === 'saving') {
+      return;
+    }
+
+    if (isLastQuestion) {
+      submitAnswers();
+      return;
+    }
+
+    setCurrentQuestionIndex((index) => Math.min(index + 1, questions.length - 1));
+  };
+
+  const goToPreviousQuestion = () => {
+    setCurrentQuestionIndex((index) => Math.max(index - 1, 0));
+  };
+
   return (
-    <TrainingShell>
-      <PageHeader
-        title="문서 문제 풀기"
-        subtitle={`${level}단계 문서를 읽고 답을 골라 주세요.`}
-        onBack={() => navigate('/training/document')}
-      />
+    <TrainingShell fullScreen>
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadSession} /> : null}
-      {(status === 'ready' || status === 'saving') && session ? (
-        <section className="document-stage">
-          {questions.map((question, index) => (
-            <article className="document-question" key={question.questionId}>
-              <div className="document-paper">
-                <span>{question.title || `문서 ${index + 1}`}</span>
-                <p>{question.documentText}</p>
-              </div>
-              <div className="document-answer-panel">
-                <strong>{question.questionText}</strong>
-                <div className="document-choice-grid">
-                  {question.choices?.map((choice) => (
-                    <button
-                      className={answers[question.questionId] === choice.choiceId ? 'is-selected' : ''}
-                      type="button"
-                      key={choice.choiceId}
-                      onClick={() =>
-                        setAnswers((currentAnswers) => ({
-                          ...currentAnswers,
-                          [question.questionId]: choice.choiceId,
-                        }))
-                      }
-                    >
-                      {choice.text}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </article>
-          ))}
-          {error ? <ErrorBlock message={error} /> : null}
-          <div className="training-actions">
-            <button type="button" onClick={submitAnswers} disabled={!allAnswered || status === 'saving'}>
-              {status === 'saving' ? '제출 중' : '답변 제출'}
+      {(status === 'ready' || status === 'saving') && session && currentQuestion ? (
+        <section className="document-session-shell">
+          <header className="document-session-topbar">
+            <button type="button" onClick={() => navigate('/training/document')} aria-label="단계 선택으로 돌아가기">
+              ←
             </button>
+            <div>
+              <strong>문서 이해 훈련</strong>
+              <p>왼쪽 문서를 천천히 읽고 알맞은 답을 골라 주세요.</p>
+            </div>
+            <span>
+              {currentQuestionIndex + 1}/{questions.length} 문제
+            </span>
+          </header>
+          <div className="document-session-progress" aria-label={`총 ${questions.length}문제 중 ${answeredCount}문제 선택`}>
+            {questions.map((question, index) => (
+              <span
+                className={`${index === currentQuestionIndex ? 'is-current' : ''} ${
+                  answers[question.questionId] ? 'is-answered' : ''
+                }`}
+                key={question.questionId}
+              />
+            ))}
           </div>
+          <div className="document-session-layout">
+            <DocumentThemePreview question={currentQuestion} />
+            <aside className="document-session-question">
+              <div className="document-question-meta">
+                <span>{documentThemeLabels[currentQuestion.theme] || '문서'}</span>
+                <em>{level}단계</em>
+              </div>
+              <p>문서 내용과 같은 답을 하나 고르세요.</p>
+              <strong>{currentQuestion.questionText}</strong>
+              <div className="document-choice-grid">
+                {currentQuestion.choices?.map((choice, index) => (
+                  <button
+                    className={selectedChoiceId === choice.choiceId ? 'is-selected' : ''}
+                    type="button"
+                    key={choice.choiceId}
+                    onClick={() =>
+                      setAnswers((currentAnswers) => ({
+                        ...currentAnswers,
+                        [currentQuestion.questionId]: choice.choiceId,
+                      }))
+                    }
+                  >
+                    <span>{index + 1}</span>
+                    <strong>{choice.text}</strong>
+                  </button>
+                ))}
+              </div>
+              <div className="document-session-actions">
+                <button type="button" className="document-prev-button" onClick={goToPreviousQuestion} disabled={currentQuestionIndex === 0}>
+                  이전 문제
+                </button>
+                <button
+                  className="document-next-button"
+                  type="button"
+                  onClick={goToNextQuestion}
+                  disabled={!selectedChoiceId || status === 'saving'}
+                >
+                  {status === 'saving' ? '제출 중' : isLastQuestion ? '결과 보기' : '다음 문제'}
+                </button>
+              </div>
+            </aside>
+          </div>
+          {error ? <ErrorBlock message={error} /> : null}
         </section>
       ) : null}
     </TrainingShell>
@@ -1010,20 +1198,54 @@ export function DocumentResultPage() {
 
   const correctCount = result?.correctCount ?? result?.answerSummary?.correctCount ?? 0;
   const totalCount = result?.totalCount ?? result?.answerSummary?.totalCount ?? 0;
+  const score = result?.score ?? 0;
+  const resultMessage =
+    score >= 80
+      ? '문서에서 필요한 정보를 잘 찾았습니다.'
+      : score >= 60
+        ? '중요한 문장을 다시 확인하면 더 좋아집니다.'
+        : '문서를 한 줄씩 천천히 읽는 연습을 다시 해봅시다.';
+  const resultItems = result?.results || result?.answers || [];
 
   return (
-    <TrainingShell>
-      <PageHeader title="훈련 결과" subtitle="오늘의 문서 이해 훈련 결과입니다." onBack={() => navigate('/training/document')} />
+    <TrainingShell fullScreen>
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadResult} /> : null}
       {status === 'ready' ? (
-        <ResultPanel
-          score={result?.score ?? 0}
-          title="문서 이해 훈련을 마쳤어요."
-          feedback={`${totalCount}문제 중 ${correctCount}문제를 맞혔습니다.`}
-          onRetry={() => navigate('/training/document')}
-          onHome={() => navigate('/training')}
-        />
+        <section className="document-result-shell">
+          <button className="document-result-back" type="button" onClick={() => navigate('/training/document')}>
+            ←
+          </button>
+          <div className="document-result-card">
+            <div className="document-result-score">
+              <span>{score}</span>
+              <small>점</small>
+            </div>
+            <div className="document-result-copy">
+              <span>문서 이해 훈련 결과</span>
+              <h1>오늘은 {totalCount}문제 중 {correctCount}문제를 맞혔어요</h1>
+              <p>{resultMessage}</p>
+            </div>
+            <div className="document-result-summary">
+              {Array.from({ length: totalCount || 5 }, (_, index) => {
+                const item = resultItems[index];
+                return (
+                  <span className={item?.correct ? 'is-correct' : 'is-wrong'} key={`${item?.questionId || index}`}>
+                    {index + 1}
+                  </span>
+                );
+              })}
+            </div>
+            <div className="document-result-actions">
+              <button type="button" onClick={() => navigate('/training/document')}>
+                다시 연습하기
+              </button>
+              <button type="button" className="secondary-action" onClick={() => navigate('/training')}>
+                훈련 선택
+              </button>
+            </div>
+          </div>
+        </section>
       ) : null}
     </TrainingShell>
   );
@@ -1191,25 +1413,4 @@ function formatHistoryDate(value) {
     String(date.getMonth() + 1).padStart(2, '0'),
     String(date.getDate()).padStart(2, '0'),
   ].join('.');
-}
-
-function ResultPanel({ score, title, feedback, onRetry, onHome }) {
-  return (
-    <section className="result-panel">
-      <div className="result-score">
-        <span>{score}</span>
-        <small>점</small>
-      </div>
-      <h2>{title}</h2>
-      <p>{feedback}</p>
-      <div className="training-actions">
-        <button type="button" onClick={onRetry}>
-          다시 훈련하기
-        </button>
-        <button type="button" className="secondary-action" onClick={onHome}>
-          훈련 선택
-        </button>
-      </div>
-    </section>
-  );
 }

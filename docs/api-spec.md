@@ -795,6 +795,7 @@ Output:
     "questions": [
       {
         "questionId": 1,
+        "theme": "ANNOUNCEMENT",
         "title": "회의실 예약 안내",
         "documentText": "회의실 2번은 오후 3시에 사용할 수 있습니다.",
         "questionText": "오후 3시에 사용할 수 있는 회의실은 어디인가요?",
