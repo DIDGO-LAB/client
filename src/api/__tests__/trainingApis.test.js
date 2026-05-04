@@ -24,11 +24,6 @@ import {
   startSafetySession,
 } from '../safetyTraining';
 import {
-  completeFocusSession,
-  getFocusProgress,
-  startFocusSession,
-} from '../focusTraining';
-import {
   getDocumentProgress,
   getDocumentSessionDetail,
   startDocumentSession,
@@ -89,27 +84,18 @@ describe('training API wrappers', () => {
   it('calls safety training endpoints and unwraps data', async () => {
     mock.onGet('/api/trainings/safety/scenarios', { params: { category: 'COMMUTE_SAFETY' } }).reply(200, wrapped([{ scenarioId: 1 }]));
     mock.onPost('/api/trainings/safety/sessions', { scenarioId: 1 }).reply(200, wrapped({ sessionId: 20 }));
-    mock.onPost('/api/trainings/safety/sessions/20/next-scene', { sceneId: 1, choiceId: 1 }).reply(200, wrapped({ selectedResult: { correct: true } }));
+    mock.onPost('/api/trainings/safety/sessions/20/next-scene', { sceneId: 1, choiceId: 1 }).reply(200, wrapped({ completed: false, nextScene: { sceneId: 2 } }));
     mock.onPost('/api/trainings/safety/sessions/20/complete', {}).reply(200, wrapped({ completed: true }));
-    mock.onGet('/api/trainings/safety/sessions/20/detail').reply(200, wrapped({ score: 80 }));
+    mock.onGet('/api/trainings/safety/sessions/20/detail').reply(200, wrapped({ score: 80, feedbackImageUrl: '/mock/result.png' }));
 
     await expect(getSafetyScenarios('COMMUTE_SAFETY')).resolves.toEqual([{ scenarioId: 1 }]);
     await expect(startSafetySession({ scenarioId: 1 })).resolves.toEqual({ sessionId: 20 });
     await expect(goToNextSafetyScene(20, { sceneId: 1, choiceId: 1 })).resolves.toEqual({
-      selectedResult: { correct: true },
+      completed: false,
+      nextScene: { sceneId: 2 },
     });
     await expect(completeSafetySession(20)).resolves.toEqual({ completed: true });
-    await expect(getSafetySessionDetail(20)).resolves.toEqual({ score: 80 });
-  });
-
-  it('calls focus training endpoints and unwraps data', async () => {
-    mock.onGet('/api/trainings/focus/progress').reply(200, wrapped({ currentLevel: 2 }));
-    mock.onPost('/api/trainings/focus/sessions', { level: 2 }).reply(200, wrapped({ sessionId: 40 }));
-    mock.onPost('/api/trainings/focus/sessions/40/complete', { reactions: [] }).reply(200, wrapped({ score: 92 }));
-
-    await expect(getFocusProgress()).resolves.toEqual({ currentLevel: 2 });
-    await expect(startFocusSession({ level: 2 })).resolves.toEqual({ sessionId: 40 });
-    await expect(completeFocusSession(40, { reactions: [] })).resolves.toEqual({ score: 92 });
+    await expect(getSafetySessionDetail(20)).resolves.toEqual({ score: 80, feedbackImageUrl: '/mock/result.png' });
   });
 
   it('calls document training endpoints and unwraps data', async () => {

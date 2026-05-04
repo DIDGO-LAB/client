@@ -1,23 +1,14 @@
-body {
-  margin: 0;
-  padding: 0;
+.app-shell {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
   overflow: hidden;
-}
-
-#root {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #FFFEFB;
+  background: #FFFEFB;
 }
 
 .app-viewport {
   position: relative;
-  width: min(100vw, calc(100vh * 1.7777777778), 1920px);
-  height: min(100vh, calc(100vw * 0.5625), 1080px);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -27,7 +18,8 @@ body {
   width: 1920px;
   height: 1080px;
   flex-shrink: 0;
-  transform: scale(calc(min(100vw / 1920px, 100vh / 1080px, 1)));
+  overflow: hidden;
+  background: #FFFEFB;
   transform-origin: top left;
 }
 

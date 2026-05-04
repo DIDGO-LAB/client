@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import { authApi, tokenStorage } from './api';
@@ -6,12 +7,26 @@ import DisabilitySelect from './components/intro/DisabilitySelect';
 import JobSelect from './components/intro/JobSelect';
 import GenderSelect from './components/intro/GenderSelect';
 import SignupForm from './components/intro/SignupForm';
-import Sidebar from './components/layout/Sidebar';
 import Login from './pages/Login';
 import Mainpage from './pages/Mainpage';
 import MyPage from './pages/MyPage';
-import SocialTraining from './pages/SocialTraining';
-import TrainMain from './pages/TrainMain';
+import {
+  DocumentResultPage,
+  DocumentSessionPage,
+  DocumentStartPage,
+  SafetyResultPage,
+  SafetyScenarioPage,
+  SafetySessionPage,
+  SafetyTypePage,
+  SocialJobPage,
+  SocialResultPage,
+  SocialScenarioPage,
+  SocialSessionPage,
+  TrainingHistoryDetailPage,
+  TrainingHistoryListPage,
+  TrainingHistorySelectPage,
+  TrainingSelectPage,
+} from './pages/training/TrainingPages';
 import { signupFormToApiPayload } from './utils/userProfile';
 
 const getApiErrorMessage = (error, fallback) => error?.message || fallback;
@@ -24,21 +39,30 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-function ComingSoonPage({ activeKey, title }) {
-  return (
-    <>
-      <Sidebar activeKey={activeKey} />
-      <main style={{ position: 'absolute', left: '516px', top: 0, width: '1404px', height: '1080px' }}>
-        <h1 style={{ margin: '160px 0 0 140px', fontSize: '48px' }}>{title}</h1>
-      </main>
-    </>
-  );
-}
-
 function IntroStepRoutes() {
   const navigate = useNavigate();
   const location = useLocation();
   const signupData = location.state?.signupData ?? {};
+  const [viewportScale, setViewportScale] = useState(() => {
+    if (typeof window === 'undefined') {
+      return 1;
+    }
+
+    return Math.max(0.1, Math.min(window.innerWidth / 1920, window.innerHeight / 1080, 1));
+  });
+
+  useEffect(() => {
+    const updateViewportScale = () => {
+      setViewportScale(Math.max(0.1, Math.min(window.innerWidth / 1920, window.innerHeight / 1080, 1)));
+    };
+
+    updateViewportScale();
+    window.addEventListener('resize', updateViewportScale);
+
+    return () => {
+      window.removeEventListener('resize', updateViewportScale);
+    };
+  }, []);
 
   const goNext = (path, newData = {}) => {
     navigate(path, {
@@ -52,8 +76,15 @@ function IntroStepRoutes() {
   };
 
   return (
-    <div className="app-viewport">
-      <div className="App">
+    <div className="app-shell">
+      <div
+        className="app-viewport"
+        style={{
+          width: `${1920 * viewportScale}px`,
+          height: `${1080 * viewportScale}px`,
+        }}
+      >
+        <div className="App" style={{ transform: `scale(${viewportScale})` }}>
         <Routes>
           <Route path="/" element={<Intro />} />
           <Route
@@ -120,15 +151,95 @@ function IntroStepRoutes() {
             path="/training"
             element={
               <ProtectedRoute>
-                <TrainMain />
+                <TrainingSelectPage />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/training/social"
+            path="/training/social/job"
             element={
               <ProtectedRoute>
-                <SocialTraining />
+                <SocialJobPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/social/scenarios"
+            element={
+              <ProtectedRoute>
+                <SocialScenarioPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/social/session"
+            element={
+              <ProtectedRoute>
+                <SocialSessionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/social/result"
+            element={
+              <ProtectedRoute>
+                <SocialResultPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/safety/types"
+            element={
+              <ProtectedRoute>
+                <SafetyTypePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/safety/scenarios"
+            element={
+              <ProtectedRoute>
+                <SafetyScenarioPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/safety/session"
+            element={
+              <ProtectedRoute>
+                <SafetySessionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/safety/result"
+            element={
+              <ProtectedRoute>
+                <SafetyResultPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/document"
+            element={
+              <ProtectedRoute>
+                <DocumentStartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/document/session"
+            element={
+              <ProtectedRoute>
+                <DocumentSessionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/document/result"
+            element={
+              <ProtectedRoute>
+                <DocumentResultPage />
               </ProtectedRoute>
             }
           />
@@ -136,7 +247,23 @@ function IntroStepRoutes() {
             path="/training-history"
             element={
               <ProtectedRoute>
-                <ComingSoonPage activeKey="history" title="훈련이력" />
+                <TrainingHistorySelectPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training-history/:type"
+            element={
+              <ProtectedRoute>
+                <TrainingHistoryListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training-history/detail"
+            element={
+              <ProtectedRoute>
+                <TrainingHistoryDetailPage />
               </ProtectedRoute>
             }
           />
@@ -150,7 +277,8 @@ function IntroStepRoutes() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
+        </div>
+    </div>
     </div>
   );
 }

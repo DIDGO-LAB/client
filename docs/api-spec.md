@@ -48,7 +48,7 @@ Content-Type: application/json
 ```json
 {
   "gender": ["MALE", "FEMALE"],
-  "trainingType": ["SOCIAL", "SAFETY", "DOCUMENT", "FOCUS"],
+  "trainingType": ["SOCIAL", "SAFETY", "DOCUMENT"],
   "socialJobType": ["OFFICE", "LABOR"],
   "socialSpeaker": ["USER", "AI"],
   "safetyCategory": ["COMMUTE_SAFETY", "WORKPLACE_SAFETY", "DAILY_SAFETY"],
@@ -604,6 +604,8 @@ Output:
       "screenInfo": "횡단보도 앞",
       "situationText": "신호가 깜빡이고 있습니다.",
       "questionText": "어떻게 행동해야 할까요?",
+      "imageUrl": "/static/trainings/safety/scenes/commute-crosswalk-01.png",
+      "imageAlt": "횡단보도 앞에서 신호를 기다리는 장면",
       "choices": [
         {
           "choiceId": 1,
@@ -636,23 +638,40 @@ Output:
 {
   "success": true,
   "data": {
-    "selectedResult": {
-      "correct": true,
-      "resultText": "안전하게 기다렸습니다.",
-      "effectText": "사고 위험을 줄였습니다."
-    },
+    "completed": false,
     "nextScene": {
       "sceneId": 2,
       "screenInfo": "버스 정류장",
       "situationText": "버스가 도착했습니다.",
       "questionText": "어디에 서야 할까요?",
+      "imageUrl": "/static/trainings/safety/scenes/commute-bus-stop-02.png",
+      "imageAlt": "버스 정류장에서 줄을 서야 하는 장면",
       "choices": [
         {
           "choiceId": 3,
           "text": "줄 뒤에 선다."
         }
       ],
-      "endScene": true
+      "endScene": false
+    }
+  },
+  "error": null
+}
+```
+
+종료 장면에 도달한 경우에는 `nextScene` 대신 `result`를 반환한다.
+
+```json
+{
+  "success": true,
+  "data": {
+    "completed": true,
+    "result": {
+      "correct": true,
+      "resultText": "안전하게 기다렸습니다.",
+      "effectText": "사고 위험을 줄였습니다.",
+      "feedbackImageUrl": "/static/trainings/safety/feedback/commute-crosswalk-correct.png",
+      "feedbackImageAlt": "안전하게 기다린 뒤 횡단보도를 건너는 결과 화면"
     }
   },
   "error": null
@@ -718,107 +737,9 @@ Output:
     "feedback": {
       "summary": "대부분의 안전 상황을 올바르게 판단했습니다.",
       "detailText": "신호와 주변 상황을 확인하는 선택이 좋았습니다."
-    }
-  },
-  "error": null
-}
-```
-
-## Focus Training
-
-### 집중력 진행 조회
-
-`GET /api/trainings/focus/progress`
-
-Input:
-
-```json
-{}
-```
-
-Output:
-
-```json
-{
-  "success": true,
-  "data": {
-    "currentLevel": 2,
-    "highestUnlockedLevel": 3,
-    "lastPlayedLevel": 2,
-    "lastAccuracyRate": 92.5,
-    "lastAverageReactionMs": 820
-  },
-  "error": null
-}
-```
-
-### 집중력 세션 시작
-
-`POST /api/trainings/focus/sessions`
-
-Input:
-
-```json
-{
-  "level": 2
-}
-```
-
-Output:
-
-```json
-{
-  "success": true,
-  "data": {
-    "sessionId": 40,
-    "level": 2,
-    "durationSeconds": 180,
-    "commands": [
-      {
-        "commandId": 1001,
-        "order": 1,
-        "commandText": "파란색 위",
-        "expectedAction": "BLUE_UP",
-        "displayAtMs": 0
-      }
-    ]
-  },
-  "error": null
-}
-```
-
-### 집중력 세션 완료
-
-`POST /api/trainings/focus/sessions/{sessionId}/complete`
-
-Input:
-
-```json
-{
-  "reactions": [
-    {
-      "commandId": 1001,
-      "userInput": "BLUE_UP",
-      "reactionMs": 720
-    }
-  ]
-}
-```
-
-Output:
-
-```json
-{
-  "success": true,
-  "data": {
-    "sessionId": 40,
-    "score": 92,
-    "accuracyRate": 92.5,
-    "wrongCount": 1,
-    "averageReactionMs": 820,
-    "unlockedNextLevel": true,
-    "currentLevel": 3,
-    "highestUnlockedLevel": 3
+    },
+    "latestSceneImageUrl": "/static/trainings/safety/scenes/commute-bus-stop-02.png",
+    "latestSceneImageAlt": "버스 정류장에서 줄을 서는 마지막 장면"
   },
   "error": null
 }
@@ -1025,8 +946,7 @@ Output:
     "safetyCorrectCount": 4,
     "safetyTotalCount": 5,
     "documentCorrectCount": 1,
-    "documentTotalCount": 1,
-    "focusCurrentLevel": 3
+    "documentTotalCount": 1
   },
   "error": null
 }

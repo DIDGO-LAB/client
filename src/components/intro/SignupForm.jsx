@@ -24,12 +24,12 @@ function SignupForm({ onNext, onPrev }) {
 
   const handleSubmit = async () => {
     if (!isAllFilled) {
-      alert('모든 정보를 입력해주세요.');
+      alert('모든 정보를 입력해 주세요.');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      alert('비밀번호가 일치하지 않습니다. 다시 확인해주세요.');
+      alert('비밀번호가 일치하지 않습니다. 다시 확인해 주세요.');
       return;
     }
 
@@ -43,97 +43,72 @@ function SignupForm({ onNext, onPrev }) {
   };
 
   return (
-    <div className="intro-page-wrapper">
-      <h1 className="intro-main-text" style={{ left: '686px', top: '198px', width: '548px', textAlign: 'center' }}>
-        상세 정보를 입력해주세요.
-      </h1>
-
-      <button
-        className="intro-back-button"
-        style={{ left: '139px', top: '110px', width: '75px', height: '80px' }}
-        onClick={onPrev}
-      >
-        <img src={backArrow} alt="뒤로가기" className="intro-back-image" />
+    <div className="intro-page-wrapper intro-step-page">
+      <button className="intro-back-button" type="button" onClick={onPrev} aria-label="뒤로 가기">
+        <img src={backArrow} alt="" className="intro-back-image" />
       </button>
 
-      <input
-        placeholder="아이디"
-        className="intro-input-field"
-        style={{ left: '368px', top: '312px', width: '543px', height: '115px' }}
-        value={formData.userId}
-        onChange={(e) => handleChange(e, 'userId')}
-      />
+      <section className="intro-step-card intro-form-card">
+        <span className="intro-kicker">마지막 단계</span>
+        <h1 className="intro-main-text">계정 정보를 입력해 주세요.</h1>
+        <p className="intro-sub-text">훈련 기록을 저장하고 이어서 연습할 때 필요합니다.</p>
 
-      <input
-        placeholder="이름"
-        className="intro-input-field"
-        style={{ left: '1009px', top: '312px', width: '543px', height: '115px' }}
-        value={formData.userName}
-        onChange={(e) => handleChange(e, 'userName')}
-      />
+        <div className="intro-form-grid">
+          <input
+            placeholder="아이디"
+            className="intro-input-field"
+            value={formData.userId}
+            onChange={(e) => handleChange(e, 'userId')}
+          />
+          <input
+            placeholder="이름"
+            className="intro-input-field"
+            value={formData.userName}
+            onChange={(e) => handleChange(e, 'userName')}
+          />
+          <input
+            type="password"
+            placeholder="비밀번호"
+            className="intro-input-field"
+            value={formData.password}
+            onChange={(e) => handleChange(e, 'password')}
+          />
+          <input
+            type="password"
+            placeholder="비밀번호 확인"
+            className={`intro-input-field ${
+              formData.confirmPassword && formData.password !== formData.confirmPassword ? 'has-error' : ''
+            }`}
+            value={formData.confirmPassword}
+            onChange={(e) => handleChange(e, 'confirmPassword')}
+          />
+          <input
+            placeholder="이메일"
+            className="intro-input-field"
+            value={formData.email}
+            onChange={(e) => handleChange(e, 'email')}
+          />
+          <input
+            placeholder="생년월일 예: 2000-01-01"
+            className="intro-input-field"
+            value={formData.birthDate}
+            onChange={(e) => handleChange(e, 'birthDate')}
+          />
+        </div>
 
-      <input
-        type="password"
-        placeholder="비밀번호"
-        className="intro-input-field"
-        style={{ left: '368px', top: '485px', width: '543px', height: '115px' }}
-        value={formData.password}
-        onChange={(e) => handleChange(e, 'password')}
-      />
+        <p className="intro-consent-text">
+          회원가입을 진행하면 서비스 이용 약관과 개인정보 처리 방침에 동의한 것으로 봅니다.
+        </p>
 
-      <input
-        type="password"
-        placeholder="비밀번호 확인"
-        className="intro-input-field"
-        style={{
-          left: '1009px',
-          top: '485px',
-          width: '543px',
-          height: '115px',
-          borderColor:
-            formData.confirmPassword && formData.password !== formData.confirmPassword
-              ? 'red'
-              : 'rgba(0, 0, 0, 0.25)',
-        }}
-        value={formData.confirmPassword}
-        onChange={(e) => handleChange(e, 'confirmPassword')}
-      />
-
-      <input
-        placeholder="이메일"
-        className="intro-input-field"
-        style={{ left: '368px', top: '662px', width: '543px', height: '115px' }}
-        value={formData.email}
-        onChange={(e) => handleChange(e, 'email')}
-      />
-
-      <input
-        placeholder="생년월일"
-        className="intro-input-field"
-        style={{ left: '1009px', top: '662px', width: '543px', height: '115px' }}
-        value={formData.birthDate}
-        onChange={(e) => handleChange(e, 'birthDate')}
-      />
-
-      <button
-        className="intro-submit-button"
-        style={{
-          left: '1500px',
-          top: '840px',
-          width: '246px',
-          height: '96px',
-          opacity: isAllFilled && !isSubmitting ? 1 : 0.5,
-          cursor: isAllFilled && !isSubmitting ? 'pointer' : 'not-allowed',
-        }}
-        onClick={handleSubmit}
-        disabled={!isAllFilled || isSubmitting}
-      >
-        <span className="intro-button-text">{isSubmitting ? '처리 중...' : '완료'}</span>
-      </button>
-
-      <h6 className="intro-sub-text" style={{ left: '533px', top: '906px', width: '853px', textAlign: 'center' }}>
-        회원가입함으로써 서비스 이용 약관 및 개인정보처리방침에 동의하게 됩니다.
-      </h6>
+        <button
+          className="intro-submit-button"
+          type="button"
+          onClick={handleSubmit}
+          disabled={!isAllFilled || isSubmitting}
+        >
+          <span className="intro-button-text">{isSubmitting ? '처리 중' : '완료'}</span>
+        </button>
+      </section>
     </div>
   );
 }
