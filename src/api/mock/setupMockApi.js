@@ -66,255 +66,93 @@ const socialScenarios = {
 };
 
 const safetyScenarios = {
-  COMMUTE_SAFETY: [
-    {
-      scenarioId: 501,
-      badge: '교통 안전',
-      title: '횡단보도 건너기',
-      description: '신호와 주변 차량을 확인하고 안전하게 길을 건너는 연습입니다.',
-      scenes: [
-        {
-          sceneId: 1,
-          screenInfo: '횡단보도 앞',
-          title: '횡단보도 앞',
-          situationText: '신호등이 빨간불이고 차가 지나가고 있습니다.',
-          imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-          imageAlt: '횡단보도 앞에서 신호를 기다리는 장면',
-          choices: [],
-        },
-        {
-          sceneId: 2,
-          screenInfo: '초록불이 켜진 뒤',
-          title: '초록불이 켜진 뒤',
-          situationText: '초록불이 켜졌지만 옆 차선에서 차량이 천천히 지나가고 있습니다.',
-          questionText: '이제 어떻게 해야 할까요?',
-          imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-          imageAlt: '초록불이 켜진 뒤 주변을 살피는 장면',
-          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
-          feedbackImageAlt: '안전하게 주변을 살피고 건너는 결과 화면',
-          choices: [
-            {
-              choiceId: 1,
-              text: '좌우를 살피고 천천히 건넌다.',
-              correct: true,
-              message: '좋아요. 초록불이어도 주변을 확인해야 합니다.',
-              resultText: '좌우를 살피고 건너는 선택이 안전합니다.',
-              effectText: '주변을 확인하는 습관이 몸을 지켜 줍니다.',
-              feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
-              feedbackImageAlt: '안전하게 횡단보도를 건너는 결과 화면',
-            },
-            {
-              choiceId: 2,
-              text: '휴대전화를 보며 건넌다.',
-              correct: false,
-              message: '길을 건널 때는 앞과 좌우를 계속 봐야 해요.',
-              resultText: '길을 건널 때는 휴대전화를 보지 않는 것이 안전합니다.',
-              effectText: '주변을 보지 않으면 위험을 늦게 발견할 수 있습니다.',
-              feedbackImageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-              feedbackImageAlt: '주의를 놓친 채 길을 건너는 상황',
-            },
-          ],
-        },
-        {
-          sceneId: 3,
-          screenInfo: '횡단보도를 건너는 중',
-          title: '횡단보도를 건너는 중',
-          situationText: '횡단보도를 건너는 중에도 주변을 계속 살펴야 합니다.',
-          questionText: '끝까지 안전하게 건너려면 어떻게 해야 할까요?',
-          imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-          imageAlt: '횡단보도를 건너는 중인 장면',
-          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
-          feedbackImageAlt: '안전하게 길을 건너 훈련을 마무리한 결과 화면',
-          choices: [
-            {
-              choiceId: 1,
-              text: '앞을 보고 빠르게 끝까지 건넌다.',
-              correct: true,
-              message: '좋아요. 끝까지 집중해서 이동하는 것이 안전합니다.',
-              resultText: '끝까지 주변을 살피며 이동했습니다.',
-              effectText: '도로에서는 마지막까지 주의를 유지해야 합니다.',
-              feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
-              feedbackImageAlt: '안전하게 횡단보도를 끝까지 건너는 결과 화면',
-            },
-            {
-              choiceId: 2,
-              text: '중간에 멈춰 휴대전화를 확인한다.',
-              correct: false,
-              message: '도로를 건널 때는 멈추거나 한눈팔지 않는 것이 좋습니다.',
-              resultText: '이동 중에는 주의를 다른 곳에 빼앗기지 않아야 합니다.',
-              effectText: '한눈을 팔면 주변 위험을 늦게 발견할 수 있습니다.',
-              feedbackImageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-              feedbackImageAlt: '횡단 중 주의를 놓친 상황',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  COMMUTE_SAFETY: [],
   WORKPLACE_SAFETY: [
     {
       scenarioId: 601,
-      badge: '직장 안전',
-      title: '원하지 않는 접촉 대처하기',
-      description: '불편한 신체 접촉 상황에서 분명하게 거절하고 도움을 요청하는 연습입니다.',
+      badge: '직장 내 경계',
+      title: '자리에서 불편한 접촉을 받았어요',
+      description: '사무실에서 원하지 않는 신체 접촉이 있을 때 거절하고 도움을 요청하는 연습입니다.',
       scenes: [
         {
           sceneId: 1,
-          screenInfo: '사무실 자리',
-          title: '사무실 자리',
-          situationText: '사수가 어깨를 주무르며 다가옵니다. 나는 너무 당황해서 몸이 얼어버렸습니다.',
+          screenInfo: '사무실 내 자리',
+          title: '사무실 내 자리',
+          situationText: '업무를 하고 있는데 사수가 뒤에서 가까이 다가와 어깨에 손을 올립니다. 나는 놀라고 불편합니다.',
           imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-          imageAlt: '상사가 앉아 있는 직원의 어깨에 손을 올리는 사무실 장면',
+          imageAlt: '사무실에서 사수가 직원 뒤로 다가와 어깨에 손을 올리는 장면',
           feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
-          feedbackImageAlt: '불편한 접촉을 분명히 거절한 결과 화면',
+          feedbackImageAlt: '불편한 접촉을 멈추게 하고 안전하게 거리를 둔 결과 화면',
           choices: [],
         },
         {
           sceneId: 2,
-          screenInfo: '자리에서 벗어난 뒤',
-          title: '자리에서 벗어난 뒤',
-          situationText: '상황이 불편해서 잠시 자리를 벗어났습니다. 이제 누구에게 알릴지 생각해야 합니다.',
-          questionText: '다음으로 어떻게 행동하는 것이 좋을까요?',
+          screenInfo: '불편함을 느낀 순간',
+          title: '불편함을 느낀 순간',
+          situationText: '상대가 계속 가까이 서 있어서 불편합니다. 먼저 내 의사를 분명히 표현해야 합니다.',
+          questionText: '이때 가장 안전한 말과 행동은 무엇일까요?',
           imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-          imageAlt: '불편한 상황 뒤에 대응 방법을 고르는 장면',
+          imageAlt: '사무실 자리에서 불편한 접촉을 받은 뒤 대응을 고르는 장면',
           feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
-          feedbackImageAlt: '도움을 요청하는 올바른 대응 결과 화면',
+          feedbackImageAlt: '거절 의사를 밝히고 안전하게 거리를 둔 결과 화면',
           choices: [
             {
               choiceId: 1,
-              text: '믿을 수 있는 담당자에게 바로 알린다.',
+              text: '“불편합니다. 손을 치워 주세요.”라고 말하고 거리를 둔다.',
               correct: true,
-              message: '좋아요. 혼자 참지 말고 믿을 수 있는 사람에게 알려야 합니다.',
-              resultText: '상황을 혼자 감당하지 않고 바로 도움을 요청했습니다.',
-              effectText: '도움을 요청하면 더 안전하게 보호받을 수 있습니다.',
+              message: '좋아요. 원하지 않는 접촉은 멈춰 달라고 말하고 거리를 둘 수 있습니다.',
+              resultText: '불편한 접촉을 분명히 거절하고 안전한 거리를 만들었습니다.',
+              effectText: '내 몸의 경계를 표현하는 것은 안전을 지키는 중요한 행동입니다.',
             },
             {
               choiceId: 2,
-              text: '아무에게도 말하지 않고 그냥 넘어간다.',
+              text: '상대가 민망할까 봐 웃으며 아무 말도 하지 않는다.',
               correct: false,
-              message: '불편한 접촉은 숨기지 말고 알려도 됩니다.',
-              resultText: '불편한 상황은 혼자 감추지 않는 것이 좋습니다.',
-              effectText: '알려야 적절한 도움과 보호를 받을 수 있습니다.',
+              message: '불편했다면 참지 않아도 됩니다. 멈춰 달라고 말할 수 있습니다.',
+              resultText: '불편한 접촉은 그냥 넘기지 않는 것이 좋습니다.',
+              effectText: '아무 말도 하지 않으면 같은 상황이 반복될 수 있습니다.',
               feedbackImageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-              feedbackImageAlt: '도움을 요청하지 않고 혼자 고민하는 상황',
+              feedbackImageAlt: '불편하지만 말하지 못하고 참고 있는 상황',
             },
           ],
         },
         {
           sceneId: 3,
-          screenInfo: '상황 정리',
-          title: '상황 정리',
-          situationText: '도움을 요청한 뒤에는 안전한 공간으로 이동해 상황을 정리합니다.',
-          questionText: '마지막으로 무엇을 기억하면 좋을까요?',
+          screenInfo: '도움 요청하기',
+          title: '도움 요청하기',
+          situationText: '거절했는데도 마음이 불안하거나 같은 일이 다시 생길까 걱정됩니다. 혼자 해결하려 하지 않아도 됩니다.',
+          questionText: '다음으로 누구에게 알리는 것이 좋을까요?',
           imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-          imageAlt: '상황을 정리하며 안전 수칙을 확인하는 장면',
+          imageAlt: '사무실에서 불편한 접촉 상황 뒤 도움 요청 방법을 확인하는 장면',
           feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
           feedbackImageAlt: '경계를 지키고 도움을 요청해 훈련을 마무리한 결과 화면',
           choices: [
             {
               choiceId: 5,
-              text: '원하지 않는 접촉은 분명히 거절하고 도움을 요청한다.',
+              text: '믿을 수 있는 담당자나 관리자에게 상황을 알린다.',
               correct: true,
-              message: '맞아요. 이것이 나를 지키는 중요한 방법입니다.',
-              resultText: '경계를 표현하고 도움을 요청하는 방법을 기억했습니다.',
-              effectText: '불편한 상황에서는 내 의사를 분명히 말하는 것이 중요합니다.',
+              message: '맞아요. 불편한 접촉은 혼자 감추지 말고 도움을 요청해야 합니다.',
+              resultText: '상황을 담당자에게 알리고 보호받을 수 있는 방법을 선택했습니다.',
+              effectText: '도움을 요청하면 같은 일이 반복되지 않도록 조치를 받을 수 있습니다.',
               feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
               feedbackImageAlt: '안전하게 상황을 마무리한 결과 화면',
             },
             {
               choiceId: 6,
-              text: '상대가 불편해할까 봐 아무 말도 하지 않는다.',
+              text: '내가 예민한 것 같다고 생각하고 아무에게도 말하지 않는다.',
               correct: false,
-              message: '내가 불편했다면 말할 수 있고 도움도 요청할 수 있습니다.',
-              resultText: '불편한 상황에서는 참지 않고 대응하는 것이 좋습니다.',
-              effectText: '내 안전과 경계가 먼저입니다.',
+              message: '내가 불편했다면 도움을 요청해도 됩니다.',
+              resultText: '불편한 일을 혼자 감추면 보호받기 어렵습니다.',
+              effectText: '내가 느낀 불편함은 중요한 신호입니다.',
               feedbackImageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-              feedbackImageAlt: '참고 넘어가려는 상황',
+              feedbackImageAlt: '혼자 참고 넘어가려는 상황',
             },
           ],
         },
       ],
     },
   ],
-  DAILY_SAFETY: [
-    {
-      scenarioId: 701,
-      badge: '생활 안전',
-      title: '뜨거운 물건 다루기',
-      description: '뜨거운 조리도구를 만질 때 보호 도구를 사용해 안전하게 행동하는 연습입니다.',
-      scenes: [
-        {
-          sceneId: 1,
-          screenInfo: '주방',
-          title: '주방',
-          situationText: '끓는 냄비 손잡이를 잡아야 합니다.',
-          imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-          imageAlt: '뜨거운 물건을 조심해야 하는 생활 안전 장면',
-          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
-          feedbackImageAlt: '보호 장비를 사용해 안전하게 행동한 결과 화면',
-          choices: [],
-        },
-        {
-          sceneId: 2,
-          screenInfo: '뜨거운 냄비를 옮기기 전',
-          title: '뜨거운 냄비를 옮기기 전',
-          situationText: '보호 도구를 준비했지만 바닥이 미끄럽지 않은지도 확인해야 합니다.',
-          questionText: '옮기기 전에 무엇을 더 확인해야 할까요?',
-          imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-          imageAlt: '뜨거운 냄비를 옮기기 전 주변을 확인하는 장면',
-          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
-          feedbackImageAlt: '주변을 확인한 뒤 안전하게 행동하는 결과 화면',
-          choices: [
-            {
-              choiceId: 1,
-              text: '주변이 미끄럽지 않은지 보고 천천히 움직인다.',
-              correct: true,
-              message: '좋아요. 주변 환경까지 확인하면 더 안전합니다.',
-              resultText: '주변 위험 요소를 먼저 확인했습니다.',
-              effectText: '안전한 행동은 도구뿐 아니라 주변 확인까지 포함합니다.',
-            },
-            {
-              choiceId: 2,
-              text: '빨리 끝내려고 바로 움직인다.',
-              correct: false,
-              message: '급하게 움직이면 넘어지거나 데일 수 있어요.',
-              resultText: '뜨거운 물건은 서두르지 않는 것이 중요합니다.',
-              effectText: '천천히 주변을 확인하며 움직여야 합니다.',
-            },
-          ],
-        },
-        {
-          sceneId: 3,
-          screenInfo: '이동을 마무리할 때',
-          title: '이동을 마무리할 때',
-          situationText: '뜨거운 냄비를 내려놓을 자리를 정한 뒤 끝까지 조심해서 옮겨야 합니다.',
-          questionText: '마지막으로 어떻게 행동하는 것이 좋을까요?',
-          imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
-          imageAlt: '뜨거운 물건을 안전하게 내려놓는 장면',
-          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
-          feedbackImageAlt: '뜨거운 물건을 안전하게 옮겨 훈련을 마무리한 결과 화면',
-          choices: [
-            {
-              choiceId: 5,
-              text: '내려놓을 자리를 미리 보고 천천히 내려놓는다.',
-              correct: true,
-              message: '맞아요. 끝까지 조심하는 것이 중요합니다.',
-              resultText: '뜨거운 물건을 안전하게 이동하고 정리했습니다.',
-              effectText: '위험한 물건은 시작부터 끝까지 천천히 다뤄야 합니다.',
-            },
-            {
-              choiceId: 6,
-              text: '대충 빈 곳에 빠르게 내려놓는다.',
-              correct: false,
-              message: '내려놓는 순간에도 화상이나 쏟아짐에 주의해야 합니다.',
-              resultText: '마지막 순간까지 안전을 확인해야 합니다.',
-              effectText: '급하게 내려놓으면 다칠 수 있습니다.',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  DAILY_SAFETY: [],
 };
 
 const mockSocialSessions = new Map();
@@ -863,7 +701,12 @@ const historySessions = {
       trainingType: 'SOCIAL',
       score: 90,
       feedbackSummary: '상대방에게 필요한 내용을 다시 확인하는 연습을 잘했습니다.',
-      situationText: '상사가 회의 자료를 복사해 달라고 했지만 몇 부가 필요한지 정확히 듣지 못했습니다.',
+      correctCount: null,
+      totalCount: null,
+      playedLevel: null,
+      accuracyRate: null,
+      wrongCount: null,
+      averageReactionMs: null,
       completedAt: '2026-05-01T10:00:00',
     },
     {
@@ -873,6 +716,12 @@ const historySessions = {
       trainingType: 'SOCIAL',
       score: 82,
       feedbackSummary: '실수를 숨기지 않고 바로 보고하는 연습을 했습니다.',
+      correctCount: null,
+      totalCount: null,
+      playedLevel: null,
+      accuracyRate: null,
+      wrongCount: null,
+      averageReactionMs: null,
       completedAt: '2026-05-02T10:00:00',
     },
     {
@@ -882,15 +731,27 @@ const historySessions = {
       trainingType: 'SOCIAL',
       score: 88,
       feedbackSummary: '도움이 필요한 상황을 분명하게 요청했습니다.',
+      correctCount: null,
+      totalCount: null,
+      playedLevel: null,
+      accuracyRate: null,
+      wrongCount: null,
+      averageReactionMs: null,
       completedAt: '2026-05-03T10:00:00',
     },
     {
       sessionId: 103,
       scenarioId: 101,
-      scenarioTitle: '회의 자료를 몇 부 복사해야 하는지 모르겠어요',
+      scenarioTitle: '고객 응대 중 모르는 내용을 확인하기',
       trainingType: 'SOCIAL',
       score: 94,
-      feedbackSummary: '모르는 부분을 구체적으로 확인했습니다.',
+      feedbackSummary: '모르는 부분을 혼자 추측하지 않고 담당자에게 구체적으로 확인했습니다.',
+      correctCount: null,
+      totalCount: null,
+      playedLevel: null,
+      accuracyRate: null,
+      wrongCount: null,
+      averageReactionMs: null,
       completedAt: '2026-05-04T10:00:00',
     },
   ],
@@ -899,23 +760,358 @@ const historySessions = {
       sessionId: 200,
       scenarioId: 501,
       scenarioTitle: '횡단보도 건너기',
+      category: 'COMMUTE_SAFETY',
       trainingType: 'SAFETY',
       score: 80,
+      correctCount: 4,
+      totalCount: 5,
+      accuracyRate: 80,
+      wrongCount: 1,
+      averageReactionMs: null,
       feedbackSummary: '신호와 주변 차량을 확인하는 선택이 좋았습니다.',
       completedAt: '2026-05-01T11:00:00',
+    },
+    {
+      sessionId: 201,
+      scenarioId: 601,
+      scenarioTitle: '자리에서 불편한 접촉을 받았어요',
+      category: 'WORKPLACE_SAFETY',
+      trainingType: 'SAFETY',
+      score: 100,
+      correctCount: 2,
+      totalCount: 2,
+      accuracyRate: 100,
+      wrongCount: 0,
+      averageReactionMs: null,
+      feedbackSummary: '불편함을 분명히 말하고 도움을 요청하는 선택을 잘했습니다.',
+      completedAt: '2026-05-04T13:30:00',
     },
   ],
   DOCUMENT: [
     {
       sessionId: 300,
       scenarioId: null,
-      scenarioTitle: '회의실 예약 안내',
+      scenarioTitle: '방문객 응대 안내문 복습',
       trainingType: 'DOCUMENT',
-      score: 100,
-      feedbackSummary: '문서에서 필요한 정보를 정확하게 찾았습니다.',
+      score: 80,
+      accuracyRate: 80,
+      correctCount: 4,
+      totalCount: 5,
+      playedLevel: 2,
+      wrongCount: 1,
+      averageReactionMs: null,
+      feedbackSummary: '방문 시간과 준비물처럼 바로 확인할 수 있는 정보를 잘 찾았습니다.',
       completedAt: '2026-05-01T12:00:00',
     },
+    {
+      sessionId: 301,
+      scenarioId: null,
+      scenarioTitle: '물류팀 반품 처리 문서 복습',
+      trainingType: 'DOCUMENT',
+      score: 60,
+      accuracyRate: 60,
+      correctCount: 3,
+      totalCount: 5,
+      playedLevel: 3,
+      wrongCount: 2,
+      averageReactionMs: null,
+      feedbackSummary: '반품 처리 순서와 예외 조건을 다시 확인하는 연습이 필요합니다.',
+      completedAt: '2026-05-03T15:20:00',
+    },
+    {
+      sessionId: 302,
+      scenarioId: null,
+      scenarioTitle: '근태 정정 신청서 복습',
+      trainingType: 'DOCUMENT',
+      score: 100,
+      accuracyRate: 100,
+      correctCount: 5,
+      totalCount: 5,
+      playedLevel: 5,
+      wrongCount: 0,
+      averageReactionMs: null,
+      feedbackSummary: '신청 조건, 마감 시간, 필요한 서명을 정확하게 구분했습니다.',
+      completedAt: '2026-05-05T09:40:00',
+    },
   ],
+};
+
+const safetyHistoryDetails = {
+  200: {
+    sessionId: 200,
+    score: 80,
+    choiceSummary: { correctCount: 4, totalCount: 5 },
+    actions: [
+      {
+        sceneId: 2101,
+        situationText: '횡단보도 신호가 깜빡이고 있습니다.',
+        selectedChoice: '다음 신호를 기다린다.',
+        correct: true,
+      },
+      {
+        sceneId: 2102,
+        situationText: '차가 멈췄지만 운전자가 나를 보지 못한 것 같습니다.',
+        selectedChoice: '차량이 완전히 멈추고 운전자와 눈을 맞춘 뒤 건넌다.',
+        correct: true,
+      },
+      {
+        sceneId: 2103,
+        situationText: '버스가 도착해 사람들이 몰리고 있습니다.',
+        selectedChoice: '줄 뒤에 선다.',
+        correct: true,
+      },
+      {
+        sceneId: 2104,
+        situationText: '비가 와서 바닥이 미끄럽습니다.',
+        selectedChoice: '천천히 걸으며 손잡이를 잡는다.',
+        correct: true,
+      },
+      {
+        sceneId: 2105,
+        situationText: '이어폰을 끼고 길을 건너려 합니다.',
+        selectedChoice: '음악을 크게 틀고 바로 건넌다.',
+        correct: false,
+      },
+    ],
+    feedback: {
+      summary: '신호와 주변 차량을 확인하는 선택이 좋았습니다.',
+      detailText: '길을 건널 때는 신호뿐 아니라 차량이 완전히 멈췄는지 함께 확인하면 더 안전합니다.',
+    },
+    latestSceneImageUrl: '/mock/trainings/safety/scenes/office-intro.png',
+    latestSceneImageAlt: '안전 훈련 마지막 장면',
+  },
+  201: {
+    sessionId: 201,
+    score: 100,
+    choiceSummary: { correctCount: 2, totalCount: 2 },
+    actions: [
+      {
+        sceneId: 2,
+        situationText: '상대가 계속 가까이 서 있어서 불편합니다. 먼저 내 의사를 분명히 표현해야 합니다.',
+        selectedChoice: '“불편합니다. 손을 치워 주세요.”라고 말하고 거리를 둔다.',
+        correct: true,
+      },
+      {
+        sceneId: 3,
+        situationText: '거절했는데도 마음이 불안하거나 같은 일이 다시 생길까 걱정됩니다.',
+        selectedChoice: '믿을 수 있는 담당자나 관리자에게 상황을 알린다.',
+        correct: true,
+      },
+    ],
+    feedback: {
+      summary: '불편함을 분명히 말하고 도움을 요청하는 선택을 잘했습니다.',
+      detailText: '원하지 않는 접촉은 참지 않고 표현할 수 있습니다. 반복될까 걱정되면 담당자에게 바로 알려 보호를 받을 수 있습니다.',
+    },
+    latestSceneImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
+    latestSceneImageAlt: '경계를 지키고 도움을 요청해 훈련을 마무리한 결과 화면',
+  },
+};
+
+const socialHistoryDetails = {
+  100: {
+    sessionId: 100,
+    score: 90,
+    scoreType: 'AI_EVALUATION',
+    feedback: {
+      summary: '상대방에게 필요한 내용을 다시 확인하는 연습을 잘했습니다.',
+      detailText: '몇 부가 필요한지 바로 다시 물었고, 확인한 수량을 다시 말해 업무 지시를 정확히 정리했습니다.',
+    },
+    dialogLogs: [
+      { turnNo: 1, speaker: 'PARTNER', content: '지우 씨, 오늘 회의 자료 복사 부탁해요.' },
+      { turnNo: 2, speaker: 'USER', content: '네. 몇 부가 필요한지 다시 한번 말씀해 주실 수 있을까요?' },
+      { turnNo: 3, speaker: 'PARTNER', content: '다섯 부만 준비하면 됩니다.' },
+      { turnNo: 4, speaker: 'USER', content: '확인했습니다. 다섯 부 복사해서 회의실에 가져다 드릴게요.' },
+    ],
+  },
+  101: {
+    sessionId: 101,
+    score: 82,
+    scoreType: 'AI_EVALUATION',
+    feedback: {
+      summary: '실수를 숨기지 않고 바로 보고하는 연습을 했습니다.',
+      detailText: '실수 내용을 먼저 말한 점이 좋았습니다. 다음에는 수정 방법까지 함께 제안하면 더 분명한 보고가 됩니다.',
+    },
+    dialogLogs: [
+      { turnNo: 1, speaker: 'PARTNER', content: '거래처 명단 입력은 다 끝났나요?' },
+      { turnNo: 2, speaker: 'USER', content: '입력은 끝났는데 전화번호 한 자리가 잘못된 것을 확인했습니다.' },
+      { turnNo: 3, speaker: 'PARTNER', content: '바로 알려줘서 좋아요. 어느 부분인지 같이 봅시다.' },
+      { turnNo: 4, speaker: 'USER', content: '네, 수정 위치를 표시해 두었습니다. 확인 후 바로 고치겠습니다.' },
+    ],
+  },
+  102: {
+    sessionId: 102,
+    score: 88,
+    scoreType: 'AI_EVALUATION',
+    feedback: {
+      summary: '도움이 필요한 상황을 분명하게 요청했습니다.',
+      detailText: '혼자 들기 어렵다는 이유와 함께 도움을 요청해 안전한 선택을 했습니다.',
+    },
+    dialogLogs: [
+      { turnNo: 1, speaker: 'PARTNER', content: '이 상자들을 창고 안쪽 선반으로 옮겨 주세요.' },
+      { turnNo: 2, speaker: 'USER', content: '상자가 무거워서 혼자 들기 어렵습니다. 같이 옮겨 주실 수 있을까요?' },
+      { turnNo: 3, speaker: 'PARTNER', content: '좋아요. 둘이 같이 들면 더 안전합니다.' },
+    ],
+  },
+  103: {
+    sessionId: 103,
+    score: 94,
+    scoreType: 'AI_EVALUATION',
+    feedback: {
+      summary: '모르는 부분을 혼자 추측하지 않고 담당자에게 구체적으로 확인했습니다.',
+      detailText: '고객에게 기다림을 안내하고 정확한 정보를 확인한 뒤 다시 알려 주는 흐름이 자연스러웠습니다.',
+    },
+    dialogLogs: [
+      { turnNo: 1, speaker: 'PARTNER', content: '서류는 어디에 제출하면 되나요?' },
+      { turnNo: 2, speaker: 'USER', content: '정확히 안내드리기 위해 담당자에게 확인해 보겠습니다. 잠시만 기다려 주세요.' },
+      { turnNo: 3, speaker: 'PARTNER', content: '네, 알겠습니다.' },
+      { turnNo: 4, speaker: 'USER', content: '확인해 보니 안내 데스크 오른쪽 제출함에 넣으시면 됩니다.' },
+      { turnNo: 5, speaker: 'PARTNER', content: '감사합니다.' },
+    ],
+  },
+};
+
+const documentHistoryDetails = {
+  300: {
+    sessionId: 300,
+    score: 80,
+    answerSummary: { correctCount: 4, totalCount: 5 },
+    answers: [
+      {
+        questionId: 3101,
+        questionText: '오후 3시에 방문하는 고객은 어느 회의실로 안내해야 하나요?',
+        userAnswer: '회의실 C',
+        correctAnswer: '회의실 C',
+        correct: true,
+        explanation: '방문 안내 공지에 오후 3시 고객은 회의실 C로 안내하라고 되어 있습니다.',
+      },
+      {
+        questionId: 3102,
+        questionText: '담당자가 오기 전까지 준비해야 하는 것은 무엇인가요?',
+        userAnswer: '생수 한 병',
+        correctAnswer: '생수 한 병',
+        correct: true,
+        explanation: '메신저에 담당자가 도착하기 전까지 생수 한 병을 준비해 달라고 되어 있습니다.',
+      },
+      {
+        questionId: 3103,
+        questionText: '방문증을 건네기 전에 먼저 확인해야 하는 것은 무엇인가요?',
+        userAnswer: '방문 목적',
+        correctAnswer: '이름과 방문 목적',
+        correct: false,
+        explanation: '방문객 응대 절차에는 이름과 방문 목적을 모두 확인한 뒤 방문증을 건넨다고 되어 있습니다.',
+      },
+      {
+        questionId: 3104,
+        questionText: '방문자 명단은 어디에 제출해야 하나요?',
+        userAnswer: '안내 데스크 제출함',
+        correctAnswer: '안내 데스크 제출함',
+        correct: true,
+        explanation: '공지에 방문자 명단은 안내 데스크 제출함에 넣으라고 되어 있습니다.',
+      },
+      {
+        questionId: 3105,
+        questionText: '고객이 도착하면 누구에게 알려야 하나요?',
+        userAnswer: '담당자',
+        correctAnswer: '담당자',
+        correct: true,
+        explanation: '메신저에 고객이 도착하면 담당자에게 바로 알려 달라고 되어 있습니다.',
+      },
+    ],
+  },
+  301: {
+    sessionId: 301,
+    score: 60,
+    answerSummary: { correctCount: 3, totalCount: 5 },
+    answers: [
+      {
+        questionId: 3201,
+        questionText: '반품 상자를 파란 카트에 올리기 전에 해야 할 일은 무엇인가요?',
+        userAnswer: '송장 사진 찍기',
+        correctAnswer: '송장 사진 찍기',
+        correct: true,
+        explanation: '반품 처리 매뉴얼에 송장 사진을 찍은 뒤 파란 카트에 올리라고 되어 있습니다.',
+      },
+      {
+        questionId: 3202,
+        questionText: '이번 주 반품 접수 마감 시간은 언제인가요?',
+        userAnswer: '금요일 오후 6시',
+        correctAnswer: '목요일 오후 3시',
+        correct: false,
+        explanation: '공지에는 이번 주 반품 접수가 목요일 오후 3시에 마감된다고 되어 있습니다.',
+      },
+      {
+        questionId: 3203,
+        questionText: '반품 상자는 어떤 상자와 섞이지 않게 해야 하나요?',
+        userAnswer: '새 상품 상자',
+        correctAnswer: '새 상품 상자',
+        correct: true,
+        explanation: '메신저에 반품 상자는 새 상품 상자와 섞이지 않게 해 달라고 되어 있습니다.',
+      },
+      {
+        questionId: 3204,
+        questionText: '라벨이 훼손된 상품은 어디에 따로 보관해야 하나요?',
+        userAnswer: '정상 상품 진열대',
+        correctAnswer: '확인 필요 바구니',
+        correct: false,
+        explanation: '매뉴얼에 라벨이 훼손된 상품은 확인 필요 바구니에 따로 보관하라고 되어 있습니다.',
+      },
+      {
+        questionId: 3205,
+        questionText: '반품 사진은 어느 폴더에 올려야 하나요?',
+        userAnswer: '반품_사진_이번주 폴더',
+        correctAnswer: '반품_사진_이번주 폴더',
+        correct: true,
+        explanation: '메신저에 반품 사진을 반품_사진_이번주 폴더에 올리라고 되어 있습니다.',
+      },
+    ],
+  },
+  302: {
+    sessionId: 302,
+    score: 100,
+    answerSummary: { correctCount: 5, totalCount: 5 },
+    answers: [
+      {
+        questionId: 3301,
+        questionText: '출근 기록이 누락되면 언제까지 정정 신청서를 작성해야 하나요?',
+        userAnswer: '당일 오후 6시 전',
+        correctAnswer: '당일 오후 6시 전',
+        correct: true,
+        explanation: '근태 정정 공지에는 당일 오후 6시 전까지 신청서를 작성해야 한다고 되어 있습니다.',
+      },
+      {
+        questionId: 3302,
+        questionText: '정정 신청서에 필요한 서명은 무엇인가요?',
+        userAnswer: '팀장 확인 서명',
+        correctAnswer: '팀장 확인 서명',
+        correct: true,
+        explanation: '작성 기준에 팀장 확인 서명이 필요하다고 되어 있습니다.',
+      },
+      {
+        questionId: 3303,
+        questionText: '정정 사유를 적은 뒤 누구에게 먼저 보내야 하나요?',
+        userAnswer: '팀장',
+        correctAnswer: '팀장',
+        correct: true,
+        explanation: '메신저에 정정 사유를 적은 뒤 팀장에게 먼저 보내 달라고 되어 있습니다.',
+      },
+      {
+        questionId: 3304,
+        questionText: '정정 신청서에 반드시 적어야 하는 내용은 무엇인가요?',
+        userAnswer: '누락 사유',
+        correctAnswer: '누락 사유',
+        correct: true,
+        explanation: '신청서 작성 기준에 누락 사유를 반드시 적어야 한다고 되어 있습니다.',
+      },
+      {
+        questionId: 3305,
+        questionText: '다음 날 제출한 정정 신청서는 언제 처리되나요?',
+        userAnswer: '다음 급여 반영일',
+        correctAnswer: '다음 급여 반영일',
+        correct: true,
+        explanation: '공지에 다음 날 제출한 신청서는 다음 급여 반영일에 처리된다고 되어 있습니다.',
+      },
+    ],
+  },
 };
 
 const publicDocumentQuestions = (questions = documentQuestions) =>
@@ -1111,14 +1307,29 @@ export const setupMockApi = () => {
       return [404, { success: false, error: { code: 'NOT_FOUND', message: '훈련 세션을 찾을 수 없습니다.' } }];
     }
 
+    const payload = parseBody(config.data);
+    const feedbackSummary = '상대방의 말을 듣고 필요한 내용을 차분하게 요청했습니다.';
     const result = {
       sessionId,
       score: 86,
-      title: '대화를 자연스럽게 이어갔어요.',
-      feedback: '상대방의 말을 듣고 필요한 내용을 차분하게 요청했습니다.',
+      feedbackSummary,
+      completed: true,
     };
 
-    mockSocialSessions.set(sessionId, { ...session, ...result });
+    mockSocialSessions.set(sessionId, {
+      ...session,
+      ...result,
+      detail: {
+        sessionId,
+        score: result.score,
+        scoreType: 'AI_EVALUATION',
+        feedback: {
+          summary: feedbackSummary,
+          detailText: '필요한 내용을 다시 확인하고, 상대방의 답변을 듣고 나서 행동을 정리하는 흐름이 좋았습니다.',
+        },
+        dialogLogs: payload.dialogLogs || [],
+      },
+    });
 
     return [200, wrappedTraining(result)];
   });
@@ -1130,21 +1341,14 @@ export const setupMockApi = () => {
     }
 
     const sessionId = Number(config.url.split('/').at(-2));
+    const historyDetail = socialHistoryDetails[sessionId];
     const session = mockSocialSessions.get(sessionId);
 
-    if (!session) {
+    if (!historyDetail && !session?.detail) {
       return [404, { success: false, error: { code: 'NOT_FOUND', message: '훈련 세션을 찾을 수 없습니다.' } }];
     }
 
-    return [
-      200,
-      wrappedTraining({
-        sessionId,
-        score: session.score || 86,
-        title: session.title || '사회성 훈련을 완료했어요.',
-        feedback: session.feedback || '상황에 맞게 대화를 이어가는 연습을 했습니다.',
-      }),
-    ];
+    return [200, wrappedTraining(historyDetail || session.detail)];
   });
 
   mockApi.onGet('/api/trainings/safety/scenarios').reply((config) => {
@@ -1288,7 +1492,11 @@ export const setupMockApi = () => {
       return authError;
     }
     const sessionId = Number(config.url.split('/').at(-2));
+    const historyDetail = safetyHistoryDetails[sessionId];
     const session = mockSafetySessions.get(sessionId);
+    if (historyDetail) {
+      return [200, wrappedTraining(historyDetail)];
+    }
     if (!session) {
       return [404, { success: false, error: { code: 'NOT_FOUND', message: '훈련 세션을 찾을 수 없습니다.' } }];
     }
@@ -1417,10 +1625,15 @@ export const setupMockApi = () => {
     }
 
     const sessionId = Number(config.url.split('/').at(-2));
+    const historyDetail = documentHistoryDetails[sessionId];
     const session = mockDocumentSessions.get(sessionId);
 
-    if (!session) {
+    if (!historyDetail && !session) {
       return [404, { success: false, error: { code: 'NOT_FOUND', message: '훈련 세션을 찾을 수 없습니다.' } }];
+    }
+
+    if (historyDetail) {
+      return [200, wrappedTraining(historyDetail)];
     }
 
     return [
