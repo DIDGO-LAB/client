@@ -84,6 +84,24 @@ const historyTypeMap = {
   document: 'DOCUMENT',
 };
 
+const historyTypeSummary = {
+  SOCIAL: {
+    badge: '대화 복습',
+    actionLabel: '대화 기록 자세히 보기',
+    emptyFeedback: '상황에 맞는 말하기 흐름을 다시 확인해 보세요.',
+  },
+  SAFETY: {
+    badge: '상황 복습',
+    actionLabel: '대처 기록 자세히 보기',
+    emptyFeedback: '어떤 선택이 안전했는지 다시 확인해 보세요.',
+  },
+  DOCUMENT: {
+    badge: '문서 복습',
+    actionLabel: '문서 풀이 자세히 보기',
+    emptyFeedback: '정답 근거와 읽기 흐름을 다시 확인해 보세요.',
+  },
+};
+
 const getErrorMessage = (error, fallback) => error?.message || fallback;
 
 function TrainingShell({ activeKey = 'training', fullScreen = false, children }) {
@@ -1319,6 +1337,7 @@ export function TrainingHistoryListPage() {
 
   const sessions = history?.sessions || [];
   const detailSession = selectedSession || sessions[0];
+  const summaryContent = historyTypeSummary[selectedType] || historyTypeSummary.SOCIAL;
 
   return (
     <TrainingShell fullScreen>
@@ -1328,34 +1347,56 @@ export function TrainingHistoryListPage() {
       {status === 'ready' && sessions.length === 0 ? <EmptyBlock message={`${selectedLabel} 훈련 이력이 없습니다.`} /> : null}
       {status === 'ready' && sessions.length > 0 ? (
         <section className="history-list-shell">
-          <div className="history-list" aria-label={`${selectedLabel} 훈련 이력`}>
-            {sessions.map((session) => (
-              <button
-                className={`history-item ${(selectedSession || sessions[0])?.sessionId === session.sessionId ? 'is-selected' : ''}`}
-                type="button"
-                key={`${session.trainingType}-${session.sessionId}`}
-                onClick={() => setSelectedSession(session)}
-              >
-                <span>{formatHistoryDate(session.completedAt)}</span>
-                <strong>{session.scenarioTitle || session.title || '시나리오 제목'}</strong>
-                <em>{session.score ?? session.accuracyRate ?? '-'}점</em>
-              </button>
-            ))}
+          <div className="history-list-column">
+            <div className="history-list-header">
+              <div>
+                <strong>{selectedLabel}</strong>
+                <p>최근 완료한 훈련을 눌러서 내용을 다시 살펴보세요.</p>
+              </div>
+              <span>{sessions.length}개 기록</span>
+            </div>
+            <div className="history-list" aria-label={`${selectedLabel} 훈련 이력`}>
+              {sessions.map((session) => (
+                <button
+                  className={`history-item ${(selectedSession || sessions[0])?.sessionId === session.sessionId ? 'is-selected' : ''}`}
+                  type="button"
+                  key={`${session.trainingType}-${session.sessionId}`}
+                  onClick={() => setSelectedSession(session)}
+                >
+                  <span>{formatHistoryDate(session.completedAt)}</span>
+                  <div className="history-item-copy">
+                    <strong>{session.scenarioTitle || session.title || '시나리오 제목'}</strong>
+                    <small>{session.feedbackSummary || session.situationText || '훈련 요약이 아직 없습니다.'}</small>
+                  </div>
+                  <em>{session.score ?? session.accuracyRate ?? '-'}점</em>
+                </button>
+              ))}
+            </div>
           </div>
-          <button
-            className="history-detail-button"
-            type="button"
-            onClick={() =>
-              navigate('/training-history/detail', {
-                state: {
-                  session: detailSession,
-                  type: selectedType,
-                },
-              })
-            }
-          >
-            상세보기
-          </button>
+          <aside className={`history-preview-card history-preview-${selectedType.toLowerCase()}`}>
+            <strong className="history-preview-badge">{summaryContent.badge}</strong>
+            <h2>{detailSession?.scenarioTitle || detailSession?.title || '시나리오 제목'}</h2>
+            <div className="history-preview-score">{detailSession?.score ?? detailSession?.accuracyRate ?? '-'}점</div>
+            <p className="history-preview-situation">{detailSession?.situationText || '상황 설명이 아직 없습니다.'}</p>
+            <div className="history-preview-feedback">
+              <strong>AI 피드백</strong>
+              <p>{detailSession?.feedbackSummary || summaryContent.emptyFeedback}</p>
+            </div>
+            <button
+              className="history-detail-button"
+              type="button"
+              onClick={() =>
+                navigate('/training-history/detail', {
+                  state: {
+                    session: detailSession,
+                    type: selectedType,
+                  },
+                })
+              }
+            >
+              {summaryContent.actionLabel}
+            </button>
+          </aside>
         </section>
       ) : null}
     </TrainingShell>
