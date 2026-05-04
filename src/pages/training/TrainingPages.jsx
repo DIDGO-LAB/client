@@ -31,6 +31,15 @@ const safetyCategories = [
   { category: 'COMMUTE_SAFETY', label: '안전하게\n씩씩하게\n걷기', description: '길을 건너고 이동할 때 필요한 안전 훈련' },
 ];
 
+const safetyTypeLabels = {
+  DAILY_SAFETY: '나를 지키기',
+  WORKPLACE_SAFETY: '경계 지키기',
+  COMMUTE_SAFETY: '이동 안전',
+};
+
+const getSafetyCategoryInfo = (category) =>
+  safetyCategories.find((item) => item.category === category) || safetyCategories[0];
+
 const trainingTypes = [
   {
     type: 'SOCIAL',
@@ -75,9 +84,9 @@ function TrainingShell({ activeKey = 'training', fullScreen = false, children })
   );
 }
 
-function PageHeader({ title, subtitle, onBack, compact = false }) {
+function PageHeader({ title, subtitle, onBack, compact = false, className = '' }) {
   return (
-    <header className={`training-header ${compact ? 'training-header-compact' : ''}`}>
+    <header className={`training-header ${compact ? 'training-header-compact' : ''} ${className}`.trim()}>
       {onBack ? (
         <button className="training-back-button" type="button" onClick={onBack} aria-label="훈련 목록">
           <img src={backArrowImg} alt="" />
@@ -132,7 +141,7 @@ export function TrainingSelectPage() {
       description: '안전 위협 상황에서 대처하는 연습',
       actionLabel: '훈련 시작',
       tone: 'yellow',
-      path: '/training/safety/types',
+      path: '/training/safety/scenarios',
       visual: 'safety',
       thumbnail: safetyThumbnail,
     },
@@ -203,22 +212,32 @@ export function SocialJobPage() {
       <section className="social-screen social-job-screen">
         <PageHeader compact onBack={() => navigate('/training')} />
         <button className="social-help-button" type="button" aria-label="도움말">
-          <span>도움말</span>
           <strong>?</strong>
         </button>
-        {error ? <ErrorBlock message={error} /> : null}
-        <div className="option-grid social-job-grid" aria-label="사회성 훈련 직무 선택">
-          {socialJobs.map((job) => (
-            <button
-              className="option-card social-job-card"
-              type="button"
-              key={job.jobType}
-              onClick={() => selectJob(job.jobType)}
-              disabled={Boolean(submittingJob)}
-            >
-              <strong>{job.label}</strong>
-            </button>
-          ))}
+        <div className="social-job-shell">
+          <header className="social-job-intro">
+            <span>사회성 훈련</span>
+            <h1>어떤 직무 상황을 먼저 연습할까요?</h1>
+            <p>내가 자주 마주치는 업무 환경을 고르면 필요한 대화를 차분하게 연습할 수 있어요.</p>
+          </header>
+          {error ? <ErrorBlock message={error} /> : null}
+          <div className="option-grid social-job-grid" aria-label="사회성 훈련 직무 선택">
+            {socialJobs.map((job) => (
+              <button
+                className="option-card social-job-card"
+                type="button"
+                key={job.jobType}
+                onClick={() => selectJob(job.jobType)}
+                disabled={Boolean(submittingJob)}
+              >
+                <div className="social-job-card-copy">
+                  <strong>{job.label}</strong>
+                  <span>{job.description}</span>
+                </div>
+                <em>선택하기</em>
+              </button>
+            ))}
+          </div>
         </div>
       </section>
     </TrainingShell>
@@ -259,13 +278,12 @@ export function SocialScenarioPage() {
         {status === 'error' ? <ErrorBlock message={error} onRetry={loadScenarios} /> : null}
         {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="선택할 수 있는 시나리오가 없습니다." /> : null}
         {status === 'ready' && scenarios.length > 0 ? (
-          <div className="social-scenario-layout">
-            <aside className="social-scenario-intro">
+          <div className="social-scenario-shell">
+            <header className="social-scenario-intro">
               <span>{getSocialJobLabel(jobType)} 생활</span>
               <h1>어떤 상황을 연습할까요?</h1>
               <p>지금 나에게 필요하거나 걱정되는 상황을 하나 골라보세요.</p>
-              <p>선택한 카드로 대화를 천천히 연습할 수 있어요.</p>
-            </aside>
+            </header>
             <div className="scenario-list social-scenario-list">
               {scenarios.slice(0, 3).map((scenario, index) => (
                 <button
@@ -387,16 +405,18 @@ export function SocialSessionPage() {
             {step + 1} / {scenario.dialogues?.length || 1}
           </div>
           {error ? <ErrorBlock message={error} /> : null}
-          <div className="training-actions social-mic-actions">
-            {!isLastStep ? (
-              <button type="button" onClick={() => setStep((currentStep) => currentStep + 1)} aria-label="다음 대화">
-                다음 대화
-              </button>
-            ) : (
-              <button type="button" onClick={completeSession} disabled={status === 'saving'} aria-label="결과 보기">
-                {status === 'saving' ? '저장 중' : '결과 보기'}
-              </button>
-            )}
+          <div className="social-session-controls">
+            <div className="training-actions social-mic-actions">
+              {!isLastStep ? (
+                <button type="button" onClick={() => setStep((currentStep) => currentStep + 1)} aria-label="음성 녹음 후 다음 대화">
+                  <span>녹음하기</span>
+                </button>
+              ) : (
+                <button type="button" onClick={completeSession} disabled={status === 'saving'} aria-label="결과 보기">
+                  <span>{status === 'saving' ? '저장 중' : '결과 보기'}</span>
+                </button>
+              )}
+            </div>
           </div>
         </section>
       ) : null}
@@ -488,21 +508,30 @@ export function SafetyTypePage() {
 
   return (
     <TrainingShell fullScreen>
-      <PageHeader
-        compact
-        onBack={() => navigate('/training')}
-      />
-      <section className="option-grid safety-type-grid">
-        {safetyCategories.map((item) => (
-          <button
-            className="option-card safety-option safety-type-card"
-            type="button"
-            key={item.category}
-            onClick={() => navigate('/training/safety/scenarios', { state: { category: item.category } })}
-          >
-            <strong>{item.label}</strong>
-          </button>
-        ))}
+      <PageHeader compact onBack={() => navigate('/training')} />
+      <section className="safety-type-shell">
+        <aside className="safety-type-intro">
+          <span>안전 대처 훈련</span>
+          <h1>오늘 연습할 안전 상황을 골라요</h1>
+          <p>상황을 선택하면 장면을 보고, 어떤 행동이 안전한지 차근차근 연습합니다.</p>
+          <strong>3가지 안전 영역</strong>
+        </aside>
+        <div className="option-grid safety-type-grid">
+          {safetyCategories.map((item) => (
+            <button
+              className="option-card safety-option safety-type-card"
+              type="button"
+              key={item.category}
+              onClick={() => navigate('/training/safety/scenarios', { state: { category: item.category } })}
+            >
+              <div className="safety-type-card-copy">
+                <strong>{safetyTypeLabels[item.category] || item.label}</strong>
+                <span>{item.description}</span>
+              </div>
+              <em>선택하기</em>
+            </button>
+          ))}
+        </div>
       </section>
     </TrainingShell>
   );
@@ -510,8 +539,6 @@ export function SafetyTypePage() {
 
 export function SafetyScenarioPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const category = location.state?.category || 'COMMUTE_SAFETY';
   const [scenarios, setScenarios] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
@@ -521,8 +548,18 @@ export function SafetyScenarioPage() {
     setError('');
 
     try {
-      const data = await safetyTrainingApi.getSafetyScenarios(category);
-      setScenarios(Array.isArray(data) ? data : []);
+      const scenarioGroups = await Promise.all(
+        safetyCategories.map(async (categoryInfo) => {
+          const data = await safetyTrainingApi.getSafetyScenarios(categoryInfo.category);
+          return (Array.isArray(data) ? data : []).map((scenario) => ({
+            ...scenario,
+            category: categoryInfo.category,
+            categoryLabel: safetyTypeLabels[categoryInfo.category] || categoryInfo.label,
+            categoryDescription: categoryInfo.description,
+          }));
+        })
+      );
+      setScenarios(scenarioGroups.flat());
       setStatus('ready');
     } catch (requestError) {
       setError(getErrorMessage(requestError, '안전 훈련 시나리오를 불러오지 못했습니다.'));
@@ -532,33 +569,49 @@ export function SafetyScenarioPage() {
 
   useEffect(() => {
     loadScenarios();
-  }, [category]);
+  }, []);
 
   return (
     <TrainingShell fullScreen>
       <PageHeader
         compact
-        onBack={() => navigate('/training/safety/types')}
+        onBack={() => navigate('/training')}
       />
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadScenarios} /> : null}
       {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="선택할 수 있는 시나리오가 없습니다." /> : null}
       {status === 'ready' && scenarios.length > 0 ? (
-        <section className="scenario-list safety-scenario-list">
-          {scenarios.map((scenario) => (
-            <button
-              className="scenario-card safety-scenario-card"
-              type="button"
-              key={scenario.scenarioId}
-              onClick={() =>
-                navigate('/training/safety/session', {
-                  state: { category, scenarioId: scenario.scenarioId },
-                })
-              }
-            >
-              <strong>{scenario.title}</strong>
-            </button>
-          ))}
+        <section className="safety-scenario-shell">
+          <aside className="safety-scenario-intro">
+            <span>안전 대처 훈련</span>
+            <h1>연습할 안전 상황을 바로 선택해요</h1>
+            <p>카테고리를 먼저 고르지 않고, 실제로 마주칠 수 있는 상황을 바로 선택해 훈련을 시작합니다.</p>
+          </aside>
+          <div className="safety-scenario-panel">
+            <header className="safety-scenario-panel-header">
+              <span>전체 안전 상황</span>
+              <strong>{scenarios.length}개 상황</strong>
+            </header>
+            <div className="scenario-list safety-scenario-list">
+              {scenarios.map((scenario, index) => (
+                <button
+                  className="scenario-card safety-scenario-card"
+                  type="button"
+                  key={`${scenario.category}-${scenario.scenarioId}`}
+                  onClick={() =>
+                    navigate('/training/safety/session', {
+                      state: { category: scenario.category, scenarioId: scenario.scenarioId },
+                    })
+                  }
+                >
+                  <span>{scenario.categoryLabel || scenario.badge || `상황 ${index + 1}`}</span>
+                  <strong>{scenario.title}</strong>
+                  <p>{scenario.description || scenario.categoryDescription || '안전한 행동을 선택하는 연습입니다.'}</p>
+                  <em>시작하기</em>
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
       ) : null}
     </TrainingShell>
@@ -576,7 +629,7 @@ export function SafetySessionPage() {
   const [error, setError] = useState('');
   const loadSession = async () => {
     if (!scenarioId) {
-      navigate('/training/safety/scenarios', { replace: true, state: { category } });
+      navigate('/training/safety/scenarios', { replace: true });
       return;
     }
     setStatus('loading');
@@ -646,7 +699,11 @@ export function SafetySessionPage() {
   const hasChoices = Array.isArray(scene?.choices) && scene.choices.length > 0;
   return (
     <TrainingShell fullScreen>
-      <PageHeader compact onBack={() => navigate('/training/safety/scenarios', { state: { category } })} />
+      <PageHeader
+        compact
+        className="safety-session-back"
+        onBack={() => navigate('/training/safety/scenarios')}
+      />
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadSession} /> : null}
       {scene && status !== 'loading' && status !== 'error' ? (
@@ -710,7 +767,7 @@ export function SafetyResultPage() {
   }, [sessionId]);
   return (
     <TrainingShell fullScreen>
-      <PageHeader compact onBack={() => navigate('/training/safety/types')} />
+      <PageHeader compact className="safety-result-back" onBack={() => navigate('/training/safety/scenarios')} />
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadResult} /> : null}
       {status === 'ready' ? (
@@ -726,7 +783,7 @@ export function SafetyResultPage() {
               <p>{result?.resultText || result?.feedback}</p>
               <span>{result?.effectText || result?.feedback}</span>
             </div>
-            <button type="button" onClick={() => navigate('/training/safety/types')}>
+            <button type="button" onClick={() => navigate('/training/safety/scenarios')}>
               {'\uB2E4\uC2DC \uC120\uD0DD\uD558\uAE30'}
             </button>
           </div>
@@ -763,28 +820,46 @@ export function DocumentStartPage() {
   const levels = Array.from({ length: Math.max(highestLevel, 1) }, (_, index) => index + 1);
 
   return (
-    <TrainingShell>
+    <TrainingShell fullScreen>
       <PageHeader
-        title="문서 이해 훈련"
-        subtitle="안내문을 읽고 중요한 내용을 찾아보세요."
+        compact
         onBack={() => navigate('/training')}
       />
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadProgress} /> : null}
       {status === 'ready' ? (
-        <section className="option-grid document-level-grid">
-          {levels.map((level) => (
-            <button
-              className={`option-card document-option ${level === currentLevel ? 'is-current' : ''}`}
-              type="button"
-              key={level}
-              onClick={() => navigate('/training/document/session', { state: { level } })}
-            >
-              <strong>{level}단계</strong>
-              <span>{level === currentLevel ? '추천 단계입니다.' : '다시 연습할 수 있는 단계입니다.'}</span>
-              <em>시작하기</em>
-            </button>
-          ))}
+        <section className="document-start-shell">
+          <aside className="document-start-intro">
+            <span>문서 이해 훈련</span>
+            <h2>읽고, 찾고, 확인하는 연습</h2>
+            <p>안내문에서 중요한 문장을 고르고 질문에 답하며 필요한 정보를 찾는 흐름을 익힙니다.</p>
+            <div className="document-progress-card">
+              <strong>{currentLevel}단계</strong>
+              <span>추천 단계</span>
+            </div>
+          </aside>
+          <div className="document-level-panel">
+            <header className="document-level-panel-header">
+              <span>선택 가능한 단계</span>
+              <strong>{levels.length}개 단계</strong>
+            </header>
+            <div className="option-grid document-level-grid">
+              {levels.map((level) => (
+                <button
+                  className={`option-card document-option ${level === currentLevel ? 'is-current' : ''}`}
+                  type="button"
+                  key={level}
+                  onClick={() => navigate('/training/document/session', { state: { level } })}
+                >
+                  <div className="document-option-copy">
+                    <strong>{level}단계</strong>
+                    <span>{level === currentLevel ? '지금 이어서 진행하기 좋은 단계입니다.' : '이전에 열어둔 단계를 다시 연습합니다.'}</span>
+                  </div>
+                  <em>{level === currentLevel ? '추천' : '복습'}</em>
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
       ) : null}
     </TrainingShell>
@@ -1138,5 +1213,3 @@ function ResultPanel({ score, title, feedback, onRetry, onHome }) {
     </section>
   );
 }
-
-

@@ -17,7 +17,6 @@ import {
   SafetyResultPage,
   SafetyScenarioPage,
   SafetySessionPage,
-  SafetyTypePage,
   SocialJobPage,
   SocialResultPage,
   SocialScenarioPage,
@@ -189,11 +188,7 @@ function IntroStepRoutes() {
           />
           <Route
             path="/training/safety/types"
-            element={
-              <ProtectedRoute>
-                <SafetyTypePage />
-              </ProtectedRoute>
-            }
+            element={<Navigate to="/training/safety/scenarios" replace />}
           />
           <Route
             path="/training/safety/scenarios"
