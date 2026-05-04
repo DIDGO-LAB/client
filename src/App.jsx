@@ -6,11 +6,13 @@ import DisabilitySelect from './components/intro/DisabilitySelect';
 import JobSelect from './components/intro/JobSelect';
 import GenderSelect from './components/intro/GenderSelect';
 import SignupForm from './components/intro/SignupForm';
-import Sidebar from './components/layout/Sidebar';
 import Login from './pages/Login';
 import Mainpage from './pages/Mainpage';
 import MyPage from './pages/MyPage';
 import {
+  DocumentResultPage,
+  DocumentSessionPage,
+  DocumentStartPage,
   SafetyResultPage,
   SafetyScenarioPage,
   SafetySessionPage,
@@ -19,6 +21,9 @@ import {
   SocialResultPage,
   SocialScenarioPage,
   SocialSessionPage,
+  TrainingHistoryDetailPage,
+  TrainingHistoryListPage,
+  TrainingHistorySelectPage,
   TrainingSelectPage,
 } from './pages/training/TrainingPages';
 import { signupFormToApiPayload } from './utils/userProfile';
@@ -31,17 +36,6 @@ function ProtectedRoute({ children }) {
   }
 
   return children;
-}
-
-function ComingSoonPage({ activeKey, title }) {
-  return (
-    <>
-      <Sidebar activeKey={activeKey} />
-      <main style={{ position: 'absolute', left: '516px', top: 0, width: '1404px', height: '1080px' }}>
-        <h1 style={{ margin: '160px 0 0 140px', fontSize: '48px' }}>{title}</h1>
-      </main>
-    </>
-  );
 }
 
 function IntroStepRoutes() {
@@ -198,10 +192,50 @@ function IntroStepRoutes() {
             }
           />
           <Route
+            path="/training/document"
+            element={
+              <ProtectedRoute>
+                <DocumentStartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/document/session"
+            element={
+              <ProtectedRoute>
+                <DocumentSessionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training/document/result"
+            element={
+              <ProtectedRoute>
+                <DocumentResultPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/training-history"
             element={
               <ProtectedRoute>
-                <ComingSoonPage activeKey="history" title="훈련이력" />
+                <TrainingHistorySelectPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training-history/:type"
+            element={
+              <ProtectedRoute>
+                <TrainingHistoryListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/training-history/detail"
+            element={
+              <ProtectedRoute>
+                <TrainingHistoryDetailPage />
               </ProtectedRoute>
             }
           />
