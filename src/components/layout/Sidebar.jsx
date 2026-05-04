@@ -5,10 +5,10 @@ import noteIcon from '../../assets/sidebar_note.png';
 import './Sidebar.css';
 
 const navItems = [
-  { key: 'main', label: '메인페이지', path: '/main', icon: homeIcon },
+  { key: 'main', label: '홈', path: '/main', icon: homeIcon },
   { key: 'training', label: '훈련', path: '/training', icon: noteIcon },
-  { key: 'history', label: '훈련이력', path: '/training-history', icon: noteIcon },
-  { key: 'mypage', label: '마이페이지', path: '/mypage', icon: noteIcon },
+  { key: 'history', label: '기록', path: '/training-history', icon: noteIcon },
+  { key: 'mypage', label: '내 정보', path: '/mypage', icon: noteIcon },
 ];
 
 function Sidebar({ activeKey = 'main' }) {
@@ -18,7 +18,7 @@ function Sidebar({ activeKey = 'main' }) {
     try {
       await authApi.logout();
     } catch (error) {
-      alert(error?.message || '로그아웃 요청에 실패했습니다. 다시 로그인해주세요.');
+      alert(error?.message || '로그아웃 요청에 실패했습니다. 다시 로그인해 주세요.');
     } finally {
       navigate('/');
     }
@@ -26,24 +26,30 @@ function Sidebar({ activeKey = 'main' }) {
 
   return (
     <aside className="sidebar">
-      <nav className="sidebar-nav">
+      <div className="sidebar-brand">
+        <span>Job Step</span>
+        <strong>직업 훈련</strong>
+      </div>
+
+      <nav className="sidebar-nav" aria-label="주요 메뉴">
         {navItems.map((item) => (
           <button
             key={item.key}
             type="button"
-            className={`sidebar-item ${activeKey === item.key ? 'is-active' : ''}`}
+            className={`sidebar-item sidebar-item-${item.key} ${activeKey === item.key ? 'is-active' : ''}`}
             onClick={() => navigate(item.path)}
           >
-            <img src={item.icon} alt="" className="sidebar-custom-icon" />
+            <span className="sidebar-icon-frame">
+              <img src={item.icon} alt="" className="sidebar-custom-icon" />
+            </span>
             <span className="sidebar-label">{item.label}</span>
           </button>
         ))}
-
-        <button type="button" className="sidebar-item" onClick={handleLogout}>
-          <img src={noteIcon} alt="" className="sidebar-custom-icon" />
-          <span className="sidebar-label">로그아웃</span>
-        </button>
       </nav>
+
+      <button type="button" className="sidebar-logout" onClick={handleLogout}>
+        로그아웃
+      </button>
     </aside>
   );
 }

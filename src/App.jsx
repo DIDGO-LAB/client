@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import { authApi, tokenStorage } from './api';
@@ -42,6 +43,26 @@ function IntroStepRoutes() {
   const navigate = useNavigate();
   const location = useLocation();
   const signupData = location.state?.signupData ?? {};
+  const [viewportScale, setViewportScale] = useState(() => {
+    if (typeof window === 'undefined') {
+      return 1;
+    }
+
+    return Math.max(0.1, Math.min(window.innerWidth / 1920, window.innerHeight / 1080, 1));
+  });
+
+  useEffect(() => {
+    const updateViewportScale = () => {
+      setViewportScale(Math.max(0.1, Math.min(window.innerWidth / 1920, window.innerHeight / 1080, 1)));
+    };
+
+    updateViewportScale();
+    window.addEventListener('resize', updateViewportScale);
+
+    return () => {
+      window.removeEventListener('resize', updateViewportScale);
+    };
+  }, []);
 
   const goNext = (path, newData = {}) => {
     navigate(path, {
@@ -55,8 +76,15 @@ function IntroStepRoutes() {
   };
 
   return (
-    <div className="app-viewport">
-      <div className="App">
+    <div className="app-shell">
+      <div
+        className="app-viewport"
+        style={{
+          width: `${1920 * viewportScale}px`,
+          height: `${1080 * viewportScale}px`,
+        }}
+      >
+        <div className="App" style={{ transform: `scale(${viewportScale})` }}>
         <Routes>
           <Route path="/" element={<Intro />} />
           <Route
@@ -249,7 +277,8 @@ function IntroStepRoutes() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
+        </div>
+    </div>
     </div>
   );
 }

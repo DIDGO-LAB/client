@@ -1,127 +1,218 @@
-.mypage-submit-button {
-    position: absolute; 
-    border-radius: 32px;
-    border: 5px solid rgba(0, 0, 0, 0.25);
-    background: rgba(205, 239, 126, 0.25);
-    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
-    display: flex; 
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
+.mypage-shell {
+  position: absolute;
+  left: 516px;
+  top: 0;
+  width: 1404px;
+  height: 1080px;
+  padding: 78px 108px 74px;
+  background: #fffefb;
+  box-sizing: border-box;
+  color: #151515;
 }
 
-.mypage-submit-button:hover {
-    background: rgba(205, 239, 126, 1);
+.mypage-header {
+  width: 1040px;
+  margin: 0 auto;
 }
 
-.mypage-back-button {
-  position: absolute; 
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  display: flex;
+.mypage-header span {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: #f3fbde;
+  border: 3px solid rgba(126, 140, 108, 0.38);
+  color: #3f4b31;
+  font-size: 22px;
+  font-weight: 800;
 }
 
-.mypage-back-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain; /* 이미지 비율 유지 */
+.mypage-header h1 {
+  margin: 24px 0 0;
+  color: #050505;
+  font-size: 58px;
+  font-weight: 800;
+  line-height: 1.12;
 }
 
-.mypage-button-text {
-    color: #000;
-    font-family: "Anonymous Pro";
-    font-size: 40px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
+.mypage-header p {
+  width: 860px;
+  margin: 18px 0 0;
+  color: #5d5d5d;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.42;
+}
+
+.mypage-panel {
+  position: relative;
+  width: 1040px;
+  margin: 34px auto 0;
+  display: grid;
+  justify-items: center;
 }
 
 .mypage-info-box {
-    position: absolute; 
-    border-radius: 32px;
-    border: 5px solid rgba(0, 0, 0, 0.25);
-    background: rgba(255, 255, 254, 1);
-    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
-    display: flex; 
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
+  width: 960px;
+  min-height: 560px;
+  padding: 48px 82px;
+  border-radius: 32px;
+  border: 5px solid rgba(0, 0, 0, 0.22);
+  background: #fff;
+  box-shadow: 0 8px 7px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-.info-item { 
-    position: absolute; 
-    display: flex;
-    gap: 150px; /* 라벨과 데이터 사이의 간격 */
-    align-items: center;
+.mypage-edit-box {
+  min-height: 578px;
+  padding: 42px 66px;
 }
 
-.info-label { /* 정보 라벨 */
-    font-family: "Anonymous Pro";
-    font-weight: 700;
-    font-size: 40px;
-    color: #000;
-    width: 180px; /* 라벨 너비를 고정하면 세로 줄이 딱 맞아요! */
+.mypage-loading {
+  width: 960px;
+  min-height: 560px;
+  margin: 76px auto 0;
+  display: grid;
+  place-items: center;
+  color: #555;
+  font-size: 34px;
+  font-weight: 800;
 }
 
-.info-value { /* 사용자 정보 */
-    font-family: "Anonymous Pro";
-    font-weight: 400;
-    font-size: 32px;
-    color: #666;
+.mypage-info-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.mypage-edit-grid {
+  gap: 10px;
+}
+
+.info-item {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 164px 34px minmax(0, 1fr);
+  align-items: center;
+  color: #000;
+}
+
+.info-label,
+.info-colon {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.mypage-edit-grid .info-label,
+.mypage-edit-grid .info-colon {
+  font-size: 24px;
+}
+
+.info-value {
+  min-width: 0;
+  color: #222;
+  font-size: 25px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.mypage-edit-grid .info-value {
+  font-size: 22px;
 }
 
 .mypage-input-field {
-    width: 531px;
-    height: 58px;
-    border-radius: 32px;
-    border: 5px solid rgba(0, 0, 0, 0.25);
-    background: #FFFFFE;
-    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
-    
-    /* 입력창 전용 설정 */
-    padding: 0 40px;     
-    font-family: "Anonymous Pro";
-    font-size: 32px; 
-    font-weight: 700;
-    outline: none;      
-    box-sizing: border-box;
+  width: 100%;
+  max-width: 460px;
+  height: 48px;
+  border-radius: 14px;
+  border: 4px solid rgba(0, 0, 0, 0.2);
+  background: #fff;
+  padding: 0 16px;
+  color: #111;
+  font-size: 20px;
+  font-weight: 700;
+  outline: none;
+  box-sizing: border-box;
 }
 
 .mypage-job-field {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .mypage-job-options {
-    display: flex;
-    gap: 12px;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .mypage-job-button {
-    height: 58px;
-    min-width: 132px;
-    padding: 0 18px;
-    border-radius: 32px;
-    border: 5px solid rgba(0, 0, 0, 0.25);
-    background: #FFFFFE;
-    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
-    cursor: pointer;
-    font-family: "Anonymous Pro";
-    font-size: 24px;
-    font-weight: 700;
+  min-width: 98px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 4px solid rgba(0, 0, 0, 0.18);
+  background: #f3fbde;
+  cursor: pointer;
+  color: #111;
+  font-size: 17px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .mypage-job-button.selected {
-    background: rgba(205, 239, 126, 0.7);
+  border-color: rgba(126, 140, 108, 0.58);
+  background: #d9ef8f;
 }
 
 .mypage-job-input {
-    width: 230px;
-    padding: 0 24px;
-    font-size: 24px;
+  width: 180px;
+  min-width: 170px;
+}
+
+.mypage-submit-button {
+  justify-self: end;
+  width: 198px;
+  height: 72px;
+  margin: 18px 40px 0 0;
+  border: 5px solid rgba(126, 140, 108, 0.46);
+  border-radius: 28px;
+  background: #f3fbde;
+  box-shadow: 0 8px 7px rgba(0, 0, 0, 0.22);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.mypage-cancel-button {
+  justify-self: end;
+  margin: 14px 40px 0 0;
+  border: 0;
+  background: transparent;
+  color: #666;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mypage-cancel-button:disabled {
+  opacity: 0.54;
+  cursor: wait;
+}
+
+.mypage-submit-button:disabled {
+  opacity: 0.62;
+  cursor: wait;
+}
+
+.mypage-button-text {
+  color: #000;
+  font-size: 28px;
+  font-weight: 800;
 }

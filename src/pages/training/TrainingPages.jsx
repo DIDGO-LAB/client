@@ -4,6 +4,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { documentTrainingApi, safetyTrainingApi, socialTrainingApi, trainingProgressApi } from '../../api';
 import characterImg from '../../assets/Character_JIWOO.png';
 import backArrowImg from '../../assets/back_arrow.png';
+import documentThumbnail from '../../assets/card/document_thumnail.png';
+import safetyThumbnail from '../../assets/card/safety_thumnail.png';
+import socialThumbnail from '../../assets/card/social_thumnail.png';
 import Sidebar from '../../components/layout/Sidebar';
 import './TrainingPages.css';
 
@@ -12,6 +15,16 @@ const socialJobs = [
   { jobType: 'LABOR', label: '단순노무직', description: '작업장에서 협력하고 보고하는 연습' },
 ];
 
+const getSocialJobLabel = (jobType) => socialJobs.find((job) => job.jobType === jobType)?.label || '사회성';
+
+const toDialogLogs = (dialogues) =>
+  dialogues.map((dialogue, index) => ({
+    turnNo: index + 1,
+    speaker: dialogue.speaker,
+    speakerName: dialogue.speakerName,
+    content: dialogue.message,
+  }));
+
 const safetyCategories = [
   { category: 'DAILY_SAFETY', label: '소중한 나\n지키기', description: '일상에서 나를 보호하는 훈련' },
   { category: 'WORKPLACE_SAFETY', label: '뽀득뽀득 건강\n지키기', description: '직장과 생활에서 경계를 지키는 훈련' },
@@ -19,9 +32,30 @@ const safetyCategories = [
 ];
 
 const trainingTypes = [
-  { type: 'SOCIAL', label: '사회성 키워가기', path: '/training-history/social', visual: 'social' },
-  { type: 'SAFETY', label: '안전교육 가이드', path: '/training-history/safety', visual: 'safety' },
-  { type: 'DOCUMENT', label: '내용 쏙쏙 파악하기', path: '/training-history/document', visual: 'document' },
+  {
+    type: 'SOCIAL',
+    label: '사회성 훈련',
+    path: '/training-history/social',
+    visual: 'social',
+    tone: 'mint',
+    thumbnail: socialThumbnail,
+  },
+  {
+    type: 'SAFETY',
+    label: '안전 대처 훈련',
+    path: '/training-history/safety',
+    visual: 'safety',
+    tone: 'yellow',
+    thumbnail: safetyThumbnail,
+  },
+  {
+    type: 'DOCUMENT',
+    label: '문서 이해 훈련',
+    path: '/training-history/document',
+    visual: 'document',
+    tone: 'pink',
+    thumbnail: documentThumbnail,
+  },
 ];
 
 const historyTypeMap = {
@@ -60,7 +94,7 @@ function PageHeader({ title, subtitle, onBack, compact = false }) {
 }
 
 function LoadingBlock() {
-  return <div className="training-status">遺덈윭?ㅻ뒗 以묒엯?덈떎.</div>;
+  return <div className="training-status">불러오는 중입니다.</div>;
 }
 
 function ErrorBlock({ message, onRetry }) {
@@ -69,7 +103,7 @@ function ErrorBlock({ message, onRetry }) {
       <span>{message}</span>
       {onRetry ? (
         <button type="button" onClick={onRetry}>
-          ?ㅼ떆 ?쒕룄
+          다시 시도
         </button>
       ) : null}
     </div>
@@ -85,48 +119,61 @@ export function TrainingSelectPage() {
 
   const cards = [
     {
-      title: '사회성 키워가기',
-      description: '',
+      title: '사회성 훈련',
+      description: '직장 동료와 말하고 부탁하는 연습',
+      actionLabel: '훈련 시작',
       tone: 'mint',
       path: '/training/social/job',
       visual: 'social',
+      thumbnail: socialThumbnail,
     },
     {
-      title: '안전교육 가이드',
-      description: '',
+      title: '안전 대처 훈련',
+      description: '안전 위협 상황에서 대처하는 연습',
+      actionLabel: '훈련 시작',
       tone: 'yellow',
       path: '/training/safety/types',
       visual: 'safety',
+      thumbnail: safetyThumbnail,
     },
     {
-      title: '내용 쏙쏙 파악하기',
-      description: '',
+      title: '문서 이해 훈련',
+      description: '문서를 읽고 핵심 내용을 찾는 연습',
+      actionLabel: '훈련 시작',
       tone: 'pink',
       path: '/training/document',
       visual: 'document',
+      thumbnail: documentThumbnail,
     },
   ];
 
   return (
     <TrainingShell>
-      <PageHeader title="훈련 선택" subtitle="오늘 연습할 훈련을 선택해 주세요." />
-      <section className="training-select-grid" aria-label="?덈젴 紐⑸줉">
-        {cards.map((card) => (
-          <button
-            className={`training-select-card training-card-${card.tone}`}
-            type="button"
-            key={card.title}
+      <section className="menu-page-shell">
+        <header className="menu-page-header">
+          <span>훈련 선택</span>
+          <h1>오늘 연습할 훈련을 골라 주세요</h1>
+          <p>하나를 선택하면 상황을 보고 천천히 따라 하며 연습할 수 있습니다.</p>
+        </header>
+        <div className="training-select-grid is-training" aria-label="훈련 목록">
+          {cards.map((card) => (
+            <button
+              className={`training-select-card training-card-${card.tone}`}
+              type="button"
+              key={card.title}
             onClick={() => {
               navigate(card.path);
             }}
           >
-            <div className={`training-card-illustration training-card-illustration-${card.visual}`} aria-hidden="true">
-              <img src={characterImg} alt="" />
-            </div>
             <span>{card.title}</span>
             {card.description ? <small>{card.description}</small> : null}
+            <div className={`training-card-illustration training-card-illustration-${card.visual}`} aria-hidden="true">
+              <img src={card.thumbnail} alt="" />
+            </div>
+            <strong className="training-card-action">{card.actionLabel}</strong>
           </button>
         ))}
+        </div>
       </section>
     </TrainingShell>
   );
@@ -145,7 +192,7 @@ export function SocialJobPage() {
       await socialTrainingApi.selectSocialJobType({ jobType });
       navigate('/training/social/scenarios', { state: { jobType } });
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '吏곷Т瑜??좏깮?섏? 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '직무를 선택하지 못했습니다.'));
     } finally {
       setSubmittingJob('');
     }
@@ -153,23 +200,26 @@ export function SocialJobPage() {
 
   return (
     <TrainingShell fullScreen>
-      <PageHeader
-        compact
-        onBack={() => navigate('/training')}
-      />
-      {error ? <ErrorBlock message={error} /> : null}
-      <section className="option-grid social-job-grid">
-        {socialJobs.map((job) => (
-          <button
-            className="option-card social-job-card"
-            type="button"
-            key={job.jobType}
-            onClick={() => selectJob(job.jobType)}
-            disabled={Boolean(submittingJob)}
-          >
-            <strong>{job.label}</strong>
-          </button>
-        ))}
+      <section className="social-screen social-job-screen">
+        <PageHeader compact onBack={() => navigate('/training')} />
+        <button className="social-help-button" type="button" aria-label="도움말">
+          <span>도움말</span>
+          <strong>?</strong>
+        </button>
+        {error ? <ErrorBlock message={error} /> : null}
+        <div className="option-grid social-job-grid" aria-label="사회성 훈련 직무 선택">
+          {socialJobs.map((job) => (
+            <button
+              className="option-card social-job-card"
+              type="button"
+              key={job.jobType}
+              onClick={() => selectJob(job.jobType)}
+              disabled={Boolean(submittingJob)}
+            >
+              <strong>{job.label}</strong>
+            </button>
+          ))}
+        </div>
       </section>
     </TrainingShell>
   );
@@ -192,7 +242,7 @@ export function SocialScenarioPage() {
       setScenarios(Array.isArray(data) ? data : []);
       setStatus('ready');
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '?쒕굹由ъ삤瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '시나리오를 불러오지 못했습니다.'));
       setStatus('error');
     }
   };
@@ -203,32 +253,41 @@ export function SocialScenarioPage() {
 
   return (
     <TrainingShell fullScreen>
-      <PageHeader
-        compact
-        onBack={() => navigate('/training/social/job')}
-      />
-      {status === 'loading' ? <LoadingBlock /> : null}
-      {status === 'error' ? <ErrorBlock message={error} onRetry={loadScenarios} /> : null}
-      {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="?좏깮?????덈뒗 ?쒕굹由ъ삤媛 ?놁뒿?덈떎." /> : null}
-      {status === 'ready' && scenarios.length > 0 ? (
-        <section className="scenario-list social-scenario-list">
-          {scenarios.slice(0, 3).map((scenario, index) => (
-            <button
-              className="scenario-card social-scenario-card"
-              type="button"
-              key={scenario.scenarioId}
-              onClick={() =>
-                navigate('/training/social/session', {
-                  state: { jobType, scenarioId: scenario.scenarioId },
-                })
-              }
-            >
-              <span>?곹솴 {index + 1}</span>
-              <strong>{scenario.title}</strong>
-            </button>
-          ))}
-        </section>
-      ) : null}
+      <section className="social-screen social-scenario-screen">
+        <PageHeader compact onBack={() => navigate('/training/social/job')} />
+        {status === 'loading' ? <LoadingBlock /> : null}
+        {status === 'error' ? <ErrorBlock message={error} onRetry={loadScenarios} /> : null}
+        {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="선택할 수 있는 시나리오가 없습니다." /> : null}
+        {status === 'ready' && scenarios.length > 0 ? (
+          <div className="social-scenario-layout">
+            <aside className="social-scenario-intro">
+              <span>{getSocialJobLabel(jobType)} 생활</span>
+              <h1>어떤 상황을 연습할까요?</h1>
+              <p>지금 나에게 필요하거나 걱정되는 상황을 하나 골라보세요.</p>
+              <p>선택한 카드로 대화를 천천히 연습할 수 있어요.</p>
+            </aside>
+            <div className="scenario-list social-scenario-list">
+              {scenarios.slice(0, 3).map((scenario, index) => (
+                <button
+                  className="scenario-card social-scenario-card"
+                  type="button"
+                  key={scenario.scenarioId}
+                  onClick={() =>
+                    navigate('/training/social/session', {
+                      state: { jobType, scenarioId: scenario.scenarioId },
+                    })
+                  }
+                >
+                  <span className="social-scenario-badge">상황 {index + 1}</span>
+                  <strong>{scenario.title}</strong>
+                  <p>{scenario.description || '상황에 맞는 말을 차분히 연습해요.'}</p>
+                  <em>시작하기</em>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </section>
     </TrainingShell>
   );
 }
@@ -245,6 +304,7 @@ export function SocialSessionPage() {
   const [error, setError] = useState('');
 
   const visibleDialogues = useMemo(() => scenario?.dialogues?.slice(0, step + 1) || [], [scenario, step]);
+  const currentDialogue = visibleDialogues.at(-1);
   const isLastStep = scenario?.dialogues ? step >= scenario.dialogues.length - 1 : false;
 
   const loadSession = async () => {
@@ -266,7 +326,7 @@ export function SocialSessionPage() {
       setStep(0);
       setStatus('ready');
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '?ы쉶???덈젴???쒖옉?섏? 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '사회성 훈련을 시작하지 못했습니다.'));
       setStatus('error');
     }
   };
@@ -284,57 +344,56 @@ export function SocialSessionPage() {
     setError('');
 
     try {
+      const dialogLogs = toDialogLogs(visibleDialogues);
       const result = await socialTrainingApi.completeSocialSession(session.sessionId, {
-        dialogLogs: visibleDialogues.map((dialogue, index) => ({
-          turnNo: index + 1,
-          speaker: dialogue.speaker,
-          content: dialogue.message,
-        })),
+        dialogLogs,
       });
       navigate('/training/social/result', {
         state: {
           sessionId: session.sessionId,
           result,
+          scenario,
+          dialogLogs,
         },
       });
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '?덈젴 寃곌낵瑜???ν븯吏 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '훈련 결과를 저장하지 못했습니다.'));
       setStatus('ready');
     }
   };
 
   return (
     <TrainingShell fullScreen>
-      <PageHeader
-        compact
-        onBack={() => navigate('/training/social/scenarios', { state: { jobType } })}
-      />
+      <PageHeader compact onBack={() => navigate('/training/social/scenarios', { state: { jobType } })} />
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadSession} /> : null}
       {(status === 'ready' || status === 'saving') && scenario ? (
         <section className="training-stage social-stage social-session-stage">
-          <div className="social-session-brief">
-            {scenario.situationText || scenario.description || '?곹솴??蹂닿퀬 ?뚮쭪寃???듯빐蹂댁꽭??'}
+          <p className="social-session-brief">
+            {scenario.situationText || scenario.description || '상황을 보고 차분하게 대화해 보세요.'}
+          </p>
+          <div className="social-session-character" aria-hidden="true">
+            <img src={characterImg} alt="" />
           </div>
-          <div className="dialogue-panel">
-            {visibleDialogues.map((dialogue, index) => (
-              <div
-                className={`dialogue-bubble ${dialogue.speaker === 'USER' ? 'is-user' : 'is-partner'}`}
-                key={`${dialogue.speaker}-${index}`}
-              >
-                <strong>{dialogue.speakerName}</strong>
-                <span>{dialogue.message}</span>
+          {currentDialogue ? (
+            <div className="dialogue-panel social-current-dialogue">
+              <div className={`dialogue-bubble ${currentDialogue.speaker === 'USER' ? 'is-user' : 'is-partner'}`}>
+                <strong>{currentDialogue.speakerName}</strong>
+                <span>{currentDialogue.message}</span>
               </div>
-            ))}
+            </div>
+          ) : null}
+          <div className="social-step-indicator" aria-label={`대화 ${step + 1}/${scenario.dialogues?.length || 1}`}>
+            {step + 1} / {scenario.dialogues?.length || 1}
           </div>
           {error ? <ErrorBlock message={error} /> : null}
-          <div className="training-actions">
+          <div className="training-actions social-mic-actions">
             {!isLastStep ? (
-              <button type="button" onClick={() => setStep((currentStep) => currentStep + 1)}>
-                ?ㅼ쓬 ???
+              <button type="button" onClick={() => setStep((currentStep) => currentStep + 1)} aria-label="다음 대화">
+                다음 대화
               </button>
             ) : (
-              <button type="button" onClick={completeSession} disabled={status === 'saving'}>
+              <button type="button" onClick={completeSession} disabled={status === 'saving'} aria-label="결과 보기">
                 {status === 'saving' ? '저장 중' : '결과 보기'}
               </button>
             )}
@@ -349,9 +408,12 @@ export function SocialResultPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const sessionId = location.state?.sessionId;
+  const scenario = location.state?.scenario;
+  const dialogLogs = location.state?.dialogLogs || [];
   const [result, setResult] = useState(location.state?.result || null);
   const [status, setStatus] = useState(result ? 'ready' : 'loading');
   const [error, setError] = useState('');
+  const resultDialogues = dialogLogs.length > 0 ? dialogLogs : [];
 
   const loadResult = async () => {
     if (!sessionId) {
@@ -385,11 +447,24 @@ export function SocialResultPage() {
       {status === 'ready' ? (
         <section className="training-result-layout social-result-layout">
           <div className="social-result-left">
-            <div className="social-result-score">{result?.score ?? 90}점</div>
-            <h2>{result?.title || '대화를 잘 마무리했어요.'}</h2>
-            <p>{result?.feedback || '상황에 맞는 요청과 확인을 차분하게 이어갔습니다.'}</p>
+            <p className="social-result-situation">
+              {scenario?.situationText || scenario?.description || result?.title || '사회성 훈련을 마쳤습니다.'}
+            </p>
+            <div className="social-result-dialogues">
+              {resultDialogues.slice(0, 4).map((dialogue) => (
+                <p
+                  className={`social-result-bubble ${
+                    dialogue.speaker === 'USER' ? 'social-result-bubble-user' : 'social-result-bubble-ai'
+                  }`}
+                  key={`${dialogue.turnNo}-${dialogue.speaker}`}
+                >
+                  {dialogue.content}
+                </p>
+              ))}
+            </div>
           </div>
           <aside className="social-result-right">
+            <div className="social-result-score">{result?.score ?? 90}점</div>
             <div className="social-result-feedback">
               <strong>AI 피드백</strong>
               <p>{result?.feedback || '필요한 정보를 다시 확인하고 정리하는 흐름이 좋았습니다.'}</p>
@@ -397,6 +472,7 @@ export function SocialResultPage() {
             <div className="social-result-recommendation">
               <strong>추천 답변</strong>
               <p>필요한 내용을 다시 한번 확인하고 진행하겠습니다.</p>
+              <img src={characterImg} alt="" />
             </div>
             <button type="button" onClick={() => navigate('/training/social/job')}>
               다시 선택하기
@@ -449,7 +525,7 @@ export function SafetyScenarioPage() {
       setScenarios(Array.isArray(data) ? data : []);
       setStatus('ready');
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '?덉쟾?덈젴 ?쒕굹由ъ삤瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '안전 훈련 시나리오를 불러오지 못했습니다.'));
       setStatus('error');
     }
   };
@@ -466,7 +542,7 @@ export function SafetyScenarioPage() {
       />
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadScenarios} /> : null}
-      {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="?좏깮?????덈뒗 ?쒕굹由ъ삤媛 ?놁뒿?덈떎." /> : null}
+      {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="선택할 수 있는 시나리오가 없습니다." /> : null}
       {status === 'ready' && scenarios.length > 0 ? (
         <section className="scenario-list safety-scenario-list">
           {scenarios.map((scenario) => (
@@ -673,7 +749,7 @@ export function DocumentStartPage() {
       setProgress(await documentTrainingApi.getDocumentProgress());
       setStatus('ready');
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '臾몄꽌 ?댄빐 吏꾪뻾 ?뺣낫瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '문서 이해 진행 정보를 불러오지 못했습니다.'));
       setStatus('error');
     }
   };
@@ -689,8 +765,8 @@ export function DocumentStartPage() {
   return (
     <TrainingShell>
       <PageHeader
-        title="臾몄꽌 ?댄빐 ?덈젴"
-        subtitle="?덈궡臾몄쓣 ?쎄퀬 以묒슂???댁슜??李얠븘蹂댁꽭??"
+        title="문서 이해 훈련"
+        subtitle="안내문을 읽고 중요한 내용을 찾아보세요."
         onBack={() => navigate('/training')}
       />
       {status === 'loading' ? <LoadingBlock /> : null}
@@ -704,9 +780,9 @@ export function DocumentStartPage() {
               key={level}
               onClick={() => navigate('/training/document/session', { state: { level } })}
             >
-              <strong>{level}?④퀎</strong>
-              <span>{level === currentLevel ? '異붿쿇 ?④퀎?낅땲??' : '?ㅼ떆 ?곗뒿?????덈뒗 ?④퀎?낅땲??'}</span>
-              <em>?쒖옉?섍린</em>
+              <strong>{level}단계</strong>
+              <span>{level === currentLevel ? '추천 단계입니다.' : '다시 연습할 수 있는 단계입니다.'}</span>
+              <em>시작하기</em>
             </button>
           ))}
         </section>
@@ -734,7 +810,7 @@ export function DocumentSessionPage() {
       setAnswers({});
       setStatus('ready');
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '臾몄꽌 ?댄빐 ?덈젴???쒖옉?섏? 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '문서 이해 훈련을 시작하지 못했습니다.'));
       setStatus('error');
     }
   };
@@ -769,7 +845,7 @@ export function DocumentSessionPage() {
         },
       });
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '?듬????쒖텧?섏? 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '답변을 제출하지 못했습니다.'));
       setStatus('ready');
     }
   };
@@ -788,7 +864,7 @@ export function DocumentSessionPage() {
           {questions.map((question, index) => (
             <article className="document-question" key={question.questionId}>
               <div className="document-paper">
-                <span>{question.title || `臾몄꽌 ${index + 1}`}</span>
+                <span>{question.title || `문서 ${index + 1}`}</span>
                 <p>{question.documentText}</p>
               </div>
               <div className="document-answer-panel">
@@ -846,7 +922,7 @@ export function DocumentResultPage() {
       setResult(await documentTrainingApi.getDocumentSessionDetail(sessionId));
       setStatus('ready');
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '寃곌낵瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '결과를 불러오지 못했습니다.'));
       setStatus('error');
     }
   };
@@ -862,7 +938,7 @@ export function DocumentResultPage() {
 
   return (
     <TrainingShell>
-      <PageHeader title="?덈젴 寃곌낵" subtitle="?ㅻ뒛??臾몄꽌 ?댄빐 ?덈젴 寃곌낵?낅땲??" onBack={() => navigate('/training/document')} />
+      <PageHeader title="훈련 결과" subtitle="오늘의 문서 이해 훈련 결과입니다." onBack={() => navigate('/training/document')} />
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadResult} /> : null}
       {status === 'ready' ? (
@@ -883,20 +959,33 @@ export function TrainingHistorySelectPage() {
 
   return (
     <TrainingShell activeKey="history">
-      <section className="training-select-grid history-select-grid" aria-label="?덈젴 ?대젰 ?좏삎">
-        {trainingTypes.map((item) => (
-          <button
-            className="training-select-card history-select-card"
-            type="button"
-            key={item.type}
-            onClick={() => navigate(item.path)}
-          >
-            <span>{item.label}</span>
-            <div className={`training-card-illustration training-card-illustration-${item.visual}`} aria-hidden="true">
-              <img src={characterImg} alt="" />
-            </div>
-          </button>
-        ))}
+      <section className="menu-page-shell">
+        <header className="menu-page-header">
+          <span>훈련 기록</span>
+          <h1>어떤 새싹이 자랐는지 살펴봐요</h1>
+          <p>지난 훈련 결과를 다시 보고, 다음 연습을 준비할 수 있습니다.</p>
+        </header>
+        <div className="training-select-grid history-select-grid is-history" aria-label="훈련 이력 유형">
+          {trainingTypes.map((item) => (
+            <button
+              className={`training-select-card history-select-card training-card-${item.tone}`}
+              type="button"
+              key={item.type}
+              onClick={() => navigate(item.path)}
+            >
+              <strong className="history-card-badge">지난 기록</strong>
+              <span>{item.label}</span>
+              <small>지난 {item.label} 훈련 결과를 확인해요</small>
+              <div className={`training-card-illustration training-card-illustration-${item.visual}`} aria-hidden="true">
+                <img src={item.thumbnail} alt="" />
+              </div>
+              <div className="history-card-meta">
+                <em>점수와 피드백 확인</em>
+                <strong>기록 보기</strong>
+              </div>
+            </button>
+          ))}
+        </div>
       </section>
     </TrainingShell>
   );
@@ -911,7 +1000,7 @@ export function TrainingHistoryListPage() {
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
 
-  const selectedLabel = trainingTypes.find((item) => item.type === selectedType)?.label || '?덈젴';
+  const selectedLabel = trainingTypes.find((item) => item.type === selectedType)?.label || '훈련';
 
   const loadHistory = async () => {
     setStatus('loading');
@@ -922,7 +1011,7 @@ export function TrainingHistoryListPage() {
       setSelectedSession(null);
       setStatus('ready');
     } catch (requestError) {
-      setError(getErrorMessage(requestError, '?덈젴 ?대젰??遺덈윭?ㅼ? 紐삵뻽?듬땲??'));
+      setError(getErrorMessage(requestError, '훈련 이력을 불러오지 못했습니다.'));
       setStatus('error');
     }
   };
@@ -939,10 +1028,10 @@ export function TrainingHistoryListPage() {
       <PageHeader compact onBack={() => navigate('/training-history')} />
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadHistory} /> : null}
-      {status === 'ready' && sessions.length === 0 ? <EmptyBlock message={`${selectedLabel} ?덈젴 ?대젰???놁뒿?덈떎.`} /> : null}
+      {status === 'ready' && sessions.length === 0 ? <EmptyBlock message={`${selectedLabel} 훈련 이력이 없습니다.`} /> : null}
       {status === 'ready' && sessions.length > 0 ? (
         <section className="history-list-shell">
-          <div className="history-list" aria-label={`${selectedLabel} ?덈젴 ?대젰`}>
+          <div className="history-list" aria-label={`${selectedLabel} 훈련 이력`}>
             {sessions.map((session) => (
               <button
                 className={`history-item ${(selectedSession || sessions[0])?.sessionId === session.sessionId ? 'is-selected' : ''}`}
@@ -968,7 +1057,7 @@ export function TrainingHistoryListPage() {
               })
             }
           >
-            ?곸꽭蹂닿린
+            상세보기
           </button>
         </section>
       ) : null}
@@ -1049,8 +1138,5 @@ function ResultPanel({ score, title, feedback, onRetry, onHome }) {
     </section>
   );
 }
-
-
-
 
 
