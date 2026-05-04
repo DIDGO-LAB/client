@@ -1,5 +1,5 @@
 ﻿/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { documentTrainingApi, safetyTrainingApi, socialTrainingApi, trainingProgressApi } from '../../api';
 import characterImg from '../../assets/Character_JIWOO.png';
@@ -357,6 +357,7 @@ export function SocialSessionPage() {
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
+  const chatThreadRef = useRef(null);
 
   const visibleDialogues = useMemo(() => scenario?.dialogues?.slice(0, step + 1) || [], [scenario, step]);
   const currentDialogue = visibleDialogues.at(-1);
@@ -389,6 +390,12 @@ export function SocialSessionPage() {
   useEffect(() => {
     loadSession();
   }, [scenarioId]);
+
+  useEffect(() => {
+    if (chatThreadRef.current) {
+      chatThreadRef.current.scrollTop = chatThreadRef.current.scrollHeight;
+    }
+  }, [visibleDialogues.length]);
 
   const completeSession = async () => {
     if (!session?.sessionId) {
@@ -427,34 +434,40 @@ export function SocialSessionPage() {
           <p className="social-session-brief">
             {scenario.situationText || scenario.description || '상황을 보고 차분하게 대화해 보세요.'}
           </p>
-          <div className="social-session-character" aria-hidden="true">
-            <img src={characterImg} alt="" />
-          </div>
-          {currentDialogue ? (
+          {visibleDialogues.length > 0 ? (
             <div className="dialogue-panel social-current-dialogue">
-              <div className={`dialogue-bubble ${currentDialogue.speaker === 'USER' ? 'is-user' : 'is-partner'}`}>
-                <strong>{currentDialogue.speakerName}</strong>
-                <span>{currentDialogue.message}</span>
+              <div className="social-current-header">
+                <span>사회성 대화 연습</span>
               </div>
+              <div className="social-video-chat-thread" ref={chatThreadRef}>
+                {visibleDialogues.map((dialogue, index) => (
+                  <div
+                    className={`dialogue-bubble ${dialogue.speaker === 'USER' ? 'is-user' : 'is-partner'}`}
+                    key={`${step}-${dialogue.speaker}-${index}`}
+                  >
+                    <span>{dialogue.message}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="training-actions social-mic-actions">
+                {!isLastStep ? (
+                  <button type="button" onClick={() => setStep((currentStep) => currentStep + 1)} aria-label="말하기">
+                    말하기
+                  </button>
+                ) : (
+                  <button type="button" onClick={completeSession} disabled={status === 'saving'} aria-label="결과 보기">
+                    {status === 'saving' ? '저장 중' : '결과 보기'}
+                  </button>
+                )}
+              </div>
+              <aside className="social-video-profile">
+                <div className="social-video-avatar">
+                  <img src={characterImg} alt="" />
+                </div>
+              </aside>
             </div>
           ) : null}
-          <div className="social-step-indicator" aria-label={`대화 ${step + 1}/${scenario.dialogues?.length || 1}`}>
-            {step + 1} / {scenario.dialogues?.length || 1}
-          </div>
           {error ? <ErrorBlock message={error} /> : null}
-          <div className="social-session-controls">
-            <div className="training-actions social-mic-actions">
-              {!isLastStep ? (
-                <button type="button" onClick={() => setStep((currentStep) => currentStep + 1)} aria-label="음성 녹음 후 다음 대화">
-                  <span>녹음하기</span>
-                </button>
-              ) : (
-                <button type="button" onClick={completeSession} disabled={status === 'saving'} aria-label="결과 보기">
-                  <span>{status === 'saving' ? '저장 중' : '결과 보기'}</span>
-                </button>
-              )}
-            </div>
-          </div>
         </section>
       ) : null}
     </TrainingShell>
