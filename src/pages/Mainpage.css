@@ -4,64 +4,112 @@
   top: 0;
   width: 1404px;
   height: 1080px;
+  padding: 82px 108px 74px;
   background: #fffefb;
+  box-sizing: border-box;
 }
 
-.main-feature-box {
-  position: absolute;
-  width: 500px;
-  height: 150px;
-  border-radius: 24px;
-  border: 5px solid rgba(0, 0, 0, 0.25);
-  background: #f2fbdc;
-  box-shadow: 0 6px 5px rgba(0, 0, 0, 0.25);
-  display: flex;
-  justify-content: center;
+.home-page-header {
+  width: 1040px;
+  margin: 0 auto;
+}
+
+.home-page-header span {
+  display: inline-flex;
   align-items: center;
-  font: inherit;
-  cursor: pointer;
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: #f3fbde;
+  border: 3px solid rgba(126, 140, 108, 0.38);
+  color: #3f4b31;
+  font-size: 22px;
+  font-weight: 800;
 }
 
-.main-feature-label {
-  color: #000;
-  font-family: "Anonymous Pro", sans-serif;
-  font-size: 40px;
+.home-page-header h1 {
+  width: 900px;
+  margin: 24px 0 0;
+  color: #050505;
+  font-size: 54px;
+  font-weight: 800;
+  line-height: 1.14;
+}
+
+.home-page-header p {
+  width: 820px;
+  margin: 18px 0 0;
+  color: #5d5d5d;
+  font-size: 26px;
   font-weight: 700;
-  white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 설정 */
+  line-height: 1.42;
 }
 
-.main-feature-social {
-  left: 138px;
-  top: 110px;
+.home-seed-grid {
+  width: 1040px;
+  margin: 64px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
 }
 
-.main-feature-safety {
-  left: 832px;
-  top: 110px;
+.home-seed-card {
+  min-height: 560px;
+  padding: 30px 26px 28px;
+  border: 5px solid rgba(126, 140, 108, 0.34);
+  border-radius: 30px;
+  background: #fff;
+  box-shadow: 0 7px 7px rgba(0, 0, 0, 0.14);
+  color: #050505;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 24px;
+  box-sizing: border-box;
 }
 
-.main-feature-understand {
-  left: 488px;
-  top: 609px;
+.home-seed-card-copy strong {
+  display: block;
+  font-size: 31px;
+  font-weight: 800;
+  line-height: 1.18;
 }
 
-.ground-mark {
-  position: absolute;
-  width: 138px;
-  height: 70px;
+.home-seed-card-copy span {
+  display: block;
+  min-height: 78px;
+  margin-top: 14px;
+  color: #5b5b5b;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.36;
 }
 
-.ground-mark-left {
-  left: 308px;
-  top: 406px;
+.home-seed-visual {
+  align-self: center;
+  width: 100%;
+  height: 270px;
+  border-radius: 28px;
+  background: #f8fbef;
+  border: 3px solid rgba(126, 140, 108, 0.2);
+  display: grid;
+  place-items: center;
 }
 
-.ground-mark-right {
-  left: 996px;
-  top: 406px;
+.home-seed-visual img {
+  width: 250px;
+  height: 190px;
+  object-fit: contain;
 }
 
-.ground-mark-bottom {
-  left: 654px;
-  top: 900px;
-} 
+.home-seed-level {
+  height: 54px;
+  margin: 0;
+  border-radius: 999px;
+  background: #243a34;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+  font-weight: 800;
+}
