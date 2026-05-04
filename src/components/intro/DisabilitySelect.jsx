@@ -2,12 +2,17 @@ import { useState } from 'react';
 import './IntroStyles.css';
 import backArrow from '../../assets/back_arrow.png';
 
+const disabilityOptions = [
+  { value: '발달장애', title: '발달장애', description: '이해하기 쉬운 단계별 안내를 중심으로 연습합니다.' },
+  { value: '지체장애', title: '지체장애', description: '직장 상황에서 필요한 의사소통과 안전을 함께 연습합니다.' },
+];
+
 function DisabilitySelect({ onNext, onPrev }) {
   const [selectedDisability, setSelectedDisability] = useState('');
 
   const handleNextPage = () => {
     if (!selectedDisability) {
-      alert('장애 유형을 선택해주세요.');
+      alert('장애 유형을 선택해 주세요.');
       return;
     }
 
@@ -15,54 +20,34 @@ function DisabilitySelect({ onNext, onPrev }) {
   };
 
   return (
-    <div className="intro-page-wrapper">
-      <h1 className="intro-main-text" style={{ left: '694px', top: '385px', width: '531px', textAlign: 'center' }}>
-        장애 유형을 선택해주세요.
-      </h1>
-
-      <button
-        className="intro-back-button"
-        style={{ left: '139px', top: '110px', width: '75px', height: '80px' }}
-        onClick={onPrev}
-      >
-        <img src={backArrow} alt="뒤로가기" className="intro-back-image" />
+    <div className="intro-page-wrapper intro-step-page">
+      <button className="intro-back-button" type="button" onClick={onPrev} aria-label="뒤로 가기">
+        <img src={backArrow} alt="" className="intro-back-image" />
       </button>
 
-      <button
-        className="intro_select-button"
-        style={{
-          left: '373px',
-          top: '529px',
-          width: '543px',
-          height: '166px',
-          backgroundColor: selectedDisability === '정신적 장애' ? 'rgba(251, 243, 196, 0.3)' : '#FFFFFE',
-        }}
-        onClick={() => setSelectedDisability('정신적 장애')}
-      >
-        <span className="intro-button-text">정신적 장애</span>
-      </button>
+      <section className="intro-step-card">
+        <span className="intro-kicker">1단계</span>
+        <h1 className="intro-main-text">나에게 맞는 안내 방식을 선택해 주세요.</h1>
+        <p className="intro-sub-text">선택한 정보는 훈련 문장과 예시를 더 쉽게 맞추는 데 사용됩니다.</p>
 
-      <button
-        className="intro_select-button"
-        style={{
-          left: '1003px',
-          top: '529px',
-          width: '543px',
-          height: '166px',
-          backgroundColor: selectedDisability === '신체적 장애' ? 'rgba(251, 243, 196, 0.3)' : '#FFFFFE',
-        }}
-        onClick={() => setSelectedDisability('신체적 장애')}
-      >
-        <span className="intro-button-text">신체적 장애</span>
-      </button>
+        <div className="intro-choice-grid">
+          {disabilityOptions.map((option) => (
+            <button
+              key={option.value}
+              className={`intro_select-button ${selectedDisability === option.value ? 'is-selected' : ''}`}
+              type="button"
+              onClick={() => setSelectedDisability(option.value)}
+            >
+              <span className="intro-button-text">{option.title}</span>
+              <small>{option.description}</small>
+            </button>
+          ))}
+        </div>
 
-      <button
-        className="intro-submit-button"
-        style={{ left: '1306px', top: '852px', width: '246px', height: '96px' }}
-        onClick={handleNextPage}
-      >
-        <span className="intro-button-text">다음으로</span>
-      </button>
+        <button className="intro-submit-button" type="button" onClick={handleNextPage}>
+          <span className="intro-button-text">다음으로</span>
+        </button>
+      </section>
     </div>
   );
 }

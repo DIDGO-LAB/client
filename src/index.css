@@ -1,0 +1,57 @@
+@font-face {
+  font-family: "Pretendard";
+  src: local("Pretendard");
+  font-weight: 400 800;
+}
+
+:root {
+  --color-canvas: #FFFEFB;
+  --color-surface: #FFFEFB;
+  --color-surface-strong: #ffffff;
+  --color-ink: #23211d;
+  --color-muted: #6f685e;
+  --color-line: rgba(35, 33, 29, 0.14);
+  --color-line-strong: rgba(35, 33, 29, 0.24);
+  --color-green: #d9ef8f;
+  --color-green-strong: #9dc45a;
+  --color-blue: #d7e8ff;
+  --color-coral: #ffb9a6;
+  --color-yellow: #ffe38f;
+  --shadow-soft: 0 18px 40px rgba(54, 46, 29, 0.12);
+  --shadow-button: 0 8px 0 rgba(35, 33, 29, 0.16);
+  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+  color: var(--color-ink);
+  background: #FFFEFB;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 6px solid rgba(65, 105, 225, 0.28);
+  outline-offset: 5px;
+}
+
+#root {
+  background-color: #FFFEFB;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
