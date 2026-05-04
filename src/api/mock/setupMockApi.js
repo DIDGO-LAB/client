@@ -349,7 +349,7 @@ const requireAuth = (config) => {
       {
         error: {
           code: 'UNAUTHORIZED',
-          message: '濡쒓렇?몄씠 ?꾩슂?⑸땲??',
+          message: '로그인이 필요합니다.',
         },
       },
     ];
@@ -524,7 +524,7 @@ export const setupMockApi = () => {
       desiredJob: payload.desiredJob,
     };
 
-    return [200, { userId: mockUser.userId, message: '?뚯썝媛?낆씠 ?꾨즺?섏뿀?듬땲??' }];
+    return [200, { userId: mockUser.userId, message: '회원가입이 완료되었습니다.' }];
   });
 
   mockApi.onPost('/api/auth/login').reply((config) => {
@@ -536,7 +536,7 @@ export const setupMockApi = () => {
         {
           error: {
             code: 'VALIDATION_ERROR',
-            message: '?꾩씠?붿? 鍮꾨?踰덊샇瑜??낅젰?댁＜?몄슂.',
+            message: '아이디와 비밀번호를 입력해 주세요.',
           },
         },
       ];
@@ -553,7 +553,7 @@ export const setupMockApi = () => {
   });
 
   mockApi.onPost('/api/auth/logout').reply(200, {
-    message: '濡쒓렇?꾩썐???꾨즺?섏뿀?듬땲??',
+    message: '로그아웃이 완료되었습니다.',
   });
 
   mockApi.onPost('/api/auth/reissue').reply(200, {
@@ -584,7 +584,7 @@ export const setupMockApi = () => {
       disabilities: payload.disabilities ?? mockUser.disabilities,
     };
 
-    return [200, { message: '?ъ슜???뺣낫媛 ?섏젙?섏뿀?듬땲??' }];
+    return [200, { message: '사용자 정보가 수정되었습니다.' }];
   });
 
   mockApi.onPost('/api/trainings/social/job-type').reply((config) => {
@@ -634,7 +634,7 @@ export const setupMockApi = () => {
     const scenario = findSocialScenario(scenarioId);
 
     if (!scenario) {
-      return [404, { success: false, error: { code: 'NOT_FOUND', message: '?쒕굹由ъ삤瑜?李얠쓣 ???놁뒿?덈떎.' } }];
+      return [404, { success: false, error: { code: 'NOT_FOUND', message: '시나리오를 찾을 수 없습니다.' } }];
     }
 
     return [200, wrappedTraining(scenario)];
@@ -682,7 +682,7 @@ export const setupMockApi = () => {
     const session = mockSocialSessions.get(sessionId);
 
     if (!session) {
-      return [404, { success: false, error: { code: 'NOT_FOUND', message: '?덈젴 ?몄뀡??李얠쓣 ???놁뒿?덈떎.' } }];
+      return [404, { success: false, error: { code: 'NOT_FOUND', message: '훈련 세션을 찾을 수 없습니다.' } }];
     }
 
     const result = {
@@ -707,7 +707,7 @@ export const setupMockApi = () => {
     const session = mockSocialSessions.get(sessionId);
 
     if (!session) {
-      return [404, { success: false, error: { code: 'NOT_FOUND', message: '?덈젴 ?몄뀡??李얠쓣 ???놁뒿?덈떎.' } }];
+      return [404, { success: false, error: { code: 'NOT_FOUND', message: '훈련 세션을 찾을 수 없습니다.' } }];
     }
 
     return [
@@ -939,7 +939,7 @@ export const setupMockApi = () => {
     const session = mockDocumentSessions.get(sessionId);
 
     if (!session) {
-      return [404, { success: false, error: { code: 'NOT_FOUND', message: '?덈젴 ?몄뀡??李얠쓣 ???놁뒿?덈떎.' } }];
+      return [404, { success: false, error: { code: 'NOT_FOUND', message: '훈련 세션을 찾을 수 없습니다.' } }];
     }
 
     const payload = parseBody(config.data);
@@ -981,7 +981,7 @@ export const setupMockApi = () => {
     const session = mockDocumentSessions.get(sessionId);
 
     if (!session) {
-      return [404, { success: false, error: { code: 'NOT_FOUND', message: '?덈젴 ?몄뀡??李얠쓣 ???놁뒿?덈떎.' } }];
+      return [404, { success: false, error: { code: 'NOT_FOUND', message: '훈련 세션을 찾을 수 없습니다.' } }];
     }
 
     return [
@@ -1005,6 +1005,24 @@ export const setupMockApi = () => {
               explanation: result.explanation,
             };
           }) || [],
+      }),
+    ];
+  });
+
+  mockApi.onGet('/api/trainings/progress/summary').reply((config) => {
+    const authError = requireAuth(config);
+    if (authError) {
+      return authError;
+    }
+
+    return [
+      200,
+      wrappedTraining({
+        items: [
+          { trainingType: 'SOCIAL', level: 3 },
+          { trainingType: 'SAFETY', level: 2 },
+          { trainingType: 'DOCUMENT', level: 1 },
+        ],
       }),
     ];
   });
