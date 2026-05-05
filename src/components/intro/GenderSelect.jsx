@@ -22,27 +22,31 @@ function GenderSelect({ onNext, onPrev }) {
         <img src={backArrow} alt="" className="intro-back-image" />
       </button>
 
-      <section className="intro-step-card">
-        <span className="intro-kicker">3단계</span>
-        <h1 className="intro-main-text">성별을 선택해 주세요.</h1>
-        <p className="intro-sub-text">프로필 정보로만 사용됩니다.</p>
+      <section className="intro-step-card intro-gender-card">
+        <div className="intro-gender-content">
+          <span className="intro-kicker">3단계</span>
+          <h1 className="intro-main-text">성별을 선택해 주세요.</h1>
+          <p className="intro-sub-text">프로필 정보로만 사용됩니다.</p>
 
-        <div className="intro-choice-grid intro-choice-grid-compact">
-          {genderOptions.map((gender) => (
-            <button
-              key={gender}
-              className={`intro_select-button ${selectedGender === gender ? 'is-selected' : ''}`}
-              type="button"
-              onClick={() => setSelectedGender(gender)}
-            >
-              <span className="intro-button-text">{gender}</span>
-            </button>
-          ))}
+          <div className="intro-choice-grid intro-choice-grid-compact">
+            {genderOptions.map((gender) => (
+              <button
+                key={gender}
+                className={`intro_select-button ${selectedGender === gender ? 'is-selected' : ''}`}
+                type="button"
+                onClick={() => setSelectedGender(gender)}
+              >
+                <span className="intro-button-text">{gender}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        <button className="intro-submit-button" type="button" onClick={handleNextPage}>
-          <span className="intro-button-text">다음으로</span>
-        </button>
+        <div className="intro-gender-actions">
+          <button className="intro-submit-button" type="button" onClick={handleNextPage}>
+            <span className="intro-button-text">다음으로</span>
+          </button>
+        </div>
       </section>
     </div>
   );

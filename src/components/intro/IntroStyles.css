@@ -25,18 +25,25 @@
 }
 
 .intro-hero-panel {
-  left: 160px;
-  top: 130px;
-  width: 1600px;
-  height: 820px;
+  left: 140px;
+  top: 112px;
+  width: 1640px;
+  height: 856px;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: 580px 280px 470px;
+  column-gap: 44px;
+  align-items: center;
+  padding: 0 88px;
+  box-sizing: border-box;
 }
 
 .intro-hero-copy {
-  position: absolute;
-  left: 92px;
-  top: 100px;
-  width: 590px;
+  position: relative;
+  left: auto;
+  top: auto;
+  width: 580px;
+  transform: translateY(-10px);
 }
 
 .intro-kicker {
@@ -55,7 +62,7 @@
 .intro-main-text {
   margin: 24px 0 0;
   color: var(--color-ink);
-  font-size: 58px;
+  font-size: 54px;
   font-weight: 800;
   line-height: 1.12;
 }
@@ -75,19 +82,55 @@
 }
 
 .intro-start-character {
-  left: 850px;
-  bottom: 74px;
+  position: relative;
+  left: auto;
+  bottom: auto;
   width: 300px;
-  height: 370px;
+  height: 410px;
+  align-self: center;
+  margin: 78px 0 0;
+  justify-self: center;
 }
 
 .intro-start-actions {
-  position: absolute;
-  right: 94px;
-  top: 256px;
-  width: 380px;
+  position: relative;
+  right: auto;
+  top: auto;
+  width: 470px;
   display: grid;
-  gap: 28px;
+  gap: 22px;
+  transform: translateY(8px);
+}
+
+.intro-start-actions .intro_select-button {
+  min-height: 172px;
+  padding: 30px 40px;
+  border-width: 3px;
+  border-radius: 26px;
+  box-shadow: 0 10px 22px rgba(35, 33, 29, 0.1);
+}
+
+.intro-start-actions .intro_select-button small {
+  white-space: nowrap;
+}
+
+.intro-start-actions .intro_select-button::after {
+  content: "시작하기";
+  display: inline-flex;
+  width: fit-content;
+  height: 44px;
+  margin-top: 22px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #243a34;
+  color: #fff;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.intro-start-actions .intro-secondary-choice::after {
+  content: "로그인";
 }
 
 .intro-step-card {
@@ -96,6 +139,300 @@
   width: 1320px;
   min-height: 800px;
   padding: 60px 72px;
+}
+
+.intro-disability-card {
+  left: 140px;
+  top: 112px;
+  width: 1640px;
+  min-height: 856px;
+  padding: 150px 250px 120px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  box-sizing: border-box;
+}
+
+.intro-disability-content {
+  width: 1180px;
+}
+
+.intro-disability-actions {
+  width: 1180px;
+  margin-top: 44px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.intro-disability-card .intro-main-text {
+  max-width: 1030px;
+  font-size: 52px;
+  line-height: 1.14;
+}
+
+.intro-disability-card .intro-sub-text {
+  max-width: 880px;
+  font-size: 24px;
+}
+
+.intro-disability-card .intro-choice-grid {
+  width: 1180px;
+  gap: 32px;
+  margin-top: 54px;
+}
+
+.intro-disability-card .intro_select-button {
+  min-height: 170px;
+  padding: 34px 36px;
+  border-width: 3px;
+  box-shadow: 0 10px 22px rgba(35, 33, 29, 0.08);
+}
+
+.intro-disability-card .intro-button-text {
+  font-size: 31px;
+}
+
+.intro-disability-card .intro_select-button small {
+  font-size: 20px;
+  line-height: 1.36;
+}
+
+.intro-disability-card .intro-submit-button {
+  min-width: 210px;
+  height: 78px;
+  position: static;
+  border-width: 3px;
+  box-shadow: none;
+}
+
+.intro-job-card {
+  left: 140px;
+  top: 112px;
+  width: 1640px;
+  min-height: 856px;
+  padding: 150px 250px 120px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  box-sizing: border-box;
+}
+
+.intro-job-content {
+  width: 1180px;
+}
+
+.intro-job-actions {
+  width: 1180px;
+  margin-top: 40px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.intro-job-card .intro-main-text {
+  max-width: 980px;
+  font-size: 52px;
+  line-height: 1.14;
+}
+
+.intro-job-card .intro-sub-text {
+  max-width: 760px;
+  font-size: 24px;
+}
+
+.intro-job-card .intro-choice-grid {
+  width: 1180px;
+  gap: 32px;
+  margin-top: 54px;
+}
+
+.intro-job-card .intro_select-button {
+  min-height: 176px;
+  padding: 34px 36px;
+  border-width: 3px;
+  box-shadow: 0 10px 22px rgba(35, 33, 29, 0.08);
+}
+
+.intro-job-card .intro-button-text {
+  font-size: 31px;
+}
+
+.intro-job-card .intro_select-button small {
+  max-width: 420px;
+  font-size: 20px;
+  line-height: 1.36;
+}
+
+.intro-job-input-shell {
+  width: 1180px;
+  margin-top: 28px;
+}
+
+.intro-job-input-label {
+  display: inline-flex;
+  margin-bottom: 14px;
+  color: #4f4b43;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.intro-job-card .intro-wide-input {
+  width: 100%;
+  height: 84px;
+  margin-top: 0;
+  border-width: 3px;
+  border-radius: 20px;
+  padding: 0 28px;
+  font-size: 24px;
+  box-sizing: border-box;
+}
+
+.intro-job-card .intro-submit-button {
+  min-width: 210px;
+  height: 78px;
+  position: static;
+  border-width: 3px;
+  box-shadow: none;
+}
+
+.intro-gender-card {
+  left: 140px;
+  top: 112px;
+  width: 1640px;
+  min-height: 856px;
+  padding: 170px 340px 130px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  box-sizing: border-box;
+}
+
+.intro-gender-content {
+  width: 960px;
+}
+
+.intro-gender-actions {
+  width: 960px;
+  margin-top: 42px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.intro-gender-card .intro-main-text {
+  max-width: 720px;
+  font-size: 52px;
+  line-height: 1.14;
+}
+
+.intro-gender-card .intro-sub-text {
+  max-width: 520px;
+  font-size: 24px;
+}
+
+.intro-gender-card .intro-choice-grid-compact {
+  width: 960px;
+  margin-top: 58px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.intro-gender-card .intro_select-button {
+  min-height: 170px;
+  padding: 32px 34px;
+  border-width: 3px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 10px 22px rgba(35, 33, 29, 0.08);
+}
+
+.intro-gender-card .intro-button-text {
+  font-size: 34px;
+}
+
+.intro-gender-card .intro-submit-button {
+  min-width: 210px;
+  height: 78px;
+  position: static;
+  border-width: 3px;
+  box-shadow: none;
+}
+
+.intro-signup-card {
+  left: 140px;
+  top: 112px;
+  width: 1640px;
+  min-height: 856px;
+  padding: 150px 170px 120px 220px;
+  display: grid;
+  grid-template-columns: 470px 1fr;
+  column-gap: 86px;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.intro-signup-copy {
+  align-self: start;
+}
+
+.intro-signup-card .intro-main-text {
+  max-width: 470px;
+  font-size: 52px;
+  line-height: 1.14;
+}
+
+.intro-signup-card .intro-sub-text {
+  max-width: 390px;
+  font-size: 24px;
+}
+
+.intro-signup-card .intro-consent-text {
+  width: 390px;
+  margin: 42px 0 0;
+  text-align: left;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.intro-signup-form-panel {
+  width: 730px;
+  padding: 42px 42px 36px;
+  border-radius: 30px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(54, 46, 29, 0.1);
+  box-sizing: border-box;
+}
+
+.intro-signup-card .intro-form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 20px;
+  margin-top: 0;
+}
+
+.intro-signup-card .intro-input-field {
+  width: 100%;
+  height: 88px;
+  min-width: 0;
+  border: 3px solid rgba(35, 33, 29, 0.18);
+  border-radius: 20px;
+  background: #fffefb;
+  padding: 0 28px;
+  box-sizing: border-box;
+  font-size: 24px;
+}
+
+.intro-signup-card .intro-input-field::placeholder {
+  color: #7d7a73;
+}
+
+.intro-signup-actions {
+  margin-top: 26px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.intro-signup-card .intro-submit-button {
+  min-width: 196px;
+  height: 80px;
+  position: static;
+  border-width: 3px;
+  box-shadow: none;
 }
 
 .intro-back-button {
@@ -141,6 +478,7 @@
 .intro_select-button {
   min-height: 146px;
   padding: 28px 32px;
+  position: relative;
   background: #fff;
   display: flex;
   flex-direction: column;
@@ -158,6 +496,41 @@
 .intro-primary-choice {
   background: var(--color-green);
   border-color: var(--color-green-strong);
+}
+
+.intro-choice-grid .intro_select-button.is-selected,
+.intro-choice-grid-compact .intro_select-button.is-selected {
+  border-color: #5f8f1f;
+  background: #eef8c8;
+  box-shadow: 0 14px 28px rgba(112, 145, 44, 0.2), 0 0 0 4px rgba(157, 196, 90, 0.2);
+  transform: translateY(-2px);
+}
+
+.intro-choice-grid .intro_select-button.is-selected::after,
+.intro-choice-grid-compact .intro_select-button.is-selected::after {
+  content: "선택됨";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: inline-flex;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #243a34;
+  color: #fff;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.intro-choice-grid .intro_select-button.is-selected .intro-button-text,
+.intro-choice-grid-compact .intro_select-button.is-selected .intro-button-text {
+  color: #1f2d18;
+}
+
+.intro-choice-grid .intro_select-button.is-selected small,
+.intro-choice-grid-compact .intro_select-button.is-selected small {
+  color: #425235;
 }
 
 .intro-secondary-choice {

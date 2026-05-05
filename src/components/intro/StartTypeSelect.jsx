@@ -7,8 +7,8 @@ function StartTypeSelect({ onNext }) {
       <section className="intro-hero-panel" aria-label="서비스 시작">
         <div className="intro-hero-copy">
           <span className="intro-kicker">취업 준비 훈련 서비스</span>
-          <h1>내 속도에 맞춰 직장 생활을 연습해요</h1>
-          <p>사회성, 안전, 문서 이해 훈련을 차근차근 이어갈 수 있습니다.</p>
+          <h1>딛고에 오신걸 환영합니다.</h1>
+          <p>내 속도에 맞춰 직장 생활을 연습해요.</p>
         </div>
 
         <img
@@ -24,6 +24,7 @@ function StartTypeSelect({ onNext }) {
             onClick={() => onNext({ startType: 'newbie' })}
           >
             <span className="intro-button-text">처음 사용해요</span>
+            <small>나에게 맞는 훈련 설정을 먼저 고를게요.</small>
           </button>
 
           <button
@@ -32,6 +33,7 @@ function StartTypeSelect({ onNext }) {
             onClick={() => onNext({ startType: 'usedBefore' })}
           >
             <span className="intro-button-text">사용해 봤어요</span>
+            <small>로그인하고 이어서 훈련할게요.</small>
           </button>
         </div>
       </section>

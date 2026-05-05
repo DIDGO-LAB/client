@@ -28,35 +28,43 @@ function JobSelect({ onNext, onPrev }) {
         <img src={backArrow} alt="" className="intro-back-image" />
       </button>
 
-      <section className="intro-step-card">
-        <span className="intro-kicker">2단계</span>
-        <h1 className="intro-main-text">연습하고 싶은 직무를 골라 주세요.</h1>
-        <p className="intro-sub-text">나중에 내 정보에서 다시 바꿀 수 있습니다.</p>
+      <section className="intro-step-card intro-job-card">
+        <div className="intro-job-content">
+          <span className="intro-kicker">2단계</span>
+          <h1 className="intro-main-text">연습하고 싶은 직무를 골라 주세요.</h1>
+          <p className="intro-sub-text">나중에 내 정보에서 다시 바꿀 수 있습니다.</p>
 
-        <div className="intro-choice-grid">
-          {jobOptions.map((job) => (
-            <button
-              key={job.value}
-              className={`intro_select-button ${selectedJob === job.value ? 'is-selected' : ''}`}
-              type="button"
-              onClick={() => setSelectedJob(job.value)}
-            >
-              <span className="intro-button-text">{job.value}</span>
-              <small>{job.description}</small>
-            </button>
-          ))}
+          <div className="intro-choice-grid">
+            {jobOptions.map((job) => (
+              <button
+                key={job.value}
+                className={`intro_select-button ${selectedJob === job.value ? 'is-selected' : ''}`}
+                type="button"
+                onClick={() => setSelectedJob(job.value)}
+              >
+                <span className="intro-button-text">{job.value}</span>
+                <small>{job.description}</small>
+              </button>
+            ))}
+          </div>
+
+          <div className="intro-job-input-shell">
+            <label className="intro-job-input-label" htmlFor="job-direct-input">직접 입력</label>
+            <input
+              id="job-direct-input"
+              placeholder="다른 직무를 입력해 주세요"
+              className="intro-input-field intro-wide-input"
+              value={isPresetJob ? '' : selectedJob}
+              onChange={(e) => setSelectedJob(e.target.value)}
+            />
+          </div>
         </div>
 
-        <input
-          placeholder="다른 직무 직접 입력"
-          className="intro-input-field intro-wide-input"
-          value={isPresetJob ? '' : selectedJob}
-          onChange={(e) => setSelectedJob(e.target.value)}
-        />
-
-        <button className="intro-submit-button" type="button" onClick={handleNextPage}>
-          <span className="intro-button-text">다음으로</span>
-        </button>
+        <div className="intro-job-actions">
+          <button className="intro-submit-button" type="button" onClick={handleNextPage}>
+            <span className="intro-button-text">다음으로</span>
+          </button>
+        </div>
       </section>
     </div>
   );
