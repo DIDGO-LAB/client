@@ -6,7 +6,6 @@ import './Sidebar.css';
 
 const navItems = [
   { key: 'main', label: '홈', path: '/main', icon: homeIcon },
-  { key: 'training', label: '훈련', path: '/training', icon: noteIcon },
   { key: 'history', label: '기록', path: '/training-history', icon: noteIcon },
   { key: 'mypage', label: '내 정보', path: '/mypage', icon: noteIcon },
 ];

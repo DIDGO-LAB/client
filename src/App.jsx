@@ -3,7 +3,6 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from
 import './App.css';
 import { authApi, tokenStorage } from './api';
 import Intro from './pages/Intro';
-import DisabilitySelect from './components/intro/DisabilitySelect';
 import JobSelect from './components/intro/JobSelect';
 import GenderSelect from './components/intro/GenderSelect';
 import SignupForm from './components/intro/SignupForm';
@@ -24,7 +23,6 @@ import {
   TrainingHistoryDetailPage,
   TrainingHistoryListPage,
   TrainingHistorySelectPage,
-  TrainingSelectPage,
 } from './pages/training/TrainingPages';
 import { signupFormToApiPayload } from './utils/userProfile';
 
@@ -86,21 +84,13 @@ function IntroStepRoutes() {
         <div className="App" style={{ transform: `scale(${viewportScale})` }}>
         <Routes>
           <Route path="/" element={<Intro />} />
-          <Route
-            path="/intro/disability"
-            element={
-              <DisabilitySelect
-                onNext={(data) => goNext('/intro/job', data)}
-                onPrev={() => navigate('/')}
-              />
-            }
-          />
+          <Route path="/intro/disability" element={<Navigate to="/intro/job" replace />} />
           <Route
             path="/intro/job"
             element={
               <JobSelect
                 onNext={(data) => goNext('/intro/gender', data)}
-                onPrev={() => navigate('/intro/disability', { state: { signupData } })}
+                onPrev={() => navigate('/')}
               />
             }
           />
@@ -148,11 +138,7 @@ function IntroStepRoutes() {
           />
           <Route
             path="/training"
-            element={
-              <ProtectedRoute>
-                <TrainingSelectPage />
-              </ProtectedRoute>
-            }
+            element={<Navigate to="/main" replace />}
           />
           <Route
             path="/training/social/job"

@@ -45,7 +45,7 @@ function SocialTraining() {
 
   const goPrev = () => {
     if (stepIndex === 0) {
-      navigate('/training');
+      navigate('/main');
       return;
     }
 
@@ -134,7 +134,7 @@ function SocialTraining() {
   }, []);
 
   if (stepIndex > 0 && !selectedJobContent) {
-    return <JobTypeSelect onSelectJob={handleSelectJob} onPrev={() => navigate('/training')} />;
+    return <JobTypeSelect onSelectJob={handleSelectJob} onPrev={() => navigate('/main')} />;
   }
 
   if (stepIndex > 1 && !selectedSituation) {

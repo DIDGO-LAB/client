@@ -28,7 +28,7 @@ function DisabilitySelect({ onNext, onPrev }) {
       <section className="intro-step-card intro-disability-card">
         <div className="intro-disability-content">
           <span className="intro-kicker">1단계</span>
-          <h1 className="intro-main-text">나에게 맞는 안내 방식을 선택해 주세요.</h1>
+          <h1 className="intro-main-text">나에게 맞는 안내 방식을 선택해 주세요</h1>
           <p className="intro-sub-text">선택한 정보는 훈련 문장과 예시를 더 쉽게 맞추는 데 사용됩니다.</p>
 
           <div className="intro-choice-grid">

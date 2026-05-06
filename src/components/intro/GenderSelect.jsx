@@ -24,8 +24,7 @@ function GenderSelect({ onNext, onPrev }) {
 
       <section className="intro-step-card intro-gender-card">
         <div className="intro-gender-content">
-          <span className="intro-kicker">3단계</span>
-          <h1 className="intro-main-text">성별을 선택해 주세요.</h1>
+          <h1 className="intro-main-text">성별을 선택해 주세요</h1>
           <p className="intro-sub-text">프로필 정보로만 사용됩니다.</p>
 
           <div className="intro-choice-grid intro-choice-grid-compact">

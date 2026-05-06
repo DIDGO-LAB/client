@@ -31,6 +31,27 @@ const toDialogLogs = (dialogues) =>
     content: dialogue.message,
   }));
 
+const getLearningScenarioIndex = (scenarios) => {
+  const explicitIndex = scenarios.findIndex(
+    (scenario) =>
+      scenario.recommended ||
+      scenario.isRecommended ||
+      scenario.current ||
+      scenario.isCurrent ||
+      scenario.next ||
+      scenario.isNext ||
+      ['RECOMMENDED', 'CURRENT', 'IN_PROGRESS', 'NEXT'].includes(scenario.status) ||
+      ['RECOMMENDED', 'CURRENT', 'IN_PROGRESS', 'NEXT'].includes(scenario.trainingStatus),
+  );
+
+  if (explicitIndex >= 0) {
+    return explicitIndex;
+  }
+
+  const incompleteIndex = scenarios.findIndex((scenario) => scenario.unlocked !== false && scenario.completed === false);
+  return incompleteIndex >= 0 ? incompleteIndex : 0;
+};
+
 const safetyCategories = [
   { category: 'DAILY_SAFETY', label: '소중한 나\n지키기', description: '일상에서 나를 보호하는 훈련' },
   { category: 'WORKPLACE_SAFETY', label: '뽀득뽀득 건강\n지키기', description: '직장과 생활에서 경계를 지키는 훈련' },
@@ -112,7 +133,7 @@ const historyTypeSummary = {
 
 const getErrorMessage = (error, fallback) => error?.message || fallback;
 
-function TrainingShell({ activeKey = 'training', fullScreen = false, children }) {
+function TrainingShell({ activeKey = 'main', fullScreen = false, children }) {
   return (
     <>
       {!fullScreen ? <Sidebar activeKey={activeKey} /> : null}
@@ -140,7 +161,12 @@ function PageHeader({ title, subtitle, onBack, compact = false, className = '' }
 }
 
 function LoadingBlock() {
-  return <div className="training-status">불러오는 중입니다.</div>;
+  return (
+    <div className="training-status training-status-loading" role="status">
+      <span className="training-loading-dot" aria-hidden="true" />
+      <span>불러오는 중입니다.</span>
+    </div>
+  );
 }
 
 function ErrorBlock({ message, onRetry }) {
@@ -158,6 +184,41 @@ function ErrorBlock({ message, onRetry }) {
 
 function EmptyBlock({ message }) {
   return <div className="training-status">{message}</div>;
+}
+
+function TrainingHelpButton({ onClick }) {
+  return (
+    <button className="social-help-button" type="button" onClick={onClick} aria-label="도움말">
+      <span aria-hidden="true">?</span>
+      <strong>도움말</strong>
+    </button>
+  );
+}
+
+function TrainingHelpDialog({ open, onClose, title = '훈련 방법' }) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div className="training-help-overlay" role="presentation" onClick={onClose}>
+      <section
+        className="training-help-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="training-help-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header className="training-help-dialog-header">
+          <h2 id="training-help-title">{title}</h2>
+          <button type="button" onClick={onClose} aria-label="도움말 닫기">
+            닫기
+          </button>
+        </header>
+        <div className="training-help-dialog-body" />
+      </section>
+    </div>
+  );
 }
 
 export function TrainingSelectPage() {
@@ -229,6 +290,7 @@ export function SocialJobPage() {
   const navigate = useNavigate();
   const [submittingJob, setSubmittingJob] = useState('');
   const [error, setError] = useState('');
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   const selectJob = async (jobType) => {
     setSubmittingJob(jobType);
@@ -247,14 +309,12 @@ export function SocialJobPage() {
   return (
     <TrainingShell fullScreen>
       <section className="social-screen social-job-screen">
-        <PageHeader compact onBack={() => navigate('/training')} />
-        <button className="social-help-button" type="button" aria-label="도움말">
-          <strong>?</strong>
-        </button>
+        <PageHeader compact className="social-module-back" onBack={() => navigate('/main')} />
+        <TrainingHelpButton onClick={() => setIsHelpOpen(true)} />
         <div className="social-job-shell">
           <header className="social-job-intro">
             <span>사회성 훈련</span>
-            <h1>어떤 직무 상황을 먼저 연습할까요?</h1>
+            <h1>어떤 직무 상황을 먼저 연습할까요</h1>
             <p>내가 자주 마주치는 업무 환경을 고르면 필요한 대화를 차분하게 연습할 수 있어요.</p>
           </header>
           {error ? <ErrorBlock message={error} /> : null}
@@ -276,6 +336,7 @@ export function SocialJobPage() {
             ))}
           </div>
         </div>
+        <TrainingHelpDialog open={isHelpOpen} onClose={() => setIsHelpOpen(false)} title="사회성 훈련 방법" />
       </section>
     </TrainingShell>
   );
@@ -285,9 +346,12 @@ export function SocialScenarioPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const jobType = location.state?.jobType || 'OFFICE';
+  const scenarioListRef = useRef(null);
+  const scenarioItemRefs = useRef({});
   const [scenarios, setScenarios] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
+  const learningScenarioIndex = scenarios.length > 0 ? getLearningScenarioIndex(scenarios) : -1;
 
   const loadScenarios = async () => {
     setStatus('loading');
@@ -307,26 +371,54 @@ export function SocialScenarioPage() {
     loadScenarios();
   }, [jobType]);
 
+  useEffect(() => {
+    if (status !== 'ready' || learningScenarioIndex < 0) {
+      return;
+    }
+
+    const list = scenarioListRef.current;
+    const targetScenario = scenarios[learningScenarioIndex];
+    const target = scenarioItemRefs.current[targetScenario?.scenarioId];
+
+    if (!list || !target) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      list.scrollTo({
+        top: Math.max(target.offsetTop - list.offsetTop, 0),
+        behavior: 'smooth',
+      });
+    });
+  }, [status, learningScenarioIndex, scenarios]);
+
   return (
     <TrainingShell fullScreen>
       <section className="social-screen social-scenario-screen">
-        <PageHeader compact onBack={() => navigate('/training/social/job')} />
-        {status === 'loading' ? <LoadingBlock /> : null}
-        {status === 'error' ? <ErrorBlock message={error} onRetry={loadScenarios} /> : null}
-        {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="선택할 수 있는 시나리오가 없습니다." /> : null}
-        {status === 'ready' && scenarios.length > 0 ? (
-          <div className="social-scenario-shell">
-            <header className="social-scenario-intro">
-              <span>{getSocialJobLabel(jobType)} 생활</span>
-              <h1>어떤 상황을 연습할까요?</h1>
-              <p>지금 나에게 필요하거나 걱정되는 상황을 하나 골라보세요.</p>
-            </header>
-            <div className="scenario-list social-scenario-list">
-              {scenarios.slice(0, 3).map((scenario, index) => (
+        <PageHeader compact className="social-module-back" onBack={() => navigate('/training/social/job')} />
+        <div className="social-scenario-shell">
+          <header className="social-scenario-intro">
+            <span>{getSocialJobLabel(jobType)} 생활</span>
+            <h1>어떤 상황을 연습할까요</h1>
+            <p>지금 나에게 필요하거나 걱정되는 상황을 하나 골라보세요.</p>
+          </header>
+          <div className="scenario-list social-scenario-list" ref={scenarioListRef} aria-busy={status === 'loading'}>
+            {status === 'loading' ? <LoadingBlock /> : null}
+            {status === 'error' ? <ErrorBlock message={error} onRetry={loadScenarios} /> : null}
+            {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="선택할 수 있는 시나리오가 없습니다." /> : null}
+            {status === 'ready' && scenarios.length > 0
+              ? scenarios.map((scenario, index) => (
                 <button
-                  className="scenario-card social-scenario-card"
+                  className={`scenario-card social-scenario-card ${index === learningScenarioIndex ? 'is-learning-target' : ''}`}
                   type="button"
                   key={scenario.scenarioId}
+                  ref={(element) => {
+                    if (element) {
+                      scenarioItemRefs.current[scenario.scenarioId] = element;
+                    } else {
+                      delete scenarioItemRefs.current[scenario.scenarioId];
+                    }
+                  }}
                   onClick={() =>
                     navigate('/training/social/session', {
                       state: { jobType, scenarioId: scenario.scenarioId },
@@ -338,10 +430,10 @@ export function SocialScenarioPage() {
                   <p>{scenario.description || '상황에 맞는 말을 차분히 연습해요.'}</p>
                   <em>시작하기</em>
                 </button>
-              ))}
-            </div>
+              ))
+              : null}
           </div>
-        ) : null}
+        </div>
       </section>
     </TrainingShell>
   );
@@ -426,15 +518,30 @@ export function SocialSessionPage() {
 
   return (
     <TrainingShell fullScreen>
-      <PageHeader compact onBack={() => navigate('/training/social/scenarios', { state: { jobType } })} />
-      {status === 'loading' ? <LoadingBlock /> : null}
-      {status === 'error' ? <ErrorBlock message={error} onRetry={loadSession} /> : null}
-      {(status === 'ready' || status === 'saving') && scenario ? (
-        <section className="training-stage social-stage social-session-stage">
-          <p className="social-session-brief">
-            {scenario.situationText || scenario.description || '상황을 보고 차분하게 대화해 보세요.'}
-          </p>
-          {visibleDialogues.length > 0 ? (
+      <PageHeader compact className="social-module-back" onBack={() => navigate('/training/social/scenarios', { state: { jobType } })} />
+      <section className="training-stage social-stage social-session-stage">
+        <p className="social-session-brief">
+          {scenario?.situationText || scenario?.description || '대화 상황을 준비하고 있어요.'}
+        </p>
+        {status === 'loading' ? (
+          <div className="dialogue-panel social-current-dialogue social-session-loading-panel">
+            <div className="social-current-header">
+              <span>사회성 대화 연습</span>
+            </div>
+            <LoadingBlock />
+          </div>
+        ) : null}
+        {status === 'error' ? (
+          <div className="dialogue-panel social-current-dialogue social-session-loading-panel">
+            <div className="social-current-header">
+              <span>사회성 대화 연습</span>
+            </div>
+            <ErrorBlock message={error} onRetry={loadSession} />
+          </div>
+        ) : null}
+        {(status === 'ready' || status === 'saving') && scenario ? (
+          <>
+            {visibleDialogues.length > 0 ? (
             <div className="dialogue-panel social-current-dialogue">
               <div className="social-current-header">
                 <span>사회성 대화 연습</span>
@@ -466,10 +573,11 @@ export function SocialSessionPage() {
                 </div>
               </aside>
             </div>
-          ) : null}
-          {error ? <ErrorBlock message={error} /> : null}
-        </section>
-      ) : null}
+            ) : null}
+            {error ? <ErrorBlock message={error} /> : null}
+          </>
+        ) : null}
+      </section>
     </TrainingShell>
   );
 }
@@ -511,17 +619,17 @@ export function SocialResultPage() {
 
   return (
     <TrainingShell fullScreen>
-      <PageHeader compact onBack={() => navigate('/training/social/job')} />
-      {status === 'loading' ? <LoadingBlock /> : null}
-      {status === 'error' ? <ErrorBlock message={error} onRetry={loadResult} /> : null}
-      {status === 'ready' ? (
-        <section className="training-result-layout social-result-layout">
-          <div className="social-result-left">
-            <p className="social-result-situation">
-              {scenario?.situationText || scenario?.description || result?.title || '사회성 훈련을 마쳤습니다.'}
-            </p>
-            <div className="social-result-dialogues">
-              {resultDialogues.slice(0, 4).map((dialogue) => (
+      <PageHeader compact className="social-module-back" onBack={() => navigate('/training/social/job')} />
+      <section className="training-result-layout social-result-layout">
+        <div className="social-result-left">
+          <p className="social-result-situation">
+            {scenario?.situationText || scenario?.description || result?.title || '사회성 훈련 결과를 정리하고 있어요.'}
+          </p>
+          <div className="social-result-dialogues" aria-busy={status === 'loading'}>
+            {status === 'loading' ? <LoadingBlock /> : null}
+            {status === 'error' ? <ErrorBlock message={error} onRetry={loadResult} /> : null}
+            {status === 'ready'
+              ? resultDialogues.slice(0, 4).map((dialogue) => (
                 <p
                   className={`social-result-bubble ${
                     dialogue.speaker === 'USER' ? 'social-result-bubble-user' : 'social-result-bubble-ai'
@@ -530,26 +638,26 @@ export function SocialResultPage() {
                 >
                   {dialogue.content}
                 </p>
-              ))}
-            </div>
+              ))
+              : null}
           </div>
-          <aside className="social-result-right">
-            <div className="social-result-score">{result?.score ?? 90}점</div>
-            <div className="social-result-feedback">
-              <strong>AI 피드백</strong>
-              <p>{result?.feedback?.summary || result?.feedbackSummary || result?.feedback || '필요한 정보를 다시 확인하고 정리하는 흐름이 좋았습니다.'}</p>
-            </div>
-            <div className="social-result-recommendation">
-              <strong>추천 답변</strong>
-              <p>필요한 내용을 다시 한번 확인하고 진행하겠습니다.</p>
-              <img src={characterImg} alt="" />
-            </div>
-            <button type="button" onClick={() => navigate('/training/social/job')}>
-              다시 선택하기
-            </button>
-          </aside>
-        </section>
-      ) : null}
+        </div>
+        <aside className={`social-result-right ${status === 'loading' ? 'is-loading' : ''}`}>
+          <div className="social-result-score">{status === 'ready' ? `${result?.score ?? 90}점` : '확인 중'}</div>
+          <div className="social-result-feedback">
+            <strong>AI 피드백</strong>
+            <p>{status === 'ready' ? result?.feedback?.summary || result?.feedbackSummary || result?.feedback || '필요한 정보를 다시 확인하고 정리하는 흐름이 좋았습니다.' : '피드백을 불러오는 중입니다.'}</p>
+          </div>
+          <div className="social-result-recommendation">
+            <strong>추천 답변</strong>
+            <p>{status === 'ready' ? '필요한 내용을 다시 한번 확인하고 진행하겠습니다.' : '추천 답변을 준비하고 있습니다.'}</p>
+            <img src={characterImg} alt="" />
+          </div>
+          <button type="button" onClick={() => navigate('/training/social/job')} disabled={status !== 'ready'}>
+            다시 선택하기
+          </button>
+        </aside>
+      </section>
     </TrainingShell>
   );
 }
@@ -558,7 +666,7 @@ export function SafetyTypePage() {
 
   return (
     <TrainingShell fullScreen>
-      <PageHeader compact onBack={() => navigate('/training')} />
+      <PageHeader compact className="safety-module-back" onBack={() => navigate('/main')} />
       <section className="safety-type-shell">
         <aside className="safety-type-intro">
           <span>안전 대처 훈련</span>
@@ -592,6 +700,7 @@ export function SafetyScenarioPage() {
   const [scenarios, setScenarios] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   const loadScenarios = async () => {
     setStatus('loading');
@@ -625,25 +734,27 @@ export function SafetyScenarioPage() {
     <TrainingShell fullScreen>
       <PageHeader
         compact
-        onBack={() => navigate('/training')}
+        className="safety-module-back"
+        onBack={() => navigate('/main')}
       />
-      {status === 'loading' ? <LoadingBlock /> : null}
-      {status === 'error' ? <ErrorBlock message={error} onRetry={loadScenarios} /> : null}
-      {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="선택할 수 있는 시나리오가 없습니다." /> : null}
-      {status === 'ready' && scenarios.length > 0 ? (
-        <section className="safety-scenario-shell">
-          <aside className="safety-scenario-intro">
-            <span>안전 대처 훈련</span>
-            <h1>연습할 안전 상황을 바로 선택해요</h1>
-            <p>카테고리를 먼저 고르지 않고, 실제로 마주칠 수 있는 상황을 바로 선택해 훈련을 시작합니다.</p>
-          </aside>
-          <div className="safety-scenario-panel">
-            <header className="safety-scenario-panel-header">
-              <span>전체 안전 상황</span>
-              <strong>{scenarios.length}개 상황</strong>
-            </header>
-            <div className="scenario-list safety-scenario-list">
-              {scenarios.map((scenario, index) => (
+      <TrainingHelpButton onClick={() => setIsHelpOpen(true)} />
+      <section className="safety-scenario-shell">
+        <aside className="safety-scenario-intro">
+          <span>안전 대처 훈련</span>
+          <h1>연습할 안전 상황을 바로 선택해요</h1>
+          <p>카테고리를 먼저 고르지 않고, 실제로 마주칠 수 있는 상황을 바로 선택해 훈련을 시작합니다.</p>
+        </aside>
+        <div className="safety-scenario-panel">
+          <header className="safety-scenario-panel-header">
+            <span>전체 안전 상황</span>
+            <strong>{status === 'ready' ? `${scenarios.length}개 상황` : '상황 확인 중'}</strong>
+          </header>
+          <div className="scenario-list safety-scenario-list" aria-busy={status === 'loading'}>
+            {status === 'loading' ? <LoadingBlock /> : null}
+            {status === 'error' ? <ErrorBlock message={error} onRetry={loadScenarios} /> : null}
+            {status === 'ready' && scenarios.length === 0 ? <EmptyBlock message="선택할 수 있는 시나리오가 없습니다." /> : null}
+            {status === 'ready' && scenarios.length > 0
+              ? scenarios.map((scenario, index) => (
                 <button
                   className="scenario-card safety-scenario-card"
                   type="button"
@@ -659,11 +770,12 @@ export function SafetyScenarioPage() {
                   <p>{scenario.description || scenario.categoryDescription || '안전한 행동을 선택하는 연습입니다.'}</p>
                   <em>시작하기</em>
                 </button>
-              ))}
-            </div>
+              ))
+              : null}
           </div>
-        </section>
-      ) : null}
+        </div>
+      </section>
+      <TrainingHelpDialog open={isHelpOpen} onClose={() => setIsHelpOpen(false)} title="안전 대처 훈련 방법" />
     </TrainingShell>
   );
 }
@@ -750,7 +862,7 @@ export function SafetySessionPage() {
     <TrainingShell fullScreen>
       <PageHeader
         compact
-        className="safety-session-back"
+        className="safety-module-back safety-session-back"
         onBack={() => navigate('/training/safety/scenarios')}
       />
       {status === 'loading' ? <LoadingBlock /> : null}
@@ -816,7 +928,7 @@ export function SafetyResultPage() {
   }, [sessionId]);
   return (
     <TrainingShell fullScreen>
-      <PageHeader compact className="safety-result-back" onBack={() => navigate('/training/safety/scenarios')} />
+      <PageHeader compact className="safety-module-back safety-result-back" onBack={() => navigate('/training/safety/scenarios')} />
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadResult} /> : null}
       {status === 'ready' ? (
@@ -947,6 +1059,7 @@ export function DocumentStartPage() {
   const [progress, setProgress] = useState(null);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   const loadProgress = async () => {
     setStatus('loading');
@@ -988,28 +1101,30 @@ export function DocumentStartPage() {
     <TrainingShell fullScreen>
       <PageHeader
         compact
-        onBack={() => navigate('/training')}
+        className="document-module-back"
+        onBack={() => navigate('/main')}
       />
-      {status === 'loading' ? <LoadingBlock /> : null}
-      {status === 'error' ? <ErrorBlock message={error} onRetry={loadProgress} /> : null}
-      {status === 'ready' ? (
-        <section className="document-start-shell">
-          <aside className="document-start-intro">
-            <span>문서 이해 훈련</span>
-            <h2>읽고, 생각하는 연습</h2>
-            <p>안내문에서 중요한 문장을 고르고 질문에 답하며 필요한 정보를 찾는 흐름을 익힙니다.</p>
-            <div className="document-progress-card">
-              <strong>{currentLevel}단계</strong>
-              <span>추천 단계</span>
-            </div>
-          </aside>
-          <div className="document-level-panel">
-            <header className="document-level-panel-header">
-              <span>선택 가능한 단계</span>
-              <strong>{unlockedLevelCount}/{levels.length}개 해금</strong>
-            </header>
-            <div className="option-grid document-level-grid">
-              {levels.map((levelInfo) => {
+      <TrainingHelpButton onClick={() => setIsHelpOpen(true)} />
+      <section className="document-start-shell">
+        <aside className="document-start-intro">
+          <span>문서 이해 훈련</span>
+          <h2>읽고, 생각하는 연습</h2>
+          <p>안내문에서 중요한 문장을 고르고 질문에 답하며 필요한 정보를 찾는 흐름을 익힙니다.</p>
+          <div className="document-progress-card">
+            <strong>{status === 'ready' ? `${currentLevel}단계` : '확인 중'}</strong>
+            <span>추천 단계</span>
+          </div>
+        </aside>
+        <div className="document-level-panel">
+          <header className="document-level-panel-header">
+            <span>선택 가능한 단계</span>
+            <strong>{status === 'ready' ? `${unlockedLevelCount}/${levels.length}개 해금` : '단계 확인 중'}</strong>
+          </header>
+          <div className="option-grid document-level-grid" aria-busy={status === 'loading'}>
+            {status === 'loading' ? <LoadingBlock /> : null}
+            {status === 'error' ? <ErrorBlock message={error} onRetry={loadProgress} /> : null}
+            {status === 'ready'
+              ? levels.map((levelInfo) => {
                 const level = levelInfo.level;
                 const isUnlocked = levelInfo.unlocked !== false;
                 const isRecommended = levelInfo.recommended || level === currentLevel;
@@ -1035,11 +1150,12 @@ export function DocumentStartPage() {
                     <em>{isUnlocked ? (isRecommended ? '추천' : '복습') : '잠김'}</em>
                   </button>
                 );
-              })}
-            </div>
+              })
+              : null}
           </div>
-        </section>
-      ) : null}
+        </div>
+      </section>
+      <TrainingHelpDialog open={isHelpOpen} onClose={() => setIsHelpOpen(false)} title="문서 이해 훈련 방법" />
     </TrainingShell>
   );
 }
@@ -1128,33 +1244,34 @@ export function DocumentSessionPage() {
 
   return (
     <TrainingShell fullScreen>
-      {status === 'loading' ? <LoadingBlock /> : null}
-      {status === 'error' ? <ErrorBlock message={error} onRetry={loadSession} /> : null}
-      {(status === 'ready' || status === 'saving') && session && currentQuestion ? (
-        <section className="document-session-shell">
-          <header className="document-session-topbar">
-            <button type="button" onClick={() => navigate('/training/document')} aria-label="단계 선택으로 돌아가기">
-              ←
-            </button>
-            <div>
-              <strong>문서 이해 훈련</strong>
-              <p>왼쪽 문서를 천천히 읽고 알맞은 답을 골라 주세요.</p>
-            </div>
-            <span>
-              {currentQuestionIndex + 1}/{questions.length} 문제
-            </span>
-          </header>
-          <div className="document-session-progress" aria-label={`총 ${questions.length}문제 중 ${answeredCount}문제 선택`}>
-            {questions.map((question, index) => (
+      <section className="document-session-shell">
+        <header className="document-session-topbar">
+          <button type="button" onClick={() => navigate('/training/document')} aria-label="단계 선택으로 돌아가기">
+            ←
+          </button>
+          <div>
+            <strong>문서 이해 훈련</strong>
+            <p>왼쪽 문서를 천천히 읽고 알맞은 답을 골라 주세요.</p>
+          </div>
+          <span>
+            {questions.length > 0 ? `${currentQuestionIndex + 1}/${questions.length} 문제` : '문제 확인 중'}
+          </span>
+        </header>
+        <div className="document-session-progress" aria-label={`총 ${questions.length}문제 중 ${answeredCount}문제 선택`}>
+          {questions.map((question, index) => (
               <span
                 className={`${index === currentQuestionIndex ? 'is-current' : ''} ${
                   answers[question.questionId] ? 'is-answered' : ''
                 }`}
                 key={question.questionId}
               />
-            ))}
-          </div>
-          <div className="document-session-layout">
+          ))}
+        </div>
+        <div className="document-session-layout" aria-busy={status === 'loading'}>
+          {status === 'loading' ? <LoadingBlock /> : null}
+          {status === 'error' ? <ErrorBlock message={error} onRetry={loadSession} /> : null}
+          {(status === 'ready' || status === 'saving') && session && currentQuestion ? (
+            <>
             <DocumentThemePreview question={currentQuestion} />
             <aside className="document-session-question">
               <div className="document-question-meta">
@@ -1195,10 +1312,11 @@ export function DocumentSessionPage() {
                 </button>
               </div>
             </aside>
-          </div>
-          {error ? <ErrorBlock message={error} /> : null}
-        </section>
-      ) : null}
+            </>
+          ) : null}
+        </div>
+        {error && status !== 'error' ? <ErrorBlock message={error} /> : null}
+      </section>
     </TrainingShell>
   );
 }
@@ -1248,44 +1366,46 @@ export function DocumentResultPage() {
 
   return (
     <TrainingShell fullScreen>
-      {status === 'loading' ? <LoadingBlock /> : null}
-      {status === 'error' ? <ErrorBlock message={error} onRetry={loadResult} /> : null}
-      {status === 'ready' ? (
-        <section className="document-result-shell">
-          <button className="document-result-back" type="button" onClick={() => navigate('/training/document')}>
-            ←
-          </button>
-          <div className="document-result-card">
-            <div className="document-result-score">
-              <span>{score}</span>
-              <small>점</small>
-            </div>
-            <div className="document-result-copy">
-              <span>문서 이해 훈련 결과</span>
-              <h1>오늘은 {totalCount}문제 중 {correctCount}문제를 맞혔어요</h1>
-              <p>{resultMessage}</p>
-            </div>
-            <div className="document-result-summary">
-              {Array.from({ length: totalCount || 5 }, (_, index) => {
+      <section className="document-result-shell">
+        <button className="document-result-back" type="button" onClick={() => navigate('/training/document')}>
+          ←
+        </button>
+        <div className="document-result-card" aria-busy={status === 'loading'}>
+          {status === 'loading' ? <LoadingBlock /> : null}
+          {status === 'error' ? <ErrorBlock message={error} onRetry={loadResult} /> : null}
+          {status === 'ready' ? (
+            <>
+              <div className="document-result-score">
+                <span>{score}</span>
+                <small>점</small>
+              </div>
+              <div className="document-result-copy">
+                <span>문서 이해 훈련 결과</span>
+                <h1>오늘은 {totalCount}문제 중 {correctCount}문제를 맞혔어요</h1>
+                <p>{resultMessage}</p>
+              </div>
+              <div className="document-result-summary">
+                {Array.from({ length: totalCount || 5 }, (_, index) => {
                 const item = resultItems[index];
                 return (
                   <span className={item?.correct ? 'is-correct' : 'is-wrong'} key={`${item?.questionId || index}`}>
                     {index + 1}
                   </span>
                 );
-              })}
-            </div>
-            <div className="document-result-actions">
-              <button type="button" onClick={() => navigate('/training/document')}>
-                다시 연습하기
-              </button>
-              <button type="button" className="secondary-action" onClick={() => navigate('/training')}>
-                훈련 선택
-              </button>
-            </div>
-          </div>
-        </section>
-      ) : null}
+                })}
+              </div>
+              <div className="document-result-actions">
+                <button type="button" onClick={() => navigate('/training/document')}>
+                  다시 연습하기
+                </button>
+                <button type="button" className="secondary-action" onClick={() => navigate('/main')}>
+                  홈으로
+                </button>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </section>
     </TrainingShell>
   );
 }
@@ -1298,7 +1418,7 @@ export function TrainingHistorySelectPage() {
       <section className="menu-page-shell">
         <header className="menu-page-header">
           <span>훈련 기록</span>
-          <h1>어떤 새싹이 자랐는지 살펴봐요</h1>
+          <h1>지난 훈련을 다시 살펴봐요</h1>
           <p>지난 훈련 결과를 다시 보고, 다음 연습을 준비할 수 있습니다.</p>
         </header>
         <div className="training-select-grid history-select-grid is-history" aria-label="훈련 이력 유형">
@@ -1309,16 +1429,12 @@ export function TrainingHistorySelectPage() {
               key={item.type}
               onClick={() => navigate(item.path)}
             >
-              <strong className="history-card-badge">지난 기록</strong>
               <span>{item.label}</span>
               <small>지난 {item.label} 훈련 결과를 확인해요</small>
               <div className={`training-card-illustration training-card-illustration-${item.visual}`} aria-hidden="true">
                 <img src={item.thumbnail} alt="" />
               </div>
-              <div className="history-card-meta">
-                <em>점수와 피드백 확인</em>
-                <strong>기록 보기</strong>
-              </div>
+              <strong className="training-card-action">기록 보기</strong>
             </button>
           ))}
         </div>
@@ -1359,15 +1475,24 @@ export function TrainingHistoryListPage() {
   const sessions = history?.sessions || [];
   const detailSession = selectedSession || sessions[0];
   const summaryContent = historyTypeSummary[selectedType] || historyTypeSummary.SOCIAL;
+  const historyLoadingProps = {
+    selectedSession: detailSession,
+    onBack: () => navigate('/training-history'),
+    onSelect: setSelectedSession,
+    isLoading: status === 'loading',
+    error: status === 'error' ? error : '',
+    onRetry: loadHistory,
+  };
 
   return (
     <TrainingShell fullScreen>
       {selectedType !== 'DOCUMENT' && selectedType !== 'SOCIAL' && selectedType !== 'SAFETY' ? (
         <PageHeader compact onBack={() => navigate('/training-history')} />
       ) : null}
-      {status === 'loading' ? <LoadingBlock /> : null}
-      {status === 'error' ? <ErrorBlock message={error} onRetry={loadHistory} /> : null}
       {status === 'ready' && sessions.length === 0 ? <EmptyBlock message={`${selectedLabel} 훈련 이력이 없습니다.`} /> : null}
+      {(status === 'loading' || status === 'error') && selectedType === 'SOCIAL' ? <SocialHistoryList sessions={[]} {...historyLoadingProps} /> : null}
+      {(status === 'loading' || status === 'error') && selectedType === 'SAFETY' ? <SafetyHistoryList sessions={[]} {...historyLoadingProps} /> : null}
+      {(status === 'loading' || status === 'error') && selectedType === 'DOCUMENT' ? <DocumentHistoryList sessions={[]} {...historyLoadingProps} /> : null}
       {status === 'ready' && selectedType === 'DOCUMENT' && sessions.length > 0 ? (
         <DocumentHistoryList
           sessions={sessions}
@@ -1545,19 +1670,21 @@ export function TrainingHistoryDetailPage() {
   );
 }
 
-function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail }) {
+function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail, isLoading = false, error = '', onRetry }) {
   const latestSession = sessions[0];
   const totalScore = sessions.reduce((sum, session) => sum + (session.score ?? session.accuracyRate ?? 0), 0);
-  const averageScore = Math.round(totalScore / sessions.length);
+  const averageScore = sessions.length > 0 ? Math.round(totalScore / sessions.length) : 0;
   const totalCorrect = sessions.reduce((sum, session) => sum + (session.correctCount || 0), 0);
   const totalQuestions = sessions.reduce((sum, session) => sum + (session.totalCount || 0), 0);
   const [detail, setDetail] = useState(null);
-  const [detailStatus, setDetailStatus] = useState('loading');
+  const [detailStatus, setDetailStatus] = useState(selectedSession?.sessionId ? 'loading' : 'idle');
   const [detailError, setDetailError] = useState('');
   const previewActions = detail?.actions?.slice(0, 2) || [];
 
   const loadSelectedDetail = async () => {
     if (!selectedSession?.sessionId) {
+      setDetail(null);
+      setDetailStatus('idle');
       return;
     }
 
@@ -1581,7 +1708,7 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
   return (
     <section className="safety-history-shell">
       <button className="safety-history-back" type="button" onClick={onBack} aria-label="훈련 이력 선택으로 돌아가기">
-        ←
+        ‹
       </button>
       <header className="safety-history-header">
         <span>안전 대처 기록</span>
@@ -1592,23 +1719,25 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
       <div className="safety-history-summary">
         <article>
           <span>최근 점수</span>
-          <strong>{latestSession?.score ?? 0}점</strong>
+          <strong>{isLoading ? '-' : latestSession?.score ?? 0}점</strong>
         </article>
         <article>
           <span>평균 점수</span>
-          <strong>{averageScore}점</strong>
+          <strong>{isLoading ? '-' : averageScore}점</strong>
         </article>
         <article>
-          <span>안전한 선택</span>
+          <span>나를 지키는 선택</span>
           <strong>
-            {totalCorrect}/{totalQuestions || '-'}
+            {isLoading ? '-' : `${totalCorrect}/${totalQuestions || '-'}`}
           </strong>
         </article>
       </div>
 
       <div className="safety-history-layout">
-        <div className="safety-history-list" aria-label="안전 대처 훈련 기록">
-          {sessions.map((session) => {
+        <div className="safety-history-list" aria-label="안전 대처 훈련 기록" aria-busy={isLoading}>
+          {isLoading ? <LoadingBlock /> : null}
+          {error ? <ErrorBlock message={error} onRetry={onRetry} /> : null}
+          {!isLoading && !error ? sessions.map((session) => {
             const isSelected = selectedSession?.sessionId === session.sessionId;
             return (
               <button
@@ -1620,7 +1749,7 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
                 <div>
                   <span>{formatHistoryDate(session.completedAt)}</span>
                   <strong>{session.scenarioTitle || '안전 대처 훈련'}</strong>
-                  <p>{session.feedbackSummary || '위험한 상황에서 안전한 선택을 연습했습니다.'}</p>
+                  <p>{session.feedbackSummary || '위험한 상황에서 나를 지키는 선택을 연습했습니다.'}</p>
                 </div>
                 <div className="safety-history-card-meta">
                   <em>{getSafetyTypeLabel(session.category)}</em>
@@ -1629,7 +1758,7 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
                 </div>
               </button>
             );
-          })}
+          }) : null}
         </div>
 
         <aside className="safety-history-preview">
@@ -1640,8 +1769,10 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
           <h2>{selectedSession?.scenarioTitle || detail?.title || '안전 대처 훈련'}</h2>
           <p>{detail?.feedback?.summary || detail?.feedback || selectedSession?.feedbackSummary || '상세 기록에서 선택한 행동을 확인해 보세요.'}</p>
 
-          {detailStatus === 'loading' ? <div className="safety-history-preview-state">상세 기록을 불러오는 중입니다.</div> : null}
-          {detailStatus === 'error' ? (
+          {isLoading ? <div className="safety-history-preview-state">기록 목록을 불러오는 중입니다.</div> : null}
+          {!isLoading && detailStatus === 'idle' ? <div className="safety-history-preview-state">기록을 선택하면 상세 내용이 표시됩니다.</div> : null}
+          {!isLoading && detailStatus === 'loading' ? <div className="safety-history-preview-state">상세 기록을 불러오는 중입니다.</div> : null}
+          {!isLoading && detailStatus === 'error' ? (
             <div className="safety-history-preview-state is-error">
               <span>{detailError}</span>
               <button type="button" onClick={loadSelectedDetail}>
@@ -1649,7 +1780,7 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
               </button>
             </div>
           ) : null}
-          {detailStatus === 'ready' ? (
+          {!isLoading && detailStatus === 'ready' ? (
             <>
               {detail?.latestSceneImageUrl ? (
                 <img className="safety-history-preview-image" src={detail.latestSceneImageUrl} alt={detail.latestSceneImageAlt || ''} />
@@ -1658,7 +1789,7 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
                 <div className="safety-history-preview-actions">
                   {previewActions.map((action) => (
                     <div className={action.correct ? 'is-correct' : 'is-wrong'} key={action.sceneId}>
-                      <span>{action.correct ? '안전한 선택' : '다시 볼 선택'}</span>
+                      <span>{action.correct ? '나를 지키는 선택' : '다시 볼 선택'}</span>
                       <p>{action.selectedChoice || action.situationText}</p>
                     </div>
                   ))}
@@ -1666,7 +1797,7 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
               ) : null}
             </>
           ) : null}
-          <button className="safety-history-detail-button" type="button" onClick={onDetail}>
+          <button className="safety-history-detail-button" type="button" onClick={onDetail} disabled={!selectedSession?.sessionId || isLoading}>
             선택 행동 자세히 보기
           </button>
         </aside>
@@ -1683,7 +1814,7 @@ function SafetyHistoryDetail({ sessionId, summary, onBack, onRetry }) {
   const correctCount = detail?.choiceSummary?.correctCount ?? summary?.correctCount ?? 0;
   const totalCount = detail?.choiceSummary?.totalCount ?? summary?.totalCount ?? detail?.actions?.length ?? 0;
   const actions = detail?.actions || [];
-  const feedbackSummary = detail?.feedback?.summary || detail?.feedback || summary?.feedbackSummary || '위험한 상황에서 안전한 선택을 연습했습니다.';
+  const feedbackSummary = detail?.feedback?.summary || detail?.feedback || summary?.feedbackSummary || '위험한 상황에서 나를 지키는 선택을 연습했습니다.';
   const feedbackDetail = detail?.feedback?.detailText || detail?.effectText || '상황을 다시 보며 어떤 행동이 안전했는지 확인해 보세요.';
 
   const loadDetail = async () => {
@@ -1713,7 +1844,7 @@ function SafetyHistoryDetail({ sessionId, summary, onBack, onRetry }) {
     <TrainingShell fullScreen>
       <section className="safety-history-detail-shell">
         <button className="safety-history-back" type="button" onClick={onBack} aria-label="안전 대처 기록으로 돌아가기">
-          ←
+          ‹
         </button>
         <header className="safety-history-detail-header">
           <span>{getSafetyTypeLabel(summary?.category)}</span>
@@ -1721,8 +1852,6 @@ function SafetyHistoryDetail({ sessionId, summary, onBack, onRetry }) {
           <p>{feedbackSummary}</p>
         </header>
 
-        {status === 'loading' ? <LoadingBlock /> : null}
-        {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
         <div className="safety-history-detail-layout">
           <aside className="safety-history-detail-score">
             <div>
@@ -1739,20 +1868,23 @@ function SafetyHistoryDetail({ sessionId, summary, onBack, onRetry }) {
 
           <div className="safety-history-review">
             <section className="safety-history-action-list" aria-label="지난 안전 선택">
-              {actions.length > 0 ? (
+              {status === 'loading' ? <LoadingBlock /> : null}
+              {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
+              {status === 'ready' && actions.length > 0 ? (
                 actions.map((action, index) => (
                   <article className={`safety-history-action ${action.correct ? 'is-correct' : 'is-wrong'}`} key={action.sceneId}>
                     <div className="safety-history-action-head">
                       <span>{index + 1}</span>
-                      <em>{action.correct ? '안전한 선택' : '다시 볼 선택'}</em>
+                      <em>{action.correct ? '나를 지키는 선택' : '다시 볼 선택'}</em>
                     </div>
                     <h2>{action.situationText}</h2>
                     <p>{action.selectedChoice || '선택 기록이 없습니다.'}</p>
                   </article>
                 ))
-              ) : (
+              ) : null}
+              {status === 'ready' && actions.length === 0 ? (
                 <div className="safety-history-empty-action">선택 기록을 불러오면 여기에 표시됩니다.</div>
-              )}
+              ) : null}
             </section>
 
             <section className="safety-history-coaching">
@@ -1781,17 +1913,19 @@ function SafetyHistoryDetail({ sessionId, summary, onBack, onRetry }) {
   );
 }
 
-function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail }) {
+function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail, isLoading = false, error = '', onRetry }) {
   const latestSession = sessions[0];
   const totalScore = sessions.reduce((sum, session) => sum + (session.score ?? session.accuracyRate ?? 0), 0);
-  const averageScore = Math.round(totalScore / sessions.length);
+  const averageScore = sessions.length > 0 ? Math.round(totalScore / sessions.length) : 0;
   const [detail, setDetail] = useState(null);
-  const [detailStatus, setDetailStatus] = useState('loading');
+  const [detailStatus, setDetailStatus] = useState(selectedSession?.sessionId ? 'loading' : 'idle');
   const [detailError, setDetailError] = useState('');
   const previewLogs = detail?.dialogLogs?.slice(-3) || [];
 
   const loadSelectedDetail = async () => {
     if (!selectedSession?.sessionId) {
+      setDetail(null);
+      setDetailStatus('idle');
       return;
     }
 
@@ -1826,21 +1960,23 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
       <div className="social-history-summary">
         <article>
           <span>최근 점수</span>
-          <strong>{latestSession?.score ?? 0}점</strong>
+          <strong>{isLoading ? '-' : latestSession?.score ?? 0}점</strong>
         </article>
         <article>
           <span>평균 점수</span>
-          <strong>{averageScore}점</strong>
+          <strong>{isLoading ? '-' : averageScore}점</strong>
         </article>
         <article>
           <span>훈련 횟수</span>
-          <strong>{sessions.length}회</strong>
+          <strong>{isLoading ? '-' : sessions.length}회</strong>
         </article>
       </div>
 
       <div className="social-history-layout">
-        <div className="social-history-list" aria-label="사회성 훈련 기록">
-          {sessions.map((session) => {
+        <div className="social-history-list" aria-label="사회성 훈련 기록" aria-busy={isLoading}>
+          {isLoading ? <LoadingBlock /> : null}
+          {error ? <ErrorBlock message={error} onRetry={onRetry} /> : null}
+          {!isLoading && !error ? sessions.map((session) => {
             const isSelected = selectedSession?.sessionId === session.sessionId;
             return (
               <button
@@ -1860,7 +1996,7 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
                 </div>
               </button>
             );
-          })}
+          }) : null}
         </div>
 
         <aside className="social-history-preview">
@@ -1870,8 +2006,10 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
           </div>
           <h2>{selectedSession?.scenarioTitle || '사회성 훈련'}</h2>
           <p>{detail?.feedback?.summary || selectedSession?.feedbackSummary || 'AI 피드백을 확인해 보세요.'}</p>
-          {detailStatus === 'loading' ? <div className="social-history-preview-state">상세 기록을 불러오는 중입니다.</div> : null}
-          {detailStatus === 'error' ? (
+          {isLoading ? <div className="social-history-preview-state">기록 목록을 불러오는 중입니다.</div> : null}
+          {!isLoading && detailStatus === 'idle' ? <div className="social-history-preview-state">기록을 선택하면 상세 내용이 표시됩니다.</div> : null}
+          {!isLoading && detailStatus === 'loading' ? <div className="social-history-preview-state">상세 기록을 불러오는 중입니다.</div> : null}
+          {!isLoading && detailStatus === 'error' ? (
             <div className="social-history-preview-state is-error">
               <span>{detailError}</span>
               <button type="button" onClick={loadSelectedDetail}>
@@ -1879,7 +2017,7 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
               </button>
             </div>
           ) : null}
-          {detailStatus === 'ready' ? (
+          {!isLoading && detailStatus === 'ready' ? (
             <div className="social-history-preview-dialogues">
               {previewLogs.map((log) => (
                 <div className={`social-history-bubble ${log.speaker === 'USER' ? 'is-user' : 'is-partner'}`} key={log.turnNo}>
@@ -1889,7 +2027,7 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
               ))}
             </div>
           ) : null}
-          <button className="social-history-detail-button" type="button" onClick={onDetail}>
+          <button className="social-history-detail-button" type="button" onClick={onDetail} disabled={!selectedSession?.sessionId || isLoading}>
             자세히 복습하기
           </button>
         </aside>
@@ -1940,8 +2078,6 @@ function SocialHistoryDetail({ sessionId, summary, onBack, onRetry }) {
           <p>{detail?.feedback?.summary || summary?.feedbackSummary || '지난 대화의 AI 피드백을 확인해 보세요.'}</p>
         </header>
 
-        {status === 'loading' ? <LoadingBlock /> : null}
-        {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
         <div className="social-history-detail-layout">
           <aside className="social-history-detail-score">
             <em>{getSocialScoreTypeLabel(detail?.scoreType)}</em>
@@ -1954,16 +2090,19 @@ function SocialHistoryDetail({ sessionId, summary, onBack, onRetry }) {
 
           <div className="social-history-review">
             <section className="social-history-dialogue-list" aria-label="지난 대화 내용">
-              {logs.length > 0 ? (
+              {status === 'loading' ? <LoadingBlock /> : null}
+              {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
+              {status === 'ready' && logs.length > 0 ? (
                 logs.map((log) => (
                   <article className={`social-history-detail-bubble ${log.speaker === 'USER' ? 'is-user' : 'is-partner'}`} key={log.turnNo}>
                     <span>{log.speaker === 'USER' ? '내 말' : '상대방'}</span>
                     <p>{log.content}</p>
                   </article>
                 ))
-              ) : (
+              ) : null}
+              {status === 'ready' && logs.length === 0 ? (
                 <div className="social-history-empty-dialogue">대화 기록을 불러오면 여기에 표시됩니다.</div>
-              )}
+              ) : null}
             </section>
 
             <section className="social-history-coaching">
@@ -1992,17 +2131,17 @@ function SocialHistoryDetail({ sessionId, summary, onBack, onRetry }) {
   );
 }
 
-function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail }) {
+function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail, isLoading = false, error = '', onRetry }) {
   const latestSession = sessions[0];
   const totalScore = sessions.reduce((sum, session) => sum + (session.score ?? session.accuracyRate ?? 0), 0);
-  const averageScore = Math.round(totalScore / sessions.length);
+  const averageScore = sessions.length > 0 ? Math.round(totalScore / sessions.length) : 0;
   const totalCorrect = sessions.reduce((sum, session) => sum + (session.correctCount || 0), 0);
   const totalQuestions = sessions.reduce((sum, session) => sum + (session.totalCount || 0), 0);
 
   return (
     <section className="document-history-shell">
       <button className="document-history-back" type="button" onClick={onBack} aria-label="훈련 기록 선택으로 돌아가기">
-        ←
+        ‹
       </button>
       <header className="document-history-header">
         <span>문서 이해 기록</span>
@@ -2012,21 +2151,23 @@ function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDe
       <div className="document-history-summary">
         <article>
           <span>최근 점수</span>
-          <strong>{latestSession?.score ?? 0}점</strong>
+          <strong>{isLoading ? '-' : latestSession?.score ?? 0}점</strong>
         </article>
         <article>
           <span>평균 점수</span>
-          <strong>{averageScore}점</strong>
+          <strong>{isLoading ? '-' : averageScore}점</strong>
         </article>
         <article>
           <span>누적 정답</span>
           <strong>
-            {totalCorrect}/{totalQuestions}
+            {isLoading ? '-' : `${totalCorrect}/${totalQuestions || '-'}`}
           </strong>
         </article>
       </div>
-      <div className="document-history-list" aria-label="문서 이해 훈련 기록">
-        {sessions.map((session) => {
+      <div className="document-history-list" aria-label="문서 이해 훈련 기록" aria-busy={isLoading}>
+        {isLoading ? <LoadingBlock /> : null}
+        {error ? <ErrorBlock message={error} onRetry={onRetry} /> : null}
+        {!isLoading && !error ? sessions.map((session) => {
           const isSelected = selectedSession?.sessionId === session.sessionId;
           return (
             <button
@@ -2046,9 +2187,9 @@ function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDe
               </div>
             </button>
           );
-        })}
+        }) : null}
       </div>
-      <button className="document-history-detail-button" type="button" onClick={onDetail}>
+      <button className="document-history-detail-button" type="button" onClick={onDetail} disabled={!selectedSession?.sessionId || isLoading}>
         선택한 기록 자세히 보기
       </button>
     </section>
@@ -2104,8 +2245,6 @@ function DocumentHistoryDetail({ sessionId, summary, onBack, onRetry }) {
           <h1>{summary?.scenarioTitle || '문서 이해 훈련'}</h1>
           <p>{message}</p>
         </header>
-        {status === 'loading' ? <LoadingBlock /> : null}
-        {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
         <div className="document-history-detail-layout">
           <aside className="document-history-detail-score">
             <div>
@@ -2117,9 +2256,11 @@ function DocumentHistoryDetail({ sessionId, summary, onBack, onRetry }) {
             </p>
             <em>{summary?.playedLevel || 1}단계</em>
           </aside>
-          {answers.length > 0 ? (
-            <div className="document-history-answer-list">
-              {answers.map((answer, index) => (
+          <div className="document-history-answer-list" aria-busy={status === 'loading'}>
+            {status === 'loading' ? <LoadingBlock /> : null}
+            {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
+            {status === 'ready' && answers.length > 0
+              ? answers.map((answer, index) => (
                 <article className={`document-history-answer ${answer.correct ? 'is-correct' : 'is-wrong'}`} key={answer.questionId}>
                   <div className="document-history-answer-head">
                     <span>{index + 1}</span>
@@ -2139,11 +2280,10 @@ function DocumentHistoryDetail({ sessionId, summary, onBack, onRetry }) {
                   </dl>
                   <p>{answer.explanation}</p>
                 </article>
-              ))}
-            </div>
-          ) : (
-            <EmptyBlock message="상세 기록이 없습니다." />
-          )}
+              ))
+              : null}
+            {status === 'ready' && answers.length === 0 ? <EmptyBlock message="상세 기록이 없습니다." /> : null}
+          </div>
         </div>
         <div className="document-history-detail-actions">
           <button type="button" onClick={onRetry}>

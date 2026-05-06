@@ -1,5 +1,4 @@
 import './IntroStyles.css';
-import characterImg from '../../assets/Character_JIWOO.png';
 
 function StartTypeSelect({ onNext }) {
   return (
@@ -7,15 +6,9 @@ function StartTypeSelect({ onNext }) {
       <section className="intro-hero-panel" aria-label="서비스 시작">
         <div className="intro-hero-copy">
           <span className="intro-kicker">취업 준비 훈련 서비스</span>
-          <h1>딛고에 오신걸 환영합니다.</h1>
+          <h1>딛고에 오신 걸 환영합니다</h1>
           <p>내 속도에 맞춰 직장 생활을 연습해요.</p>
         </div>
-
-        <img
-          src={characterImg}
-          alt="훈련을 안내하는 캐릭터"
-          className="intro-character-img intro-start-character"
-        />
 
         <div className="intro-start-actions">
           <button
