@@ -29,7 +29,7 @@ export const signupFormToApiPayload = (signupData) => ({
   birthDate: signupData.birthDate,
   gender: genderToApi(signupData.gender),
   email: signupData.email,
-  disabilities: signupData.disability ? [signupData.disability] : [],
+  disabilities: [signupData.disability || '지적장애'],
   desiredJob: signupData.job,
 });
 
@@ -47,9 +47,6 @@ export const userEditToApiPayload = (userData) => ({
   name: userData.userName,
   gender: genderToApi(userData.gender),
   email: userData.email,
-  disabilities: userData.disability
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean),
+  disabilities: ['지적장애'],
   desiredJob: userData.job,
 });

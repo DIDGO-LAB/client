@@ -11,9 +11,9 @@ function Intro() {
       return;
     }
 
-    navigate('/intro/disability', {
+    navigate('/intro/job', {
       state: {
-        signupData: { startType },
+        signupData: { startType, disability: '지적장애' },
       },
     });
   };

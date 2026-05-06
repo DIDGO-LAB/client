@@ -6,7 +6,6 @@ const profileRows = [
   ['생년월일', 'birthDate'],
   ['성별', 'gender'],
   ['이메일', 'email'],
-  ['장애유형', 'disability'],
   ['희망직무', 'job'],
 ];
 

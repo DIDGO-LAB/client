@@ -90,7 +90,7 @@ const safetyScenarios = {
           screenInfo: '불편함을 느낀 순간',
           title: '불편함을 느낀 순간',
           situationText: '상대가 계속 가까이 서 있어서 불편합니다. 먼저 내 의사를 분명히 표현해야 합니다.',
-          questionText: '이때 가장 안전한 말과 행동은 무엇일까요?',
+          questionText: '이때 나를 지키는 말과 행동은 무엇일까요?',
           imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
           imageAlt: '사무실 자리에서 불편한 접촉을 받은 뒤 대응을 고르는 장면',
           feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',

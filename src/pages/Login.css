@@ -123,17 +123,34 @@
   left: 180px;
   top: 154px;
   z-index: 2;
-  width: 70px;
-  height: 70px;
+  width: 64px;
+  height: 64px;
   border: 0;
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: var(--shadow-soft);
+  border-radius: 20px;
+  background: #243a34;
+  box-shadow: 0 12px 24px rgba(36, 58, 52, 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.login-back-button::before {
+  content: "‹";
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 0.78;
+  transform: translateY(-2px);
+}
+
+.login-back-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(36, 58, 52, 0.18);
 }
 
 .login-back-image {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
+  display: none;
 }

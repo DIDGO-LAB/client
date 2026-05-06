@@ -51,7 +51,7 @@ function SignupForm({ onNext, onPrev }) {
       <section className="intro-step-card intro-signup-card">
         <div className="intro-signup-copy">
           <span className="intro-kicker">마지막 단계</span>
-          <h1 className="intro-main-text">계정 정보를 입력해 주세요.</h1>
+          <h1 className="intro-main-text">계정 정보를 입력해 주세요</h1>
           <p className="intro-sub-text">훈련 기록을 저장하고 이어서 연습할 때 필요합니다.</p>
           <p className="intro-consent-text">
             회원가입을 진행하면 서비스 이용 약관과 개인정보 처리 방침에 동의한 것으로 봅니다.

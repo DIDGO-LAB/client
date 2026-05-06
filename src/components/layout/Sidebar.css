@@ -40,7 +40,7 @@
 .sidebar-item {
   width: 100%;
   height: 96px;
-  border: 3px solid var(--color-line);
+  border: 3px solid rgba(126, 140, 108, 0.32);
   border-radius: 24px;
   background: #fffefb;
   display: flex;
@@ -53,24 +53,14 @@
 
 .sidebar-item:hover {
   transform: translateY(-2px);
+  background: #fbfdf4;
+  border-color: rgba(126, 140, 108, 0.56);
 }
 
 .sidebar-item.is-active {
-  background: #f7fbec;
-  border-color: var(--color-line-strong);
+  background: #eef7dc;
+  border-color: rgba(126, 140, 108, 0.46);
   box-shadow: var(--shadow-button);
-}
-
-.sidebar-item-training {
-  background: #fff7d8;
-}
-
-.sidebar-item-history {
-  background: #eef6ff;
-}
-
-.sidebar-item-mypage {
-  background: #fff0e9;
 }
 
 .sidebar-label {
@@ -99,15 +89,21 @@
 
 .sidebar-logout {
   position: absolute;
-  left: 66px;
-  bottom: 64px;
-  width: 384px;
-  height: 76px;
-  border: 0;
-  border-radius: 22px;
-  background: #243a34;
-  color: #fff;
-  font-size: 26px;
+  left: 46px;
+  bottom: 192px;
+  width: 212px;
+  height: 56px;
+  border: 3px solid rgba(90, 95, 86, 0.18);
+  border-radius: 18px;
+  background: #f7f7f3;
+  color: #6f756b;
+  font-size: 20px;
   font-weight: 800;
   cursor: pointer;
+}
+
+.sidebar-logout:hover {
+  background: #f1f2ed;
+  border-color: rgba(90, 95, 86, 0.3);
+  color: #4f574d;
 }

@@ -31,10 +31,10 @@
   height: 856px;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 580px 280px 470px;
-  column-gap: 44px;
+  grid-template-columns: minmax(0, 1fr) 520px;
+  column-gap: 150px;
   align-items: center;
-  padding: 0 88px;
+  padding: 0 132px;
   box-sizing: border-box;
 }
 
@@ -42,8 +42,8 @@
   position: relative;
   left: auto;
   top: auto;
-  width: 580px;
-  transform: translateY(-10px);
+  width: 680px;
+  transform: translateY(-4px);
 }
 
 .intro-kicker {
@@ -82,29 +82,22 @@
 }
 
 .intro-start-character {
-  position: relative;
-  left: auto;
-  bottom: auto;
-  width: 300px;
-  height: 410px;
-  align-self: center;
-  margin: 78px 0 0;
-  justify-self: center;
+  display: none;
 }
 
 .intro-start-actions {
   position: relative;
-  right: auto;
-  top: auto;
-  width: 470px;
+  z-index: 2;
+  width: 520px;
+  justify-self: end;
   display: grid;
-  gap: 22px;
-  transform: translateY(8px);
+  gap: 26px;
+  transform: none;
 }
 
 .intro-start-actions .intro_select-button {
-  min-height: 172px;
-  padding: 30px 40px;
+  min-height: 190px;
+  padding: 34px 44px;
   border-width: 3px;
   border-radius: 26px;
   box-shadow: 0 10px 22px rgba(35, 33, 29, 0.1);
@@ -121,6 +114,7 @@
   height: 44px;
   margin-top: 22px;
   padding: 0 20px;
+  border: 3px solid #243a34;
   border-radius: 999px;
   background: #243a34;
   color: #fff;
@@ -277,11 +271,18 @@
   width: 100%;
   height: 84px;
   margin-top: 0;
-  border-width: 3px;
+  border: 3px solid rgba(126, 140, 108, 0.32);
   border-radius: 20px;
+  background: #fffefb;
   padding: 0 28px;
   font-size: 24px;
   box-sizing: border-box;
+}
+
+.intro-job-card .intro-wide-input:focus {
+  border-color: rgba(126, 140, 108, 0.56);
+  background: #fbfdf4;
+  box-shadow: 0 0 0 4px rgba(126, 140, 108, 0.12);
 }
 
 .intro-job-card .intro-submit-button {
@@ -437,22 +438,39 @@
 
 .intro-back-button {
   position: absolute;
-  left: 126px;
-  top: 108px;
+  left: 132px;
+  top: 112px;
   z-index: 3;
-  width: 78px;
-  height: 78px;
+  width: 64px;
+  height: 64px;
   border: 0;
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: var(--shadow-soft);
+  border-radius: 20px;
+  background: #243a34;
+  box-shadow: 0 12px 24px rgba(36, 58, 52, 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.intro-back-button::before {
+  content: "‹";
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 0.78;
+  transform: translateY(-2px);
+}
+
+.intro-back-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(36, 58, 52, 0.18);
 }
 
 .intro-back-image {
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
+  display: none;
 }
 
 .intro-choice-grid {
@@ -468,18 +486,18 @@
 
 .intro_select-button,
 .intro-submit-button {
-  border: 4px solid var(--color-line-strong);
+  border: 3px solid rgba(126, 140, 108, 0.32);
   border-radius: 24px;
-  box-shadow: var(--shadow-button);
+  background: #fffefb;
+  box-shadow: none;
   cursor: pointer;
-  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, border-color 140ms ease;
 }
 
 .intro_select-button {
   min-height: 146px;
   padding: 28px 32px;
   position: relative;
-  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -490,25 +508,35 @@
 .intro_select-button:hover,
 .intro-submit-button:hover {
   transform: translateY(-3px);
+  background: #fbfdf4;
+  border-color: rgba(126, 140, 108, 0.56);
+}
+
+.intro_select-button:active,
+.intro-submit-button:active {
+  transform: translateY(-1px);
+  background: #eef7dc;
+  border-color: rgba(126, 140, 108, 0.46);
+  box-shadow: var(--shadow-button);
 }
 
 .intro_select-button.is-selected,
 .intro-primary-choice {
-  background: var(--color-green);
-  border-color: var(--color-green-strong);
+  background: #fffefb;
+  border-color: rgba(126, 140, 108, 0.32);
 }
 
 .intro-choice-grid .intro_select-button.is-selected,
 .intro-choice-grid-compact .intro_select-button.is-selected {
-  border-color: #5f8f1f;
-  background: #eef8c8;
-  box-shadow: 0 14px 28px rgba(112, 145, 44, 0.2), 0 0 0 4px rgba(157, 196, 90, 0.2);
+  border-color: rgba(126, 140, 108, 0.46);
+  background: #eef7dc;
+  box-shadow: var(--shadow-button);
   transform: translateY(-2px);
 }
 
 .intro-choice-grid .intro_select-button.is-selected::after,
 .intro-choice-grid-compact .intro_select-button.is-selected::after {
-  content: "선택됨";
+  content: none;
   position: absolute;
   top: 18px;
   right: 18px;
@@ -534,7 +562,8 @@
 }
 
 .intro-secondary-choice {
-  background: var(--color-blue);
+  background: #fffefb;
+  border-color: rgba(126, 140, 108, 0.32);
 }
 
 .intro-button-text {
@@ -601,14 +630,17 @@
   min-width: 220px;
   height: 86px;
   padding: 0 42px;
-  background: #243a34;
+  background: #fffefb;
 }
 
 .intro-submit-button .intro-button-text {
-  color: #fff;
+  color: var(--color-ink);
 }
 
 .intro-submit-button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  background: #f7f7f3;
+  border-color: rgba(90, 95, 86, 0.18);
+  box-shadow: none;
 }

@@ -30,8 +30,7 @@ function JobSelect({ onNext, onPrev }) {
 
       <section className="intro-step-card intro-job-card">
         <div className="intro-job-content">
-          <span className="intro-kicker">2단계</span>
-          <h1 className="intro-main-text">연습하고 싶은 직무를 골라 주세요.</h1>
+          <h1 className="intro-main-text">연습하고 싶은 직무를 골라 주세요</h1>
           <p className="intro-sub-text">나중에 내 정보에서 다시 바꿀 수 있습니다.</p>
 
           <div className="intro-choice-grid">

@@ -2,13 +2,11 @@ import { useState } from 'react';
 import './MyPageStyles.css';
 
 const jobOptions = ['사무직', '단순노무직'];
-const disabilityOptions = ['발달장애', '지체장애'];
 
 function EditProfile({ userData, onSave, onPrev, isSaving = false }) {
   const initialJob = userData?.job || '';
   const [formData, setFormData] = useState({
     email: userData?.email || '',
-    disability: userData?.disability || '',
     job: jobOptions.includes(initialJob) ? initialJob : '',
     customJob: jobOptions.includes(initialJob) ? '' : initialJob,
   });
@@ -31,15 +29,14 @@ function EditProfile({ userData, onSave, onPrev, isSaving = false }) {
   const handleSave = () => {
     const finalJob = formData.customJob.trim() || formData.job;
 
-    if (!formData.email.trim() || !formData.disability.trim() || !finalJob.trim()) {
-      alert('이메일, 장애 유형, 희망 직무를 모두 입력해 주세요.');
+    if (!formData.email.trim() || !finalJob.trim()) {
+      alert('이메일과 희망 직무를 모두 입력해 주세요.');
       return;
     }
 
     onSave({
       ...userData,
       email: formData.email,
-      disability: formData.disability,
       job: finalJob,
     });
   };
@@ -79,22 +76,6 @@ function EditProfile({ userData, onSave, onPrev, isSaving = false }) {
             />
           </label>
           <div className="info-item">
-            <span className="info-label">장애유형</span>
-            <span className="info-colon">:</span>
-            <div className="mypage-job-options">
-              {disabilityOptions.map((disability) => (
-                <button
-                  key={disability}
-                  type="button"
-                  className={`mypage-job-button ${formData.disability === disability ? 'selected' : ''}`}
-                  onClick={() => handleChange('disability', disability)}
-                >
-                  {disability}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="info-item">
             <span className="info-label">희망직무</span>
             <span className="info-colon">:</span>
             <div className="mypage-job-field">
@@ -124,12 +105,14 @@ function EditProfile({ userData, onSave, onPrev, isSaving = false }) {
         </div>
       </div>
 
-      <button type="button" className="mypage-submit-button" onClick={handleSave} disabled={isSaving}>
-        <span className="mypage-button-text">{isSaving ? '저장 중' : '저장'}</span>
-      </button>
-      <button type="button" className="mypage-cancel-button" onClick={onPrev} disabled={isSaving}>
-        취소
-      </button>
+      <div className="mypage-edit-actions">
+        <button type="button" className="mypage-submit-button" onClick={handleSave} disabled={isSaving}>
+          <span className="mypage-button-text">{isSaving ? '저장 중' : '저장'}</span>
+        </button>
+        <button type="button" className="mypage-cancel-button" onClick={onPrev} disabled={isSaving}>
+          취소
+        </button>
+      </div>
     </section>
   );
 }
