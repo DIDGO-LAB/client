@@ -857,6 +857,24 @@ export function SafetySessionPage() {
   };
 
   const hasChoices = Array.isArray(scene?.choices) && scene.choices.length > 0;
+  const canTapToContinue = Boolean(scene && !hasChoices && status !== 'saving');
+  const handleStageContinue = () => {
+    if (canTapToContinue) {
+      goNextScene();
+    }
+  };
+
+  const handleStageKeyDown = (event) => {
+    if (!canTapToContinue) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      goNextScene();
+    }
+  };
+
   return (
     <TrainingShell fullScreen>
       <PageHeader
@@ -867,16 +885,32 @@ export function SafetySessionPage() {
       {status === 'loading' ? <LoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadSession} /> : null}
       {scene && status !== 'loading' && status !== 'error' ? (
-        <section className="training-stage safety-stage safety-session-stage">
+        <section
+          className={`training-stage safety-stage safety-session-stage ${hasChoices ? 'has-decision-panel' : ''} ${canTapToContinue ? 'is-tap-to-continue' : ''}`}
+          onClick={handleStageContinue}
+          onKeyDown={handleStageKeyDown}
+          role={canTapToContinue ? 'button' : undefined}
+          tabIndex={canTapToContinue ? 0 : undefined}
+          aria-label={canTapToContinue ? '다음 장면으로 이동' : undefined}
+        >
           <img className="safety-stage-image" src={scene.imageUrl} alt={scene.imageAlt || ''} />
-          {scene.questionText ? <div className="safety-question-bubble">{scene.questionText}</div> : null}
-          <div className="safety-caption">
-            <strong>{scene.screenInfo || scene.title || '\uC548\uC804 \uD6C8\uB828'}</strong>
-            <span>{scene.situationText}</span>
-          </div>
-          <div className="safety-choice-overlay">
-            {hasChoices
-              ? scene.choices?.map((choice) => (
+          {scene.questionText && !hasChoices ? <div className="safety-question-bubble">{scene.questionText}</div> : null}
+          {!hasChoices ? (
+            <div className="safety-caption">
+              <strong>{scene.screenInfo || scene.title || '\uC548\uC804 \uD6C8\uB828'}</strong>
+              {canTapToContinue ? <span className="safety-continue-hint">다음으로 넘어가려면 화면 아무데나 클릭하세요</span> : null}
+              <span>{scene.situationText}</span>
+            </div>
+          ) : null}
+          {hasChoices ? (
+            <div className="safety-decision-panel">
+              <div className="safety-panel-prompt">
+                <strong>{scene.screenInfo || scene.title || '\uC0C1\uD669'}</strong>
+                <span>{scene.situationText}</span>
+                {scene.questionText ? <em>{scene.questionText}</em> : null}
+              </div>
+              <div className="safety-choice-overlay">
+                {scene.choices?.map((choice) => (
                   <button
                     type="button"
                     key={choice.choiceId}
@@ -885,13 +919,10 @@ export function SafetySessionPage() {
                   >
                     {choice.text}
                   </button>
-                ))
-              : (
-                <button type="button" className="safety-continue-button" onClick={goNextScene} disabled={status === 'saving'}>
-                  다음
-                </button>
-              )}
-          </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
           {error ? <ErrorBlock message={error} /> : null}
         </section>
       ) : null}
