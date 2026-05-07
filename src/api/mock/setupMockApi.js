@@ -1381,11 +1381,15 @@ export const setupMockApi = () => {
     if (!scenario) {
       return [404, { success: false, error: { code: 'NOT_FOUND', message: '????? ?? ? ????.' } }];
     }
+    const category = Object.entries(safetyScenarios).find(([, items]) =>
+      items.some((item) => item.scenarioId === Number(payload.scenarioId)),
+    )?.[0];
     const sessionId = nextSafetySessionId;
     nextSafetySessionId += 1;
     mockSafetySessions.set(sessionId, {
       sessionId,
       scenarioId: payload.scenarioId,
+      category,
       scenario,
       sceneIndex: 0,
       correctCount: 0,
@@ -1437,7 +1441,8 @@ export const setupMockApi = () => {
         completed
           ? {
               completed: true,
-              result: result || {
+              result: {
+                ...(result || {
                 correct: true,
                 title: '잘했어요!',
                 score,
@@ -1446,6 +1451,9 @@ export const setupMockApi = () => {
                 feedbackImageUrl: scene.feedbackImageUrl || scene.imageUrl,
                 feedbackImageAlt: scene.feedbackImageAlt || scene.imageAlt,
                 feedback: '상황을 차분히 확인하며 훈련을 마무리했습니다.',
+                }),
+                scenarioId: session.scenarioId,
+                category: session.category,
               },
             }
           : {
@@ -1473,6 +1481,8 @@ export const setupMockApi = () => {
     const score = session.score || Math.round((session.correctCount / totalScenes) * 100);
     const result = {
       sessionId,
+      scenarioId: session.scenarioId,
+      category: session.category,
       score,
       title: session.result?.title || '안전 훈련을 마쳤어요.',
       feedback: session.result?.effectText || '상황을 보고 안전한 선택을 연습했습니다.',
@@ -1606,6 +1616,7 @@ export const setupMockApi = () => {
     const score = Math.round((correctCount / totalCount) * 100);
     const result = {
       sessionId,
+      level: session.level,
       score,
       correctCount,
       totalCount,
@@ -1640,6 +1651,7 @@ export const setupMockApi = () => {
       200,
       wrappedTraining({
         sessionId,
+        level: session.level,
         score: session.score || 0,
         answerSummary: {
           correctCount: session.correctCount || 0,
