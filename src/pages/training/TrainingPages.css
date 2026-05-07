@@ -1167,6 +1167,99 @@
   background: #fffefb;
 }
 
+.safety-session-loading {
+  position: absolute;
+  inset: 0;
+  width: 1920px;
+  height: 1080px;
+  background:
+    radial-gradient(circle at 32% 24%, rgba(255, 244, 207, 0.86), transparent 34%),
+    linear-gradient(180deg, #fffdf6 0%, #fff7df 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.safety-session-loading-card {
+  width: 680px;
+  min-height: 330px;
+  padding: 54px 62px;
+  border: 4px solid rgba(217, 176, 76, 0.34);
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 42px rgba(154, 100, 24, 0.14);
+  box-sizing: border-box;
+  color: #3f3212;
+  text-align: center;
+}
+
+.safety-session-loading-badge {
+  display: inline-flex;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 3px solid rgba(217, 176, 76, 0.3);
+  border-radius: 999px;
+  background: #fff4cf;
+  color: #654d08;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.safety-session-loading-card h1 {
+  margin: 28px 0 0;
+  color: #050505;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.safety-session-loading-card p {
+  margin: 18px 0 0;
+  color: #654d08;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.42;
+}
+
+.safety-session-loading-steps {
+  width: 360px;
+  height: 16px;
+  margin: 38px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.safety-session-loading-steps span {
+  border-radius: 999px;
+  background: rgba(217, 176, 76, 0.28);
+  animation: safetyLoadingStep 1.2s ease-in-out infinite;
+}
+
+.safety-session-loading-steps span:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.safety-session-loading-steps span:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes safetyLoadingStep {
+  0%,
+  100% {
+    background: rgba(217, 176, 76, 0.26);
+    transform: scaleY(1);
+  }
+
+  50% {
+    background: rgba(154, 100, 24, 0.72);
+    transform: scaleY(1.18);
+  }
+}
+
 .safety-session-stage.is-tap-to-continue {
   cursor: pointer;
 }
@@ -7624,7 +7717,7 @@
 .social-scenario-list,
 .training-content-full .social-scenario-list {
   max-height: 604px;
-  padding-right: 18px;
+  padding: 6px 18px 6px 0;
   overflow-y: auto;
   scrollbar-color: #8db7d7 transparent;
 }

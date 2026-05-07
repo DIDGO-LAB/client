@@ -169,6 +169,23 @@ function LoadingBlock() {
   );
 }
 
+function SafetySessionLoadingBlock() {
+  return (
+    <section className="safety-session-loading" role="status" aria-live="polite">
+      <div className="safety-session-loading-card">
+        <span className="safety-session-loading-badge">안전 대처 훈련</span>
+        <h1>안전 상황을 준비하고 있어요</h1>
+        <p>그림과 선택지를 곧 보여드릴게요.</p>
+        <div className="safety-session-loading-steps" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ErrorBlock({ message, onRetry }) {
   return (
     <div className="training-status training-status-error">
@@ -882,7 +899,7 @@ export function SafetySessionPage() {
         className="safety-module-back safety-session-back"
         onBack={() => navigate('/training/safety/scenarios')}
       />
-      {status === 'loading' ? <LoadingBlock /> : null}
+      {status === 'loading' ? <SafetySessionLoadingBlock /> : null}
       {status === 'error' ? <ErrorBlock message={error} onRetry={loadSession} /> : null}
       {scene && status !== 'loading' && status !== 'error' ? (
         <section
