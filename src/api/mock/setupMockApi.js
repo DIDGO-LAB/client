@@ -81,7 +81,7 @@ const safetyScenarios = {
           situationText: '업무를 하고 있는데 사수가 뒤에서 가까이 다가와 어깨에 손을 올립니다. 나는 놀라고 불편합니다.',
           imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
           imageAlt: '사무실에서 사수가 직원 뒤로 다가와 어깨에 손을 올리는 장면',
-          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
+          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png?v=20260507',
           feedbackImageAlt: '불편한 접촉을 멈추게 하고 안전하게 거리를 둔 결과 화면',
           choices: [],
         },
@@ -93,7 +93,7 @@ const safetyScenarios = {
           questionText: '이때 나를 지키는 말과 행동은 무엇일까요?',
           imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
           imageAlt: '사무실 자리에서 불편한 접촉을 받은 뒤 대응을 고르는 장면',
-          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
+          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png?v=20260507',
           feedbackImageAlt: '거절 의사를 밝히고 안전하게 거리를 둔 결과 화면',
           choices: [
             {
@@ -124,7 +124,7 @@ const safetyScenarios = {
           questionText: '다음으로 누구에게 알리는 것이 좋을까요?',
           imageUrl: '/mock/trainings/safety/scenes/workplace-touch_new.png',
           imageAlt: '사무실에서 불편한 접촉 상황 뒤 도움 요청 방법을 확인하는 장면',
-          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
+          feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png?v=20260507',
           feedbackImageAlt: '경계를 지키고 도움을 요청해 훈련을 마무리한 결과 화면',
           choices: [
             {
@@ -134,7 +134,7 @@ const safetyScenarios = {
               message: '맞아요. 불편한 접촉은 혼자 감추지 말고 도움을 요청해야 합니다.',
               resultText: '상황을 담당자에게 알리고 보호받을 수 있는 방법을 선택했습니다.',
               effectText: '도움을 요청하면 같은 일이 반복되지 않도록 조치를 받을 수 있습니다.',
-              feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
+              feedbackImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png?v=20260507',
               feedbackImageAlt: '안전하게 상황을 마무리한 결과 화면',
             },
             {
@@ -902,7 +902,7 @@ const safetyHistoryDetails = {
       summary: '불편함을 분명히 말하고 도움을 요청하는 선택을 잘했습니다.',
       detailText: '원하지 않는 접촉은 참지 않고 표현할 수 있습니다. 반복될까 걱정되면 담당자에게 바로 알려 보호를 받을 수 있습니다.',
     },
-    latestSceneImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png',
+    latestSceneImageUrl: '/mock/trainings/safety/feedback/workplace-touch-correct.png?v=20260507',
     latestSceneImageAlt: '경계를 지키고 도움을 요청해 훈련을 마무리한 결과 화면',
   },
 };

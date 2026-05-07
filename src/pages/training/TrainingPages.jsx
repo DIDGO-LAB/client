@@ -1519,16 +1519,17 @@ export function TrainingHistoryListPage() {
       {selectedType !== 'DOCUMENT' && selectedType !== 'SOCIAL' && selectedType !== 'SAFETY' ? (
         <PageHeader compact onBack={() => navigate('/training-history')} />
       ) : null}
-      {status === 'ready' && sessions.length === 0 ? <EmptyBlock message={`${selectedLabel} 훈련 이력이 없습니다.`} /> : null}
+      {status === 'ready' && sessions.length === 0 && selectedType !== 'SOCIAL' && selectedType !== 'SAFETY' && selectedType !== 'DOCUMENT' ? <EmptyBlock message={`${selectedLabel} 훈련 이력이 없습니다.`} /> : null}
       {(status === 'loading' || status === 'error') && selectedType === 'SOCIAL' ? <SocialHistoryList sessions={[]} {...historyLoadingProps} /> : null}
       {(status === 'loading' || status === 'error') && selectedType === 'SAFETY' ? <SafetyHistoryList sessions={[]} {...historyLoadingProps} /> : null}
       {(status === 'loading' || status === 'error') && selectedType === 'DOCUMENT' ? <DocumentHistoryList sessions={[]} {...historyLoadingProps} /> : null}
-      {status === 'ready' && selectedType === 'DOCUMENT' && sessions.length > 0 ? (
+      {status === 'ready' && selectedType === 'DOCUMENT' ? (
         <DocumentHistoryList
           sessions={sessions}
           selectedSession={detailSession}
           onBack={() => navigate('/training-history')}
           onSelect={setSelectedSession}
+          onStart={() => navigate('/training/document')}
           onDetail={() =>
             navigate(`/training-history/document/${detailSession.sessionId}`, {
               state: {
@@ -1539,12 +1540,13 @@ export function TrainingHistoryListPage() {
           }
         />
       ) : null}
-      {status === 'ready' && selectedType === 'SOCIAL' && sessions.length > 0 ? (
+      {status === 'ready' && selectedType === 'SOCIAL' ? (
         <SocialHistoryList
           sessions={sessions}
           selectedSession={detailSession}
           onBack={() => navigate('/training-history')}
           onSelect={setSelectedSession}
+          onStart={() => navigate('/training/social/job')}
           onDetail={() =>
             navigate(`/training-history/social/${detailSession.sessionId}`, {
               state: {
@@ -1555,12 +1557,13 @@ export function TrainingHistoryListPage() {
           }
         />
       ) : null}
-      {status === 'ready' && selectedType === 'SAFETY' && sessions.length > 0 ? (
+      {status === 'ready' && selectedType === 'SAFETY' ? (
         <SafetyHistoryList
           sessions={sessions}
           selectedSession={detailSession}
           onBack={() => navigate('/training-history')}
           onSelect={setSelectedSession}
+          onStart={() => navigate('/training/safety/scenarios')}
           onDetail={() =>
             navigate(`/training-history/safety/${detailSession.sessionId}`, {
               state: {
@@ -1700,12 +1703,13 @@ export function TrainingHistoryDetailPage() {
   );
 }
 
-function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail, isLoading = false, error = '', onRetry }) {
+function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail, onStart, isLoading = false, error = '', onRetry }) {
   const latestSession = sessions[0];
   const totalScore = sessions.reduce((sum, session) => sum + (session.score ?? session.accuracyRate ?? 0), 0);
   const averageScore = sessions.length > 0 ? Math.round(totalScore / sessions.length) : 0;
   const totalCorrect = sessions.reduce((sum, session) => sum + (session.correctCount || 0), 0);
   const totalQuestions = sessions.reduce((sum, session) => sum + (session.totalCount || 0), 0);
+  const hasSessions = sessions.length > 0;
   const [detail, setDetail] = useState(null);
   const [detailStatus, setDetailStatus] = useState(selectedSession?.sessionId ? 'loading' : 'idle');
   const [detailError, setDetailError] = useState('');
@@ -1749,16 +1753,16 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
       <div className="safety-history-summary">
         <article>
           <span>최근 점수</span>
-          <strong>{isLoading ? '-' : latestSession?.score ?? 0}점</strong>
+          <strong>{isLoading || !hasSessions ? '-' : `${latestSession?.score ?? 0}점`}</strong>
         </article>
         <article>
           <span>평균 점수</span>
-          <strong>{isLoading ? '-' : averageScore}점</strong>
+          <strong>{isLoading || !hasSessions ? '-' : `${averageScore}점`}</strong>
         </article>
         <article>
           <span>나를 지키는 선택</span>
           <strong>
-            {isLoading ? '-' : `${totalCorrect}/${totalQuestions || '-'}`}
+            {isLoading || !hasSessions ? '-' : `${totalCorrect}/${totalQuestions || '-'}`}
           </strong>
         </article>
       </div>
@@ -1767,6 +1771,13 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
         <div className="safety-history-list" aria-label="안전 대처 훈련 기록" aria-busy={isLoading}>
           {isLoading ? <LoadingBlock /> : null}
           {error ? <ErrorBlock message={error} onRetry={onRetry} /> : null}
+          {!isLoading && !error && !hasSessions ? (
+            <div className="safety-history-empty-state">
+              <span>첫 안전 선택을 기다리고 있어요</span>
+              <strong>아직 완료한 안전 대처 훈련이 없어요</strong>
+              <p>훈련을 마치면 위험한 순간에 어떤 선택을 했는지 이곳에서 다시 볼 수 있습니다.</p>
+            </div>
+          ) : null}
           {!isLoading && !error ? sessions.map((session) => {
             const isSelected = selectedSession?.sessionId === session.sessionId;
             return (
@@ -1794,13 +1805,18 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
         <aside className="safety-history-preview">
           <div className="safety-history-preview-score">
             <span>{getSafetyTypeLabel(selectedSession?.category)}</span>
-            <strong>{detail?.score ?? selectedSession?.score ?? 0}점</strong>
+            <strong>{hasSessions ? `${detail?.score ?? selectedSession?.score ?? 0}점` : '-'}</strong>
           </div>
-          <h2>{selectedSession?.scenarioTitle || detail?.title || '안전 대처 훈련'}</h2>
-          <p>{detail?.feedback?.summary || detail?.feedback || selectedSession?.feedbackSummary || '상세 기록에서 선택한 행동을 확인해 보세요.'}</p>
+          <h2>{selectedSession?.scenarioTitle || detail?.title || (hasSessions ? '안전 대처 훈련' : '첫 안전 훈련을 시작해 볼까요')}</h2>
+          <p>{detail?.feedback?.summary || detail?.feedback || selectedSession?.feedbackSummary || (hasSessions ? '상세 기록에서 선택한 행동을 확인해 보세요.' : '훈련을 완료하면 안전한 선택과 다시 볼 선택이 여기에 표시됩니다.')}</p>
 
           {isLoading ? <div className="safety-history-preview-state">기록 목록을 불러오는 중입니다.</div> : null}
-          {!isLoading && detailStatus === 'idle' ? <div className="safety-history-preview-state">기록을 선택하면 상세 내용이 표시됩니다.</div> : null}
+          {!isLoading && detailStatus === 'idle' && hasSessions ? <div className="safety-history-preview-state">기록을 선택하면 상세 내용이 표시됩니다.</div> : null}
+          {!isLoading && !hasSessions ? (
+            <div className="safety-history-preview-state safety-history-empty-preview">
+              <span>안전 대처 훈련을 마치면 점수, 선택한 행동, 다음 연습 포인트를 한 번에 볼 수 있어요.</span>
+            </div>
+          ) : null}
           {!isLoading && detailStatus === 'loading' ? <div className="safety-history-preview-state">상세 기록을 불러오는 중입니다.</div> : null}
           {!isLoading && detailStatus === 'error' ? (
             <div className="safety-history-preview-state is-error">
@@ -1827,8 +1843,13 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
               ) : null}
             </>
           ) : null}
-          <button className="safety-history-detail-button" type="button" onClick={onDetail} disabled={!selectedSession?.sessionId || isLoading}>
-            선택 행동 자세히 보기
+          <button
+            className="safety-history-detail-button"
+            type="button"
+            onClick={hasSessions ? onDetail : onStart}
+            disabled={(hasSessions && !selectedSession?.sessionId) || isLoading}
+          >
+            {hasSessions ? '선택 행동 자세히 보기' : '첫 안전 훈련 시작하기'}
           </button>
         </aside>
       </div>
@@ -1943,10 +1964,11 @@ function SafetyHistoryDetail({ sessionId, summary, onBack, onRetry }) {
   );
 }
 
-function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail, isLoading = false, error = '', onRetry }) {
+function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail, onStart, isLoading = false, error = '', onRetry }) {
   const latestSession = sessions[0];
   const totalScore = sessions.reduce((sum, session) => sum + (session.score ?? session.accuracyRate ?? 0), 0);
   const averageScore = sessions.length > 0 ? Math.round(totalScore / sessions.length) : 0;
+  const hasSessions = sessions.length > 0;
   const [detail, setDetail] = useState(null);
   const [detailStatus, setDetailStatus] = useState(selectedSession?.sessionId ? 'loading' : 'idle');
   const [detailError, setDetailError] = useState('');
@@ -1990,11 +2012,11 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
       <div className="social-history-summary">
         <article>
           <span>최근 점수</span>
-          <strong>{isLoading ? '-' : latestSession?.score ?? 0}점</strong>
+          <strong>{isLoading || !hasSessions ? '-' : `${latestSession?.score ?? 0}점`}</strong>
         </article>
         <article>
           <span>평균 점수</span>
-          <strong>{isLoading ? '-' : averageScore}점</strong>
+          <strong>{isLoading || !hasSessions ? '-' : `${averageScore}점`}</strong>
         </article>
         <article>
           <span>훈련 횟수</span>
@@ -2006,6 +2028,13 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
         <div className="social-history-list" aria-label="사회성 훈련 기록" aria-busy={isLoading}>
           {isLoading ? <LoadingBlock /> : null}
           {error ? <ErrorBlock message={error} onRetry={onRetry} /> : null}
+          {!isLoading && !error && !hasSessions ? (
+            <div className="social-history-empty-state">
+              <span>첫 기록을 기다리고 있어요</span>
+              <strong>아직 완료한 사회성 훈련이 없어요</strong>
+              <p>훈련을 마치면 대화 기록과 AI 피드백이 이곳에 차곡차곡 쌓입니다.</p>
+            </div>
+          ) : null}
           {!isLoading && !error ? sessions.map((session) => {
             const isSelected = selectedSession?.sessionId === session.sessionId;
             return (
@@ -2032,12 +2061,17 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
         <aside className="social-history-preview">
           <div className="social-history-preview-score">
             <span>{getSocialScoreTypeLabel(detail?.scoreType)}</span>
-            <strong>{detail?.score ?? selectedSession?.score ?? 0}점</strong>
+            <strong>{hasSessions ? `${detail?.score ?? selectedSession?.score ?? 0}점` : '-'}</strong>
           </div>
-          <h2>{selectedSession?.scenarioTitle || '사회성 훈련'}</h2>
-          <p>{detail?.feedback?.summary || selectedSession?.feedbackSummary || 'AI 피드백을 확인해 보세요.'}</p>
+          <h2>{selectedSession?.scenarioTitle || (hasSessions ? '사회성 훈련' : '첫 훈련을 시작해 볼까요')}</h2>
+          <p>{detail?.feedback?.summary || selectedSession?.feedbackSummary || (hasSessions ? 'AI 피드백을 확인해 보세요.' : '상황별 대화를 연습하면 여기에 복습할 내용이 표시됩니다.')}</p>
           {isLoading ? <div className="social-history-preview-state">기록 목록을 불러오는 중입니다.</div> : null}
-          {!isLoading && detailStatus === 'idle' ? <div className="social-history-preview-state">기록을 선택하면 상세 내용이 표시됩니다.</div> : null}
+          {!isLoading && detailStatus === 'idle' && hasSessions ? <div className="social-history-preview-state">기록을 선택하면 상세 내용이 표시됩니다.</div> : null}
+          {!isLoading && !hasSessions ? (
+            <div className="social-history-preview-state social-history-empty-preview">
+              <span>대화 연습을 완료하면 점수, 대화 흐름, 다음 연습 포인트를 한 번에 볼 수 있어요.</span>
+            </div>
+          ) : null}
           {!isLoading && detailStatus === 'loading' ? <div className="social-history-preview-state">상세 기록을 불러오는 중입니다.</div> : null}
           {!isLoading && detailStatus === 'error' ? (
             <div className="social-history-preview-state is-error">
@@ -2057,8 +2091,13 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
               ))}
             </div>
           ) : null}
-          <button className="social-history-detail-button" type="button" onClick={onDetail} disabled={!selectedSession?.sessionId || isLoading}>
-            자세히 복습하기
+          <button
+            className="social-history-detail-button"
+            type="button"
+            onClick={hasSessions ? onDetail : onStart}
+            disabled={(hasSessions && !selectedSession?.sessionId) || isLoading}
+          >
+            {hasSessions ? '자세히 복습하기' : '첫 사회성 훈련 시작하기'}
           </button>
         </aside>
       </div>
@@ -2161,12 +2200,13 @@ function SocialHistoryDetail({ sessionId, summary, onBack, onRetry }) {
   );
 }
 
-function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail, isLoading = false, error = '', onRetry }) {
+function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDetail, onStart, isLoading = false, error = '', onRetry }) {
   const latestSession = sessions[0];
   const totalScore = sessions.reduce((sum, session) => sum + (session.score ?? session.accuracyRate ?? 0), 0);
   const averageScore = sessions.length > 0 ? Math.round(totalScore / sessions.length) : 0;
   const totalCorrect = sessions.reduce((sum, session) => sum + (session.correctCount || 0), 0);
   const totalQuestions = sessions.reduce((sum, session) => sum + (session.totalCount || 0), 0);
+  const hasSessions = sessions.length > 0;
 
   return (
     <section className="document-history-shell">
@@ -2181,22 +2221,29 @@ function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDe
       <div className="document-history-summary">
         <article>
           <span>최근 점수</span>
-          <strong>{isLoading ? '-' : latestSession?.score ?? 0}점</strong>
+          <strong>{isLoading || !hasSessions ? '-' : `${latestSession?.score ?? 0}점`}</strong>
         </article>
         <article>
           <span>평균 점수</span>
-          <strong>{isLoading ? '-' : averageScore}점</strong>
+          <strong>{isLoading || !hasSessions ? '-' : `${averageScore}점`}</strong>
         </article>
         <article>
           <span>누적 정답</span>
           <strong>
-            {isLoading ? '-' : `${totalCorrect}/${totalQuestions || '-'}`}
+            {isLoading || !hasSessions ? '-' : `${totalCorrect}/${totalQuestions || '-'}`}
           </strong>
         </article>
       </div>
       <div className="document-history-list" aria-label="문서 이해 훈련 기록" aria-busy={isLoading}>
         {isLoading ? <LoadingBlock /> : null}
         {error ? <ErrorBlock message={error} onRetry={onRetry} /> : null}
+        {!isLoading && !error && !hasSessions ? (
+          <div className="document-history-empty-state">
+            <span>첫 문서 풀이를 기다리고 있어요</span>
+            <strong>아직 완료한 문서 이해 훈련이 없어요</strong>
+            <p>훈련을 마치면 읽은 문서 유형, 정답 근거, 다시 볼 문제가 이곳에 정리됩니다.</p>
+          </div>
+        ) : null}
         {!isLoading && !error ? sessions.map((session) => {
           const isSelected = selectedSession?.sessionId === session.sessionId;
           return (
@@ -2219,8 +2266,13 @@ function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDe
           );
         }) : null}
       </div>
-      <button className="document-history-detail-button" type="button" onClick={onDetail} disabled={!selectedSession?.sessionId || isLoading}>
-        선택한 기록 자세히 보기
+      <button
+        className="document-history-detail-button"
+        type="button"
+        onClick={hasSessions ? onDetail : onStart}
+        disabled={(hasSessions && !selectedSession?.sessionId) || isLoading}
+      >
+        {hasSessions ? '선택한 기록 자세히 보기' : '첫 문서 이해 훈련 시작하기'}
       </button>
     </section>
   );
