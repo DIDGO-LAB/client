@@ -1,9 +1,9 @@
 export const genderToApi = (gender) => {
-  if (gender === '남성') {
+  if (gender === '?⑥꽦') {
     return 'MALE';
   }
 
-  if (gender === '여성') {
+  if (gender === '?ъ꽦') {
     return 'FEMALE';
   }
 
@@ -12,11 +12,11 @@ export const genderToApi = (gender) => {
 
 export const genderFromApi = (gender) => {
   if (gender === 'MALE') {
-    return '남성';
+    return '?⑥꽦';
   }
 
   if (gender === 'FEMALE') {
-    return '여성';
+    return '?ъ꽦';
   }
 
   return gender || '';
@@ -29,7 +29,7 @@ export const signupFormToApiPayload = (signupData) => ({
   birthDate: signupData.birthDate,
   gender: genderToApi(signupData.gender),
   email: signupData.email,
-  disabilities: [signupData.disability || '지적장애'],
+  disabilities: [],
   desiredJob: signupData.job,
 });
 
@@ -39,7 +39,6 @@ export const userFromApi = (user) => ({
   birthDate: user.birthDate || '',
   gender: genderFromApi(user.gender),
   email: user.email || '',
-  disability: Array.isArray(user.disabilities) ? user.disabilities.join(', ') : '',
   job: user.desiredJob || '',
 });
 
@@ -47,6 +46,6 @@ export const userEditToApiPayload = (userData) => ({
   name: userData.userName,
   gender: genderToApi(userData.gender),
   email: userData.email,
-  disabilities: ['지적장애'],
+  disabilities: [],
   desiredJob: userData.job,
 });

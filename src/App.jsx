@@ -84,7 +84,6 @@ function IntroStepRoutes() {
         <div className="App" style={{ transform: `scale(${viewportScale})` }}>
         <Routes>
           <Route path="/" element={<Intro />} />
-          <Route path="/intro/disability" element={<Navigate to="/intro/job" replace />} />
           <Route
             path="/intro/job"
             element={

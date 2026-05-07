@@ -452,7 +452,6 @@ export function SocialSessionPage() {
   const chatThreadRef = useRef(null);
 
   const visibleDialogues = useMemo(() => scenario?.dialogues?.slice(0, step + 1) || [], [scenario, step]);
-  const currentDialogue = visibleDialogues.at(-1);
   const isLastStep = scenario?.dialogues ? step >= scenario.dialogues.length - 1 : false;
 
   const loadSession = async () => {

@@ -135,69 +135,6 @@
   padding: 60px 72px;
 }
 
-.intro-disability-card {
-  left: 140px;
-  top: 112px;
-  width: 1640px;
-  min-height: 856px;
-  padding: 150px 250px 120px;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  box-sizing: border-box;
-}
-
-.intro-disability-content {
-  width: 1180px;
-}
-
-.intro-disability-actions {
-  width: 1180px;
-  margin-top: 44px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.intro-disability-card .intro-main-text {
-  max-width: 1030px;
-  font-size: 52px;
-  line-height: 1.14;
-}
-
-.intro-disability-card .intro-sub-text {
-  max-width: 880px;
-  font-size: 24px;
-}
-
-.intro-disability-card .intro-choice-grid {
-  width: 1180px;
-  gap: 32px;
-  margin-top: 54px;
-}
-
-.intro-disability-card .intro_select-button {
-  min-height: 170px;
-  padding: 34px 36px;
-  border-width: 3px;
-  box-shadow: 0 10px 22px rgba(35, 33, 29, 0.08);
-}
-
-.intro-disability-card .intro-button-text {
-  font-size: 31px;
-}
-
-.intro-disability-card .intro_select-button small {
-  font-size: 20px;
-  line-height: 1.36;
-}
-
-.intro-disability-card .intro-submit-button {
-  min-width: 210px;
-  height: 78px;
-  position: static;
-  border-width: 3px;
-  box-shadow: none;
-}
-
 .intro-job-card {
   left: 140px;
   top: 112px;

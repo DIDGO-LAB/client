@@ -13,14 +13,12 @@ function Intro() {
 
     navigate('/intro/job', {
       state: {
-        signupData: { startType, disability: '지적장애' },
+        signupData: { startType },
       },
     });
   };
 
-  return (
-    <StartTypeSelect onNext={handleNextPage} />
-  );
+  return <StartTypeSelect onNext={handleNextPage} />;
 }
 
 export default Intro;
