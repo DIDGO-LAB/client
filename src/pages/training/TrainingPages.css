@@ -1907,6 +1907,25 @@
   font-size: 24px;
 }
 
+.safety-result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 0 0 250px;
+}
+
+.safety-result-actions button {
+  width: 100%;
+  min-width: 0;
+  height: 64px;
+}
+
+.safety-result-actions .secondary-action {
+  border: 3px solid rgba(154, 100, 24, 0.22);
+  background: #fff;
+  color: #654d08;
+}
+
 .social-session-stage {
   position: absolute;
   left: 42px;
@@ -5504,8 +5523,8 @@
 }
 
 .training-help-dialog {
-  width: 820px;
-  min-height: 520px;
+  width: min(1500px, calc(100vw - 96px));
+  max-height: calc(100vh - 80px);
   border: 4px solid rgba(36, 58, 52, 0.18);
   border-radius: 28px;
   background: #fffefb;
@@ -5547,8 +5566,23 @@
 }
 
 .training-help-dialog-body {
-  min-height: 424px;
+  max-height: calc(100vh - 176px);
+  padding: 28px;
   background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.training-help-image {
+  width: 100%;
+  height: auto;
+  border: 3px solid rgba(47, 111, 159, 0.14);
+  border-radius: 18px;
+  box-shadow: 0 12px 26px rgba(36, 58, 52, 0.1);
+  display: block;
 }
 
 .social-job-shell {
@@ -6372,13 +6406,19 @@
   object-fit: contain;
 }
 
-.social-result-right button {
+.social-result-actions {
   position: absolute;
   left: 28px;
   right: 28px;
   bottom: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.social-result-right button {
   width: auto;
-  height: 72px;
+  min-height: 64px;
   padding: 0 28px;
   border: 0;
   border-radius: 22px;
@@ -6387,6 +6427,12 @@
   font-family: inherit;
   font-size: 24px;
   font-weight: 900;
+}
+
+.social-result-right button.secondary-action {
+  border: 3px solid rgba(47, 111, 159, 0.22);
+  background: #fff;
+  color: #244a66;
 }
 
 .social-history-detail-button:disabled {
@@ -6587,6 +6633,28 @@
 .safety-result-content button {
   background: #654d08;
   box-shadow: 0 10px 20px rgba(154, 100, 24, 0.14);
+}
+
+.safety-result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 0 0 260px;
+}
+
+.safety-result-actions button {
+  width: 100%;
+  min-width: 0;
+  height: 62px;
+  border: 3px solid #654d08;
+  font-size: 22px;
+  box-sizing: border-box;
+}
+
+.safety-result-actions .secondary-action {
+  border: 3px solid rgba(154, 100, 24, 0.22);
+  background: #fff;
+  color: #654d08;
 }
 
 .document-start-intro,
@@ -7411,7 +7479,7 @@
 }
 
 .social-result-right {
-  padding: 38px 28px 118px;
+  padding: 38px 28px 166px;
 }
 
 .social-result-score {
@@ -7462,13 +7530,20 @@
 }
 
 .social-result-right button {
-  left: 28px;
-  right: 28px;
-  bottom: 36px;
-  height: 68px;
+  min-height: 64px;
   border-radius: 20px;
   background: #244a66;
   font-size: 23px;
+}
+
+.social-result-actions {
+  bottom: 32px;
+  gap: 12px;
+}
+
+.social-result-right button.secondary-action {
+  background: #fff;
+  color: #244a66;
 }
 
 /* History screens polish */

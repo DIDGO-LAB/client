@@ -212,7 +212,7 @@ function TrainingHelpButton({ onClick }) {
   );
 }
 
-function TrainingHelpDialog({ open, onClose, title = '훈련 방법' }) {
+function TrainingHelpDialog({ open, onClose, title = '훈련 방법', images = [] }) {
   if (!open) {
     return null;
   }
@@ -232,7 +232,11 @@ function TrainingHelpDialog({ open, onClose, title = '훈련 방법' }) {
             닫기
           </button>
         </header>
-        <div className="training-help-dialog-body" />
+        <div className="training-help-dialog-body">
+          {images.map((image) => (
+            <img className="training-help-image" src={image.src} alt={image.alt} key={image.src} />
+          ))}
+        </div>
       </section>
     </div>
   );
@@ -353,7 +357,15 @@ export function SocialJobPage() {
             ))}
           </div>
         </div>
-        <TrainingHelpDialog open={isHelpOpen} onClose={() => setIsHelpOpen(false)} title="사회성 훈련 방법" />
+        <TrainingHelpDialog
+          open={isHelpOpen}
+          onClose={() => setIsHelpOpen(false)}
+          title="사회성 훈련 방법"
+          images={[
+            { src: '/mock/help/social-training-help.png', alt: '사회성 대화 연습 화면 도움말' },
+            { src: '/mock/help/social-result-help.png', alt: '사회성 훈련 결과 화면 도움말' },
+          ]}
+        />
       </section>
     </TrainingShell>
   );
@@ -523,6 +535,8 @@ export function SocialSessionPage() {
           sessionId: session.sessionId,
           result,
           scenario,
+          jobType,
+          scenarioId,
           dialogLogs,
         },
       });
@@ -603,8 +617,10 @@ export function SocialResultPage() {
   const location = useLocation();
   const sessionId = location.state?.sessionId;
   const scenario = location.state?.scenario;
+  const jobType = location.state?.jobType || scenario?.jobType || 'OFFICE';
   const dialogLogs = location.state?.dialogLogs || [];
   const [result, setResult] = useState(location.state?.result || null);
+  const scenarioId = location.state?.scenarioId || scenario?.scenarioId || result?.scenarioId;
   const [status, setStatus] = useState(result ? 'ready' : 'loading');
   const [error, setError] = useState('');
   const resultDialogues = dialogLogs.length > 0 ? dialogLogs : [];
@@ -669,9 +685,23 @@ export function SocialResultPage() {
             <p>{status === 'ready' ? '필요한 내용을 다시 한번 확인하고 진행하겠습니다.' : '추천 답변을 준비하고 있습니다.'}</p>
             <img src={characterImg} alt="" />
           </div>
-          <button type="button" onClick={() => navigate('/training/social/job')} disabled={status !== 'ready'}>
-            다시 선택하기
-          </button>
+          <div className="social-result-actions">
+            <button
+              type="button"
+              onClick={() => navigate('/training/social/session', { state: { jobType, scenarioId } })}
+              disabled={status !== 'ready' || !scenarioId}
+            >
+              다시 연습하기
+            </button>
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => navigate('/training/social/scenarios', { state: { jobType } })}
+              disabled={status !== 'ready'}
+            >
+              다른 상황 연습하기
+            </button>
+          </div>
         </aside>
       </section>
     </TrainingShell>
@@ -791,7 +821,16 @@ export function SafetyScenarioPage() {
           </div>
         </div>
       </section>
-      <TrainingHelpDialog open={isHelpOpen} onClose={() => setIsHelpOpen(false)} title="안전 대처 훈련 방법" />
+      <TrainingHelpDialog
+        open={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        title="안전 대처 훈련 방법"
+        images={[
+          { src: '/mock/help/safety-training-help.png', alt: '안전 대처 훈련 상황 설명 화면 도움말' },
+          { src: '/mock/help/safety-choice-help.png', alt: '안전 대처 훈련 선택 화면 도움말' },
+          { src: '/mock/help/safety-result-help.png', alt: '안전 대처 훈련 결과 화면 도움말' },
+        ]}
+      />
     </TrainingShell>
   );
 }
@@ -800,6 +839,7 @@ export function SafetySessionPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const scenarioId = location.state?.scenarioId;
+  const category = location.state?.category;
   const [sessionId, setSessionId] = useState(null);
   const [scene, setScene] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -836,7 +876,7 @@ export function SafetySessionPage() {
         choiceId,
       });
       if (data.completed) {
-        navigate('/training/safety/result', { state: { sessionId, result: data.result } });
+        navigate('/training/safety/result', { state: { sessionId, result: data.result, category, scenarioId } });
         return;
       }
       setScene(data.nextScene || scene);
@@ -861,7 +901,7 @@ export function SafetySessionPage() {
       });
 
       if (data.completed) {
-        navigate('/training/safety/result', { state: { sessionId, result: data.result } });
+        navigate('/training/safety/result', { state: { sessionId, result: data.result, category, scenarioId } });
         return;
       }
 
@@ -951,6 +991,8 @@ export function SafetyResultPage() {
   const location = useLocation();
   const sessionId = location.state?.sessionId;
   const [result, setResult] = useState(location.state?.result || null);
+  const scenarioId = location.state?.scenarioId || result?.scenarioId;
+  const category = location.state?.category || result?.category;
   const [status, setStatus] = useState(result ? 'ready' : 'loading');
   const [error, setError] = useState('');
   const loadResult = async () => {
@@ -991,9 +1033,18 @@ export function SafetyResultPage() {
               <p>{result?.resultText || result?.feedback}</p>
               <span>{result?.effectText || result?.feedback}</span>
             </div>
-            <button type="button" onClick={() => navigate('/training/safety/scenarios')}>
-              {'\uB2E4\uC2DC \uC120\uD0DD\uD558\uAE30'}
-            </button>
+            <div className="safety-result-actions">
+              <button
+                type="button"
+                onClick={() => navigate('/training/safety/session', { state: { category, scenarioId } })}
+                disabled={!scenarioId}
+              >
+                다시 연습하기
+              </button>
+              <button type="button" className="secondary-action" onClick={() => navigate('/training/safety/scenarios', { state: { category } })}>
+                다른 상황 연습하기
+              </button>
+            </div>
           </div>
         </section>
       ) : null}
@@ -1202,7 +1253,15 @@ export function DocumentStartPage() {
           </div>
         </div>
       </section>
-      <TrainingHelpDialog open={isHelpOpen} onClose={() => setIsHelpOpen(false)} title="문서 이해 훈련 방법" />
+      <TrainingHelpDialog
+        open={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        title="문서 이해 훈련 방법"
+        images={[
+          { src: '/mock/help/document-training-quiz-help.png', alt: '문서 이해 훈련 문제 풀이 화면 도움말' },
+          { src: '/mock/help/document-training-result-help.png', alt: '문서 이해 훈련 결과 화면 도움말' },
+        ]}
+      />
     </TrainingShell>
   );
 }
@@ -1264,6 +1323,7 @@ export function DocumentSessionPage() {
         state: {
           sessionId: session.sessionId,
           result,
+          level,
         },
       });
     } catch (requestError) {
@@ -1372,6 +1432,7 @@ export function DocumentResultPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const sessionId = location.state?.sessionId;
+  const resultLevel = location.state?.level || location.state?.result?.level || location.state?.result?.playedLevel || 1;
   const [result, setResult] = useState(location.state?.result || null);
   const [status, setStatus] = useState(result ? 'ready' : 'loading');
   const [error, setError] = useState('');
@@ -1442,11 +1503,11 @@ export function DocumentResultPage() {
                 })}
               </div>
               <div className="document-result-actions">
-                <button type="button" onClick={() => navigate('/training/document')}>
+                <button type="button" onClick={() => navigate('/training/document/session', { state: { level: resultLevel } })}>
                   다시 연습하기
                 </button>
-                <button type="button" className="secondary-action" onClick={() => navigate('/main')}>
-                  홈으로
+                <button type="button" className="secondary-action" onClick={() => navigate('/training/document')}>
+                  다른 문제 풀기
                 </button>
               </div>
             </>
