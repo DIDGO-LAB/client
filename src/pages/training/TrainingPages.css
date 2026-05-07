@@ -1167,6 +1167,10 @@
   background: #fffefb;
 }
 
+.safety-session-stage.is-tap-to-continue {
+  cursor: pointer;
+}
+
 .safety-illustration {
   position: absolute;
   inset: 0;
@@ -1312,6 +1316,19 @@
   font-size: 38px;
   font-weight: 700;
   line-height: 1.45;
+}
+
+.safety-caption .safety-continue-hint {
+  position: absolute;
+  top: 28px;
+  right: 42px;
+  display: inline-flex;
+  max-width: 520px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: right;
 }
 
 .safety-choice-overlay {
@@ -1476,6 +1493,14 @@
   border: 3px solid rgba(126, 140, 108, 0.22);
   border-radius: 32px;
   box-shadow: 0 18px 36px rgba(54, 46, 29, 0.16);
+  transition: left 260ms ease, top 260ms ease, width 260ms ease, height 260ms ease;
+}
+
+.safety-session-stage.has-decision-panel .safety-stage-image {
+  left: 92px;
+  top: 175px;
+  width: 1180px;
+  height: 680px;
 }
 
 .safety-result-image {
@@ -1546,6 +1571,125 @@
   line-height: 1.48;
 }
 
+.safety-caption .safety-continue-hint {
+  top: 24px;
+  right: 34px;
+  max-width: 430px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.safety-decision-panel {
+  position: absolute;
+  top: 175px;
+  right: 92px;
+  width: 532px;
+  height: 680px;
+  padding: 26px 28px;
+  border: 3px solid rgba(154, 100, 24, 0.28);
+  border-radius: 34px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 34px rgba(154, 100, 24, 0.12);
+  backdrop-filter: blur(6px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.safety-panel-prompt {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  padding: 22px 26px 24px;
+  border: 3px solid rgba(217, 176, 76, 0.32);
+  border-radius: 24px;
+  background: #fff4cf;
+  color: var(--color-ink);
+  box-shadow: 0 8px 18px rgba(154, 100, 24, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.safety-panel-prompt strong {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 36px;
+  margin-bottom: 14px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid rgba(217, 176, 76, 0.28);
+  color: #3f3212;
+  align-items: center;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.safety-panel-prompt span {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.42;
+  word-break: keep-all;
+}
+
+.safety-panel-prompt em {
+  display: block;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 3px solid rgba(101, 77, 8, 0.16);
+  color: #050505;
+  box-shadow: none;
+  font-size: 31px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: left;
+  word-break: keep-all;
+}
+
+.safety-session-stage .safety-decision-panel .safety-choice-overlay {
+  position: static;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  display: grid;
+  width: 100%;
+  transform: none;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  flex: 1;
+  align-content: stretch;
+  grid-auto-rows: minmax(0, 1fr);
+}
+
+.safety-session-stage .safety-decision-panel .safety-choice-overlay button {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  padding: 20px 24px;
+  border: 3px solid rgba(154, 100, 24, 0.24);
+  border-radius: 18px;
+  background: #fff;
+  color: var(--color-ink);
+  box-shadow: 0 7px 14px rgba(154, 100, 24, 0.08);
+  font-size: 23px;
+  font-weight: 900;
+  line-height: 1.34;
+  text-align: left;
+  word-break: keep-all;
+  display: flex;
+  align-items: center;
+}
+
+.safety-session-stage .safety-decision-panel .safety-choice-overlay button:hover {
+  border-color: rgba(154, 100, 24, 0.48);
+  background: #fff8df;
+  box-shadow: 0 10px 20px rgba(154, 100, 24, 0.12);
+}
+
 .safety-choice-overlay {
   left: 50%;
   right: auto;
@@ -1567,13 +1711,6 @@
   font-size: 21px;
   font-weight: 800;
   line-height: 1.3;
-}
-
-.safety-continue-button {
-  justify-self: center;
-  grid-column: 1 / -1;
-  width: 168px;
-  min-height: 58px;
 }
 
 .safety-choice-overlay button:disabled {
@@ -4630,6 +4767,13 @@
 .safety-session-stage .safety-choice-overlay button {
   background: rgba(36, 58, 52, 0.9);
   box-shadow: 0 8px 18px rgba(20, 26, 23, 0.18);
+}
+
+.safety-session-stage .safety-decision-panel .safety-choice-overlay button {
+  border-color: rgba(154, 100, 24, 0.2);
+  background: #fff;
+  color: var(--color-ink);
+  box-shadow: 0 8px 18px rgba(154, 100, 24, 0.08);
 }
 
 .safety-result-layout::after {
