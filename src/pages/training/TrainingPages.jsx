@@ -23,13 +23,82 @@ const socialScoreTypeLabels = {
 
 const getSocialScoreTypeLabel = (scoreType) => socialScoreTypeLabels[scoreType] || 'AI 평가';
 
+const normalizeSocialSpeaker = (speaker) => (speaker === 'PARTNER' ? 'AI' : speaker || 'AI');
+
+const getSocialDialogueContent = (dialogue) => dialogue.content || dialogue.message || dialogue.text || '';
+
 const toDialogLogs = (dialogues) =>
   dialogues.map((dialogue, index) => ({
     turnNo: index + 1,
-    speaker: dialogue.speaker,
+    speaker: normalizeSocialSpeaker(dialogue.speaker),
     speakerName: dialogue.speakerName,
-    content: dialogue.message,
+    content: getSocialDialogueContent(dialogue),
   }));
+
+const getSocialOpeningScript = (voiceSession) =>
+  voiceSession?.opening?.script || voiceSession?.openingScript || '';
+
+const createFallbackSocialDialogues = (scenario, voiceSession) => {
+  const openingScript =
+    getSocialOpeningScript(voiceSession) ||
+    scenario?.situationText ||
+    scenario?.backgroundText ||
+    scenario?.title ||
+    '상황을 확인하고 필요한 말을 연습합니다.';
+
+  return [
+    {
+      speaker: 'AI',
+      speakerName: scenario?.npcName || '상대',
+      message: openingScript,
+    },
+    {
+      speaker: 'USER',
+      speakerName: scenario?.learnerName || '나',
+      message: scenario?.recommendedAnswer || '상황을 확인했습니다. 필요한 내용을 차분히 말씀드리겠습니다.',
+    },
+  ];
+};
+
+const normalizeSocialScenario = (scenario, voiceSession) => ({
+  ...scenario,
+  description: scenario?.description || scenario?.backgroundText || scenario?.characterInfo,
+  dialogues:
+    Array.isArray(scenario?.dialogues) && scenario.dialogues.length > 0
+      ? scenario.dialogues
+      : createFallbackSocialDialogues(scenario, voiceSession),
+});
+
+const getDocumentAnswerValue = (answers, question) => (question ? answers[question.questionId] : undefined);
+
+const isDocumentShortAnswer = (question) =>
+  question?.questionType === 'SHORT_ANSWER' || !Array.isArray(question?.choices) || question.choices.length === 0;
+
+const isDocumentQuestionAnswered = (answers, question) => {
+  const value = getDocumentAnswerValue(answers, question);
+
+  if (isDocumentShortAnswer(question)) {
+    return typeof value === 'string' && value.trim().length > 0;
+  }
+
+  return Boolean(value);
+};
+
+const toDocumentAnswerRequest = (question, answerValue) => {
+  if (isDocumentShortAnswer(question)) {
+    return {
+      questionId: question.questionId,
+      userAnswer: String(answerValue || '').trim(),
+      choiceId: null,
+    };
+  }
+
+  return {
+    questionId: question.questionId,
+    userAnswer: null,
+    choiceId: answerValue,
+  };
+};
 
 const getLearningScenarioIndex = (scenarios) => {
   const explicitIndex = scenarios.findIndex(
@@ -53,14 +122,14 @@ const getLearningScenarioIndex = (scenarios) => {
 };
 
 const safetyCategories = [
-  { category: 'DAILY_SAFETY', label: '소중한 나\n지키기', description: '일상에서 나를 보호하는 훈련' },
-  { category: 'WORKPLACE_SAFETY', label: '뽀득뽀득 건강\n지키기', description: '직장과 생활에서 경계를 지키는 훈련' },
+  { category: 'SEXUAL_EDUCATION', label: '소중한 나\n지키기', description: '일상에서 나를 보호하는 훈련' },
+  { category: 'INFECTIOUS_DISEASE', label: '뽀득뽀득 건강\n지키기', description: '직장과 생활에서 경계를 지키는 훈련' },
   { category: 'COMMUTE_SAFETY', label: '안전하게\n씩씩하게\n걷기', description: '길을 건너고 이동할 때 필요한 안전 훈련' },
 ];
 
 const safetyTypeLabels = {
-  DAILY_SAFETY: '나를 지키기',
-  WORKPLACE_SAFETY: '경계 지키기',
+  SEXUAL_EDUCATION: '나를 지키기',
+  INFECTIOUS_DISEASE: '건강 지키기',
   COMMUTE_SAFETY: '이동 안전',
 };
 
@@ -132,6 +201,19 @@ const historyTypeSummary = {
 };
 
 const getErrorMessage = (error, fallback) => error?.message || fallback;
+
+const looksCorruptedKoreanText = (value) =>
+  typeof value === 'string' &&
+  (/�|Ã|ë|ì|í|ê|Â|臾|議|쒖|댄|덈|꾨|낅|뒿|瑜|怨|쇰|좎|꽌|젴|멋관/.test(value) ||
+    (value.match(/\?/g) || []).length >= 2);
+
+const readableText = (value, fallback) => {
+  if (!value || looksCorruptedKoreanText(value)) {
+    return fallback;
+  }
+
+  return value;
+};
 
 function TrainingShell({ activeKey = 'main', fullScreen = false, children }) {
   return (
@@ -497,7 +579,15 @@ export function SocialSessionPage() {
         socialTrainingApi.getSocialScenario(scenarioId),
         socialTrainingApi.startSocialSession({ jobType, scenarioId }),
       ]);
-      setScenario(scenarioDetail);
+
+      let voiceSessionData = null;
+      try {
+        voiceSessionData = await socialTrainingApi.prepareSocialVoiceSession(sessionData.sessionId);
+      } catch {
+        voiceSessionData = null;
+      }
+
+      setScenario(normalizeSocialScenario(scenarioDetail, voiceSessionData));
       setSession(sessionData);
       setStep(0);
       setStatus('ready');
@@ -582,7 +672,7 @@ export function SocialSessionPage() {
                     className={`dialogue-bubble ${dialogue.speaker === 'USER' ? 'is-user' : 'is-partner'}`}
                     key={`${step}-${dialogue.speaker}-${index}`}
                   >
-                    <span>{dialogue.message}</span>
+                    <span>{getSocialDialogueContent(dialogue)}</span>
                   </div>
                 ))}
               </div>
@@ -623,7 +713,7 @@ export function SocialResultPage() {
   const scenarioId = location.state?.scenarioId || scenario?.scenarioId || result?.scenarioId;
   const [status, setStatus] = useState(result ? 'ready' : 'loading');
   const [error, setError] = useState('');
-  const resultDialogues = dialogLogs.length > 0 ? dialogLogs : [];
+  const resultDialogues = dialogLogs.length > 0 ? dialogLogs : result?.dialogLogs || [];
 
   const loadResult = async () => {
     if (!sessionId) {
@@ -864,6 +954,21 @@ export function SafetySessionPage() {
   useEffect(() => {
     loadSession();
   }, [scenarioId]);
+
+  const finishSafetySession = async (selectedResult) => {
+    const completion = await safetyTrainingApi.completeSafetySession(sessionId);
+    navigate('/training/safety/result', {
+      state: {
+        sessionId,
+        result: {
+          ...completion,
+          ...selectedResult,
+          completed: completion.completed ?? true,
+        },
+      },
+    });
+  };
+
   const selectChoice = async (choiceId) => {
     if (!sessionId || !scene) {
       return;
@@ -876,7 +981,7 @@ export function SafetySessionPage() {
         choiceId,
       });
       if (data.completed) {
-        navigate('/training/safety/result', { state: { sessionId, result: data.result, category, scenarioId } });
+        await finishSafetySession(data.result);
         return;
       }
       setScene(data.nextScene || scene);
@@ -901,7 +1006,7 @@ export function SafetySessionPage() {
       });
 
       if (data.completed) {
-        navigate('/training/safety/result', { state: { sessionId, result: data.result, category, scenarioId } });
+        await finishSafetySession(data.result);
         return;
       }
 
@@ -914,7 +1019,7 @@ export function SafetySessionPage() {
   };
 
   const hasChoices = Array.isArray(scene?.choices) && scene.choices.length > 0;
-  const canTapToContinue = Boolean(scene && !hasChoices && status !== 'saving');
+  const canTapToContinue = false;
   const handleStageContinue = () => {
     if (canTapToContinue) {
       goNextScene();
@@ -1298,10 +1403,12 @@ export function DocumentSessionPage() {
 
   const questions = session?.questions || [];
   const currentQuestion = questions[currentQuestionIndex];
-  const selectedChoiceId = currentQuestion ? answers[currentQuestion.questionId] : null;
+  const currentAnswerValue = getDocumentAnswerValue(answers, currentQuestion);
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const allAnswered = questions.length > 0 && questions.every((question) => answers[question.questionId]);
-  const answeredCount = questions.filter((question) => answers[question.questionId]).length;
+  const allAnswered = questions.length > 0 && questions.every((question) => isDocumentQuestionAnswered(answers, question));
+  const answeredCount = questions.filter((question) => isDocumentQuestionAnswered(answers, question)).length;
+  const currentQuestionAnswered = currentQuestion ? isDocumentQuestionAnswered(answers, currentQuestion) : false;
+  const currentQuestionIsShortAnswer = isDocumentShortAnswer(currentQuestion);
 
   const submitAnswers = async () => {
     if (!session?.sessionId || !allAnswered) {
@@ -1313,11 +1420,7 @@ export function DocumentSessionPage() {
 
     try {
       const result = await documentTrainingApi.submitDocumentAnswers(session.sessionId, {
-        answers: questions.map((question) => ({
-          questionId: question.questionId,
-          userAnswer: null,
-          choiceId: answers[question.questionId],
-        })),
+        answers: questions.map((question) => toDocumentAnswerRequest(question, answers[question.questionId])),
       });
       navigate('/training/document/result', {
         state: {
@@ -1333,7 +1436,7 @@ export function DocumentSessionPage() {
   };
 
   const goToNextQuestion = () => {
-    if (!currentQuestion || !selectedChoiceId || status === 'saving') {
+    if (!currentQuestion || !currentQuestionAnswered || status === 'saving') {
       return;
     }
 
@@ -1385,26 +1488,41 @@ export function DocumentSessionPage() {
                 <span>{documentThemeLabels[currentQuestion.theme] || '문서'}</span>
                 <em>{level}단계</em>
               </div>
-              <p>문서 내용과 같은 답을 하나 고르세요.</p>
+              <p>{currentQuestionIsShortAnswer ? '문서 내용을 보고 답을 입력하세요.' : '문서 내용과 같은 답을 하나 고르세요.'}</p>
               <strong>{currentQuestion.questionText}</strong>
-              <div className="document-choice-grid">
-                {currentQuestion.choices?.map((choice, index) => (
-                  <button
-                    className={selectedChoiceId === choice.choiceId ? 'is-selected' : ''}
-                    type="button"
-                    key={choice.choiceId}
-                    onClick={() =>
-                      setAnswers((currentAnswers) => ({
-                        ...currentAnswers,
-                        [currentQuestion.questionId]: choice.choiceId,
-                      }))
-                    }
-                  >
-                    <span>{index + 1}</span>
-                    <strong>{choice.text}</strong>
-                  </button>
-                ))}
-              </div>
+              {currentQuestionIsShortAnswer ? (
+                <input
+                  className="document-answer-input"
+                  type="text"
+                  value={currentAnswerValue || ''}
+                  onChange={(event) =>
+                    setAnswers((currentAnswers) => ({
+                      ...currentAnswers,
+                      [currentQuestion.questionId]: event.target.value,
+                    }))
+                  }
+                  placeholder="답을 입력해 주세요"
+                />
+              ) : (
+                <div className="document-choice-grid">
+                  {currentQuestion.choices?.map((choice, index) => (
+                    <button
+                      className={currentAnswerValue === choice.choiceId ? 'is-selected' : ''}
+                      type="button"
+                      key={choice.choiceId}
+                      onClick={() =>
+                        setAnswers((currentAnswers) => ({
+                          ...currentAnswers,
+                          [currentQuestion.questionId]: choice.choiceId,
+                        }))
+                      }
+                    >
+                      <span>{index + 1}</span>
+                      <strong>{choice.text}</strong>
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="document-session-actions">
                 <button type="button" className="document-prev-button" onClick={goToPreviousQuestion} disabled={currentQuestionIndex === 0}>
                   이전 문제
@@ -1413,7 +1531,7 @@ export function DocumentSessionPage() {
                   className="document-next-button"
                   type="button"
                   onClick={goToNextQuestion}
-                  disabled={!selectedChoiceId || status === 'saving'}
+                  disabled={!currentQuestionAnswered || status === 'saving'}
                 >
                   {status === 'saving' ? '제출 중' : isLastQuestion ? '결과 보기' : '다음 문제'}
                 </button>
@@ -2329,15 +2447,15 @@ function DocumentHistoryList({ sessions, selectedSession, onBack, onSelect, onDe
               className={`document-history-card ${isSelected ? 'is-selected' : ''}`}
               type="button"
               key={session.sessionId}
-              onClick={() => onSelect(session)}
-            >
-              <div>
-                <span>{formatHistoryDate(session.completedAt)}</span>
-                <strong>{session.scenarioTitle || '문서 이해 훈련'}</strong>
-                <p>{session.feedbackSummary}</p>
-              </div>
-              <div className="document-history-card-meta">
-                <em>{session.playedLevel || 1}단계</em>
+                onClick={() => onSelect(session)}
+              >
+                <div>
+                  <span>{formatHistoryDate(session.completedAt)}</span>
+                  <strong>{readableText(session.scenarioTitle, '문서 이해 훈련')}</strong>
+                  <p>{readableText(session.feedbackSummary, '정답 근거와 읽기 흐름을 다시 확인해 보세요.')}</p>
+                </div>
+                <div className="document-history-card-meta">
+                  <em>{session.playedLevel || 1}단계</em>
                 <strong>{session.score ?? 0}점</strong>
               </div>
             </button>
@@ -2402,7 +2520,7 @@ function DocumentHistoryDetail({ sessionId, summary, onBack, onRetry }) {
         </button>
         <header className="document-history-detail-header">
           <span>문서 이해 상세 기록</span>
-          <h1>{summary?.scenarioTitle || '문서 이해 훈련'}</h1>
+          <h1>{readableText(summary?.scenarioTitle, '문서 이해 훈련')}</h1>
           <p>{message}</p>
         </header>
         <div className="document-history-detail-layout">

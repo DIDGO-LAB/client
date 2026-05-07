@@ -67,7 +67,8 @@ const socialScenarios = {
 
 const safetyScenarios = {
   COMMUTE_SAFETY: [],
-  WORKPLACE_SAFETY: [
+  INFECTIOUS_DISEASE: [],
+  SEXUAL_EDUCATION: [
     {
       scenarioId: 601,
       badge: '직장 내 경계',
@@ -152,7 +153,6 @@ const safetyScenarios = {
       ],
     },
   ],
-  DAILY_SAFETY: [],
 };
 
 const mockSocialSessions = new Map();
@@ -775,7 +775,7 @@ const historySessions = {
       sessionId: 201,
       scenarioId: 601,
       scenarioTitle: '자리에서 불편한 접촉을 받았어요',
-      category: 'WORKPLACE_SAFETY',
+      category: 'SEXUAL_EDUCATION',
       trainingType: 'SAFETY',
       score: 100,
       correctCount: 2,

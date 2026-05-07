@@ -1,9 +1,11 @@
+const DEFAULT_DISABILITIES = ['발달장애'];
+
 export const genderToApi = (gender) => {
-  if (gender === '?⑥꽦') {
+  if (gender === '남성' || gender === 'MALE') {
     return 'MALE';
   }
 
-  if (gender === '?ъ꽦') {
+  if (gender === '여성' || gender === 'FEMALE') {
     return 'FEMALE';
   }
 
@@ -12,15 +14,18 @@ export const genderToApi = (gender) => {
 
 export const genderFromApi = (gender) => {
   if (gender === 'MALE') {
-    return '?⑥꽦';
+    return '남성';
   }
 
   if (gender === 'FEMALE') {
-    return '?ъ꽦';
+    return '여성';
   }
 
   return gender || '';
 };
+
+const normalizeDisabilities = (disabilities) =>
+  Array.isArray(disabilities) && disabilities.length > 0 ? disabilities : DEFAULT_DISABILITIES;
 
 export const signupFormToApiPayload = (signupData) => ({
   loginId: signupData.userId,
@@ -29,7 +34,7 @@ export const signupFormToApiPayload = (signupData) => ({
   birthDate: signupData.birthDate,
   gender: genderToApi(signupData.gender),
   email: signupData.email,
-  disabilities: [],
+  disabilities: normalizeDisabilities(signupData.disabilities),
   desiredJob: signupData.job,
 });
 
@@ -39,6 +44,7 @@ export const userFromApi = (user) => ({
   birthDate: user.birthDate || '',
   gender: genderFromApi(user.gender),
   email: user.email || '',
+  disabilities: normalizeDisabilities(user.disabilities),
   job: user.desiredJob || '',
 });
 
@@ -46,6 +52,6 @@ export const userEditToApiPayload = (userData) => ({
   name: userData.userName,
   gender: genderToApi(userData.gender),
   email: userData.email,
-  disabilities: [],
+  disabilities: normalizeDisabilities(userData.disabilities),
   desiredJob: userData.job,
 });

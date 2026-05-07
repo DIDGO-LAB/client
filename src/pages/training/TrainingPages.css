@@ -2541,6 +2541,27 @@
   color: #fff;
 }
 
+.document-answer-input {
+  width: 100%;
+  min-height: 76px;
+  margin-top: 32px;
+  padding: 18px 22px;
+  border: 5px solid #bdbdbd;
+  border-radius: 18px;
+  background: #fff;
+  box-sizing: border-box;
+  color: #151515;
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 800;
+  outline: none;
+}
+
+.document-answer-input:focus {
+  border-color: #7fa95c;
+  box-shadow: 0 0 0 4px rgba(127, 169, 92, 0.18);
+}
+
 .document-session-actions {
   margin-top: auto;
   display: grid;

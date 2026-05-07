@@ -29,6 +29,11 @@ import {
   startDocumentSession,
   submitDocumentAnswers,
 } from '../documentTraining';
+import {
+  completeFocusSession,
+  getFocusProgress,
+  startFocusSession,
+} from '../focusTraining';
 
 const wrapped = (data) => ({ success: true, data, error: null });
 
@@ -108,5 +113,17 @@ describe('training API wrappers', () => {
     await expect(startDocumentSession({ level: 1 })).resolves.toEqual({ sessionId: 50 });
     await expect(submitDocumentAnswers(50, { answers: [] })).resolves.toEqual({ score: 100 });
     await expect(getDocumentSessionDetail(50)).resolves.toEqual({ score: 100 });
+  });
+
+  it('calls focus training endpoints and unwraps data', async () => {
+    mock.onGet('/api/trainings/focus/progress').reply(200, wrapped({ currentLevel: 2 }));
+    mock.onPost('/api/trainings/focus/sessions', { level: 1 }).reply(200, wrapped({ sessionId: 40, commands: [] }));
+    mock
+      .onPost('/api/trainings/focus/sessions/40/complete', { reactions: [] })
+      .reply(200, wrapped({ score: 92, completed: true }));
+
+    await expect(getFocusProgress()).resolves.toEqual({ currentLevel: 2 });
+    await expect(startFocusSession({ level: 1 })).resolves.toEqual({ sessionId: 40, commands: [] });
+    await expect(completeFocusSession(40, { reactions: [] })).resolves.toEqual({ score: 92, completed: true });
   });
 });
