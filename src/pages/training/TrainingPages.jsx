@@ -38,13 +38,32 @@ const toDialogLogs = (dialogues) =>
 const getSocialOpeningScript = (voiceSession) =>
   voiceSession?.opening?.script || voiceSession?.openingScript || '';
 
+const extractSocialCounterpartRequest = (text) => {
+  if (!text) {
+    return '';
+  }
+
+  const value = String(text).trim();
+  const quotedMatches = [...value.matchAll(/["“”'‘’]([^"“”'‘’]+)["“”'‘’]/g)]
+    .map((match) => match[1]?.trim())
+    .filter(Boolean);
+
+  if (quotedMatches.length > 0) {
+    return quotedMatches[quotedMatches.length - 1];
+  }
+
+  return value;
+};
+
+const getSocialScenarioOpeningMessage = (scenario, voiceSession) =>
+  extractSocialCounterpartRequest(getSocialOpeningScript(voiceSession)) ||
+  extractSocialCounterpartRequest(scenario?.situationText) ||
+  scenario?.backgroundText ||
+  scenario?.title ||
+  '상황을 확인하고 필요한 말을 연습합니다.';
+
 const createFallbackSocialDialogues = (scenario, voiceSession) => {
-  const openingScript =
-    getSocialOpeningScript(voiceSession) ||
-    scenario?.situationText ||
-    scenario?.backgroundText ||
-    scenario?.title ||
-    '상황을 확인하고 필요한 말을 연습합니다.';
+  const openingScript = getSocialScenarioOpeningMessage(scenario, voiceSession);
 
   return [
     {
@@ -68,6 +87,105 @@ const normalizeSocialScenario = (scenario, voiceSession) => ({
       ? scenario.dialogues
       : createFallbackSocialDialogues(scenario, voiceSession),
 });
+
+const SOCIAL_VOICE_SAMPLE_RATE = 24000;
+const SOCIAL_VOICE_RECORD_BUFFER_SIZE = 2048;
+
+const encodeBase64 = (bytes) => {
+  let binary = '';
+  const chunkSize = 0x8000;
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+
+  return window.btoa(binary);
+};
+
+const float32ToPcm16 = (samples, inputSampleRate, outputSampleRate = SOCIAL_VOICE_SAMPLE_RATE) => {
+  if (!samples || samples.length === 0) {
+    return new Int16Array(0);
+  }
+
+  const sampleRateRatio = inputSampleRate / outputSampleRate;
+
+  if (!Number.isFinite(sampleRateRatio) || sampleRateRatio <= 1) {
+    const pcm = new Int16Array(samples.length);
+    for (let index = 0; index < samples.length; index += 1) {
+      const clipped = Math.max(-1, Math.min(1, samples[index]));
+      pcm[index] = clipped < 0 ? clipped * 0x8000 : clipped * 0x7fff;
+    }
+    return pcm;
+  }
+
+  const frameCount = Math.round(samples.length / sampleRateRatio);
+  const pcm = new Int16Array(frameCount);
+
+  for (let frameIndex = 0; frameIndex < frameCount; frameIndex += 1) {
+    const nextFrameOffset = Math.round((frameIndex + 1) * sampleRateRatio);
+    let inputIndex = Math.round(frameIndex * sampleRateRatio);
+    let sum = 0;
+    let count = 0;
+
+    while (inputIndex < nextFrameOffset && inputIndex < samples.length) {
+      sum += samples[inputIndex];
+      count += 1;
+      inputIndex += 1;
+    }
+
+    const averaged = count > 0 ? sum / count : 0;
+    const clipped = Math.max(-1, Math.min(1, averaged));
+    pcm[frameIndex] = clipped < 0 ? clipped * 0x8000 : clipped * 0x7fff;
+  }
+
+  return pcm;
+};
+
+const float32ToPcm16Base64 = (samples, inputSampleRate) => {
+  const pcm16 = float32ToPcm16(samples, inputSampleRate);
+  if (!pcm16.length) {
+    return '';
+  }
+
+  return encodeBase64(new Uint8Array(pcm16.buffer, pcm16.byteOffset, pcm16.byteLength));
+};
+
+const base64ToPcm16 = (base64) => {
+  const binary = window.atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return new Int16Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+};
+
+const pcm16ToFloat32 = (pcm16) => {
+  const samples = new Float32Array(pcm16.length);
+
+  for (let index = 0; index < pcm16.length; index += 1) {
+    samples[index] = Math.max(-1, pcm16[index] / 0x8000);
+  }
+
+  return samples;
+};
+
+function SocialAiCharacter({ speaking }) {
+  return (
+    <>
+      <img src={characterImg} alt="AI 사수 캐릭터" />
+      <svg
+        className={`social-character-mouth-svg ${speaking ? 'is-speaking' : ''}`}
+        viewBox="0 0 100 80"
+        aria-hidden="true"
+      >
+        <ellipse className="social-character-mouth-cover" cx="50" cy="35" rx="32" ry="23" />
+        <ellipse className="social-character-mouth-open" cx="50" cy="40" rx="22" ry="15" />
+      </svg>
+    </>
+  );
+}
 
 const getDocumentAnswerValue = (answers, question) => (question ? answers[question.questionId] : undefined);
 
@@ -559,11 +677,674 @@ export function SocialSessionPage() {
   const [session, setSession] = useState(null);
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState('loading');
+  const [voicePhase, setVoicePhaseState] = useState('idle');
   const [error, setError] = useState('');
+  const [voiceStatusText, setVoiceStatusText] = useState('');
+  const [chatDialogues, setChatDialogues] = useState([]);
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const chatThreadRef = useRef(null);
+  const voiceSocketRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const sourceNodeRef = useRef(null);
+  const processorNodeRef = useRef(null);
+  const gainNodeRef = useRef(null);
+  const playbackChainRef = useRef(Promise.resolve());
+  const advanceAfterTurnRef = useRef(false);
+  const isRecordingRef = useRef(false);
+  const isMountedRef = useRef(false);
+  const isCleaningUpRef = useRef(false);
+  const pendingAutoStartRef = useRef(false);
+  const voiceConnectPromiseRef = useRef(null);
+  const voiceConnectResolveRef = useRef(null);
+  const voiceConnectRejectRef = useRef(null);
+  const voicePhaseRef = useRef('idle');
+  const currentUserMessageIdRef = useRef(null);
+  const currentAiMessageIdRef = useRef(null);
+  const currentAiFinalHandledRef = useRef(false);
+  const messageCounterRef = useRef(0);
+  const openingAudioRef = useRef(null);
+  const openingAudioObjectUrlRef = useRef('');
+  const aiSpeakingStopTimerRef = useRef(null);
+  const aiAudioPlayedThisTurnRef = useRef(false);
 
-  const visibleDialogues = useMemo(() => scenario?.dialogues?.slice(0, step + 1) || [], [scenario, step]);
-  const isLastStep = scenario?.dialogues ? step >= scenario.dialogues.length - 1 : false;
+  const startAiSpeaking = () => {
+    if (aiSpeakingStopTimerRef.current) {
+      window.clearTimeout(aiSpeakingStopTimerRef.current);
+      aiSpeakingStopTimerRef.current = null;
+    }
+    setIsAiSpeaking(true);
+  };
+
+  const stopAiSpeakingSoon = (delayMs = 180) => {
+    if (aiSpeakingStopTimerRef.current) {
+      window.clearTimeout(aiSpeakingStopTimerRef.current);
+    }
+    aiSpeakingStopTimerRef.current = window.setTimeout(() => {
+      setIsAiSpeaking(false);
+      aiSpeakingStopTimerRef.current = null;
+    }, delayMs);
+  };
+
+  const visibleDialogues = useMemo(
+    () => (chatDialogues.length > 0 ? chatDialogues : scenario?.dialogues?.slice(0, step + 1) || []),
+    [chatDialogues, scenario, step],
+  );
+  const isLiveVoiceChat = chatDialogues.length > 0;
+  const isLastStep = !isLiveVoiceChat && scenario?.dialogues ? step >= scenario.dialogues.length - 1 : false;
+  const shouldAnimateAiCharacter = isAiSpeaking || voicePhase === 'processing';
+
+  const setVoicePhase = (nextPhase) => {
+    voicePhaseRef.current = nextPhase;
+    setVoicePhaseState(nextPhase);
+  };
+
+  const playOpeningRequest = async (audioUrl) => {
+    if (!audioUrl || typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      if (openingAudioRef.current) {
+        openingAudioRef.current.pause();
+      }
+      if (openingAudioObjectUrlRef.current) {
+        URL.revokeObjectURL(openingAudioObjectUrlRef.current);
+        openingAudioObjectUrlRef.current = '';
+      }
+
+      const audioBlob = await socialTrainingApi.getSocialOpeningAudioBlob(audioUrl);
+      const objectUrl = URL.createObjectURL(audioBlob);
+      openingAudioObjectUrlRef.current = objectUrl;
+      const audio = new Audio(objectUrl);
+      openingAudioRef.current = audio;
+      await audio.play();
+    } catch {
+      // Browser autoplay policies may block page-entry audio. The visible request text remains available.
+    }
+  };
+
+  const nextMessageId = (prefix) => {
+    messageCounterRef.current += 1;
+    return `${prefix}-${messageCounterRef.current}`;
+  };
+
+  const upsertChatDialogue = (dialogueId, patch, { beforeId } = {}) => {
+    setChatDialogues((currentDialogues) => {
+      const index = currentDialogues.findIndex((dialogue) => dialogue.id === dialogueId);
+      if (index < 0) {
+        const nextDialogue = { id: dialogueId, ...patch };
+        const beforeIndex = beforeId
+          ? currentDialogues.findIndex((dialogue) => dialogue.id === beforeId)
+          : -1;
+
+        if (beforeIndex < 0) {
+          return [...currentDialogues, nextDialogue];
+        }
+
+        return [
+          ...currentDialogues.slice(0, beforeIndex),
+          nextDialogue,
+          ...currentDialogues.slice(beforeIndex),
+        ];
+      }
+
+      return currentDialogues.map((dialogue, currentIndex) =>
+        currentIndex === index ? { ...dialogue, ...patch } : dialogue,
+      );
+    });
+  };
+
+  const appendChatDialogueText = (dialogueId, patch, text) => {
+    if (!text) {
+      return;
+    }
+
+    setChatDialogues((currentDialogues) => {
+      const index = currentDialogues.findIndex((dialogue) => dialogue.id === dialogueId);
+      if (index < 0) {
+        return [...currentDialogues, { id: dialogueId, ...patch, message: text }];
+      }
+
+      return currentDialogues.map((dialogue, currentIndex) =>
+        currentIndex === index
+          ? {
+              ...dialogue,
+              ...patch,
+              message: `${getSocialDialogueContent(dialogue)}${text}`,
+            }
+          : dialogue,
+      );
+    });
+  };
+
+  const cleanupRecording = () => {
+    isRecordingRef.current = false;
+
+    if (processorNodeRef.current) {
+      processorNodeRef.current.onaudioprocess = null;
+      processorNodeRef.current.disconnect();
+      processorNodeRef.current = null;
+    }
+
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.disconnect();
+      sourceNodeRef.current = null;
+    }
+
+    if (gainNodeRef.current) {
+      gainNodeRef.current.disconnect();
+      gainNodeRef.current = null;
+    }
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+  };
+
+  const cleanupVoiceSession = () => {
+    cleanupRecording();
+
+    if (voiceSocketRef.current) {
+      const socket = voiceSocketRef.current;
+      voiceSocketRef.current = null;
+      try {
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.onerror = null;
+        socket.onclose = null;
+        socket.close(1000, 'session cleanup');
+      } catch {
+        // Ignore cleanup errors.
+      }
+    }
+
+    pendingAutoStartRef.current = false;
+    voiceConnectPromiseRef.current = null;
+    voiceConnectResolveRef.current = null;
+    voiceConnectRejectRef.current = null;
+    currentUserMessageIdRef.current = null;
+    currentAiMessageIdRef.current = null;
+    currentAiFinalHandledRef.current = false;
+    aiAudioPlayedThisTurnRef.current = false;
+    setIsAiSpeaking(false);
+    if (aiSpeakingStopTimerRef.current) {
+      window.clearTimeout(aiSpeakingStopTimerRef.current);
+      aiSpeakingStopTimerRef.current = null;
+    }
+  };
+
+  const sendVoiceEvent = (payload) => {
+    const socket = voiceSocketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      return false;
+    }
+
+    socket.send(JSON.stringify(payload));
+    return true;
+  };
+
+  const stopRecording = async ({ requestResponse = true } = {}) => {
+    if (!isRecordingRef.current) {
+      return;
+    }
+
+    cleanupRecording();
+    setVoicePhase('processing');
+    setVoiceStatusText('음성을 텍스트로 변환하고 있어요.');
+    aiAudioPlayedThisTurnRef.current = false;
+    startAiSpeaking();
+
+    if (requestResponse) {
+      sendVoiceEvent({
+        type: 'audio.commit',
+        sessionId: session?.sessionId,
+      });
+      sendVoiceEvent({
+        type: 'response.request',
+        sessionId: session?.sessionId,
+      });
+    }
+  };
+
+  const playAudioChunk = async (chunkBase64) => {
+    if (!chunkBase64) {
+      return;
+    }
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+      return;
+    }
+
+    const audioContext =
+      audioContextRef.current || new AudioContextClass({ sampleRate: SOCIAL_VOICE_SAMPLE_RATE });
+    audioContextRef.current = audioContext;
+
+    if (audioContext.state === 'suspended') {
+      try {
+        await audioContext.resume();
+      } catch {
+        return;
+      }
+    }
+
+    const pcm16 = base64ToPcm16(chunkBase64);
+    const samples = pcm16ToFloat32(pcm16);
+    if (!samples.length) {
+      return;
+    }
+
+    const buffer = audioContext.createBuffer(1, samples.length, SOCIAL_VOICE_SAMPLE_RATE);
+    buffer.getChannelData(0).set(samples);
+
+    startAiSpeaking();
+
+    await new Promise((resolve) => {
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
+      source.onended = () => {
+        try {
+          source.disconnect();
+        } catch {
+          // Ignore disconnect errors during shutdown.
+        }
+        resolve();
+      };
+      source.start();
+    });
+
+    stopAiSpeakingSoon();
+  };
+
+  const queueAudioPlayback = (chunkBase64) => {
+    startAiSpeaking();
+    aiAudioPlayedThisTurnRef.current = true;
+    playbackChainRef.current = playbackChainRef.current
+      .catch(() => undefined)
+      .then(() => playAudioChunk(chunkBase64))
+      .catch(() => undefined);
+  };
+
+  const finishTurn = () => {
+    const shouldAdvance = advanceAfterTurnRef.current;
+    const stopDelayMs = aiAudioPlayedThisTurnRef.current ? 160 : 1200;
+    advanceAfterTurnRef.current = false;
+    setVoicePhase('ready');
+
+    if (shouldAdvance) {
+      playbackChainRef.current = playbackChainRef.current
+        .catch(() => undefined)
+        .then(() => {
+          stopAiSpeakingSoon(stopDelayMs);
+          if (isMountedRef.current) {
+            setStep((currentStep) => currentStep + 1);
+          }
+        })
+        .catch(() => undefined);
+    } else {
+      playbackChainRef.current = playbackChainRef.current
+        .catch(() => undefined)
+        .then(() => stopAiSpeakingSoon(stopDelayMs))
+        .catch(() => undefined);
+    }
+  };
+
+  const showOpeningDialogue = (script) => {
+    const message = getSocialScenarioOpeningMessage(scenario, { opening: { script } });
+    upsertChatDialogue('opening', {
+      speaker: 'AI',
+      speakerName: scenario?.npcName || '상대',
+      message,
+    });
+  };
+
+  const showUserTranscript = (text) => {
+    if (!text) {
+      return;
+    }
+
+    const dialogueId = currentUserMessageIdRef.current || nextMessageId('user');
+    currentUserMessageIdRef.current = dialogueId;
+    upsertChatDialogue(dialogueId, {
+      speaker: 'USER',
+      speakerName: '나',
+      message: text,
+    }, {
+      beforeId: currentAiMessageIdRef.current,
+    });
+    setVoiceStatusText('');
+  };
+
+  const showAiPartial = (text) => {
+    startAiSpeaking();
+    const dialogueId = currentAiMessageIdRef.current || nextMessageId('ai');
+    currentAiMessageIdRef.current = dialogueId;
+    appendChatDialogueText(dialogueId, {
+      speaker: 'AI',
+      speakerName: scenario?.npcName || '상대',
+    }, text);
+  };
+
+  const showAiFinal = (text) => {
+    if (!text) {
+      return;
+    }
+
+    startAiSpeaking();
+
+    if (currentAiFinalHandledRef.current) {
+      return;
+    }
+    currentAiFinalHandledRef.current = true;
+
+    const dialogueId = currentAiMessageIdRef.current || nextMessageId('ai');
+    currentAiMessageIdRef.current = dialogueId;
+    upsertChatDialogue(dialogueId, {
+      speaker: 'AI',
+      speakerName: scenario?.npcName || '상대',
+      message: text,
+    });
+  };
+
+  const handleVoiceMessage = (event) => {
+    let payload;
+
+    try {
+      payload = JSON.parse(event.data);
+    } catch {
+      return;
+    }
+
+    switch (payload?.type) {
+      case 'session.ready':
+        if (isMountedRef.current) {
+          setVoicePhase('ready');
+        }
+        voiceConnectResolveRef.current?.();
+        voiceConnectPromiseRef.current = null;
+        voiceConnectResolveRef.current = null;
+        voiceConnectRejectRef.current = null;
+        if (pendingAutoStartRef.current) {
+          pendingAutoStartRef.current = false;
+          beginRecording();
+        }
+        break;
+      case 'opening.play':
+        showOpeningDialogue(payload.script);
+        break;
+      case 'upstream.input_audio_buffer.committed':
+        break;
+      case 'upstream.response.created':
+        startAiSpeaking();
+        aiAudioPlayedThisTurnRef.current = false;
+        currentAiMessageIdRef.current = payload.responseId ? `ai-${payload.responseId}` : nextMessageId('ai');
+        currentAiFinalHandledRef.current = false;
+        upsertChatDialogue(currentAiMessageIdRef.current, {
+          speaker: 'AI',
+          speakerName: scenario?.npcName || '상대',
+          message: '응답을 준비하고 있어요.',
+        });
+        break;
+      case 'transcript.partial':
+      case 'text.out.partial':
+        if (payload.speaker === 'USER') {
+          showUserTranscript(payload.text);
+        } else {
+          startAiSpeaking();
+          showAiPartial(payload.text);
+        }
+        break;
+      case 'transcript.complete':
+        if (payload.speaker === 'USER') {
+          showUserTranscript(payload.finalText || payload.text);
+        } else {
+          startAiSpeaking();
+          showAiFinal(payload.finalText || payload.text);
+        }
+        break;
+      case 'audio.out':
+        startAiSpeaking();
+        queueAudioPlayback(payload.chunkBase64);
+        break;
+      case 'turn.complete':
+        showAiFinal(payload.finalText);
+        finishTurn();
+        break;
+      case 'upstream.response.done':
+        showAiFinal(payload.finalText);
+        finishTurn();
+        break;
+      case 'session.completed':
+        if (isMountedRef.current) {
+          cleanupVoiceSession();
+          setVoicePhase(payload.status === 'COMPLETED' ? 'idle' : 'ready');
+        }
+        break;
+      case 'error':
+        if (isMountedRef.current) {
+          setVoicePhase('error');
+          setError(payload.message || '실시간 음성 연결에 실패했습니다.');
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  const connectVoiceSession = async () => {
+    if (voiceSocketRef.current?.readyState === WebSocket.OPEN) {
+      return voiceConnectPromiseRef.current || Promise.resolve();
+    }
+
+    if (voiceConnectPromiseRef.current) {
+      return voiceConnectPromiseRef.current;
+    }
+
+    if (!session?.sessionId) {
+      setVoicePhase('error');
+      setError('실시간 음성 세션을 준비하지 못했습니다.');
+      return Promise.reject(new Error('Missing social session id.'));
+    }
+
+    const shouldAutoStartAfterConnect = pendingAutoStartRef.current;
+    cleanupVoiceSession();
+    pendingAutoStartRef.current = shouldAutoStartAfterConnect;
+    setVoicePhase('connecting');
+
+    let voiceSessionData;
+    try {
+      voiceSessionData = await socialTrainingApi.prepareSocialVoiceSession(session.sessionId);
+    } catch (requestError) {
+      setVoicePhase('error');
+      setError(getErrorMessage(requestError, '실시간 음성 세션을 준비하지 못했습니다.'));
+      return Promise.reject(requestError);
+    }
+
+    if (!voiceSessionData?.realtime?.connectionToken) {
+      setVoicePhase('error');
+      setError('실시간 음성 세션을 준비하지 못했습니다.');
+      return Promise.reject(new Error('Missing voice session token.'));
+    }
+
+    voiceConnectPromiseRef.current = new Promise((resolve, reject) => {
+      voiceConnectResolveRef.current = resolve;
+      voiceConnectRejectRef.current = reject;
+
+      const socket = new WebSocket(
+        socialTrainingApi.createSocialVoiceWebSocketUrl(voiceSessionData.realtime.connectionToken),
+      );
+      voiceSocketRef.current = socket;
+
+      socket.onopen = () => {
+        sendVoiceEvent({
+          type: 'session.start',
+          sessionId: session?.sessionId,
+        });
+      };
+
+      socket.onmessage = handleVoiceMessage;
+
+      socket.onerror = () => {
+        if (!isMountedRef.current) {
+          return;
+        }
+        setVoicePhase('error');
+        setError('실시간 음성 연결에 실패했습니다.');
+        pendingAutoStartRef.current = false;
+        reject(new Error('Voice websocket error.'));
+        voiceSocketRef.current = null;
+        voiceConnectPromiseRef.current = null;
+        voiceConnectResolveRef.current = null;
+        voiceConnectRejectRef.current = null;
+      };
+
+      socket.onclose = () => {
+        if (!isMountedRef.current || isCleaningUpRef.current) {
+          return;
+        }
+
+        if (voicePhaseRef.current !== 'error') {
+          setVoicePhase('error');
+          setError('실시간 음성 연결이 종료되었습니다.');
+        }
+        pendingAutoStartRef.current = false;
+        reject(new Error('Voice websocket closed.'));
+        voiceSocketRef.current = null;
+        voiceConnectPromiseRef.current = null;
+        voiceConnectResolveRef.current = null;
+        voiceConnectRejectRef.current = null;
+      };
+    });
+
+    return voiceConnectPromiseRef.current;
+  };
+
+  const beginRecording = async () => {
+    if (isRecordingRef.current || voicePhaseRef.current === 'connecting' || voicePhaseRef.current === 'processing') {
+      return;
+    }
+
+    const socket = voiceSocketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      setError('실시간 음성 연결이 아직 준비되지 않았습니다.');
+      return;
+    }
+
+    const mediaDevices = navigator.mediaDevices;
+    if (!mediaDevices?.getUserMedia) {
+      setError('이 브라우저는 마이크 녹음을 지원하지 않습니다.');
+      return;
+    }
+
+    try {
+      setError('');
+      const stream = await mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) {
+        stream.getTracks().forEach((track) => track.stop());
+        setError('이 브라우저는 오디오 재생을 지원하지 않습니다.');
+        return;
+      }
+
+      const audioContext = audioContextRef.current || new AudioContextClass({ sampleRate: SOCIAL_VOICE_SAMPLE_RATE });
+      audioContextRef.current = audioContext;
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+
+      const sourceNode = audioContext.createMediaStreamSource(stream);
+      const processorNode = audioContext.createScriptProcessor(SOCIAL_VOICE_RECORD_BUFFER_SIZE, 1, 1);
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0;
+
+      processorNode.onaudioprocess = (event) => {
+        if (!isRecordingRef.current) {
+          return;
+        }
+
+        const inputBuffer = event.inputBuffer.getChannelData(0);
+        const chunkBase64 = float32ToPcm16Base64(inputBuffer, audioContext.sampleRate);
+        if (!chunkBase64) {
+          return;
+        }
+
+        sendVoiceEvent({
+          type: 'audio.chunk',
+          sessionId: session?.sessionId,
+          mimeType: 'audio/pcm',
+          chunkBase64,
+        });
+      };
+
+      sourceNode.connect(processorNode);
+      processorNode.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      mediaStreamRef.current = stream;
+      sourceNodeRef.current = sourceNode;
+      processorNodeRef.current = processorNode;
+      gainNodeRef.current = gainNode;
+      isRecordingRef.current = true;
+      currentUserMessageIdRef.current = nextMessageId('user');
+      currentAiMessageIdRef.current = null;
+      currentAiFinalHandledRef.current = false;
+      setVoiceStatusText('듣고 있어요.');
+      setVoicePhase('recording');
+    } catch (requestError) {
+      cleanupRecording();
+      setVoicePhase('ready');
+      setError(getErrorMessage(requestError, '마이크를 사용할 수 없습니다.'));
+    }
+  };
+
+  const startRecording = async () => {
+    const socket = voiceSocketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      pendingAutoStartRef.current = true;
+      try {
+        await connectVoiceSession();
+      } catch {
+        pendingAutoStartRef.current = false;
+      }
+      return;
+    }
+
+    await beginRecording();
+  };
+
+  const handleVoiceButtonClick = async () => {
+    if (status === 'saving') {
+      return;
+    }
+
+    if (voicePhase === 'recording') {
+      advanceAfterTurnRef.current = !isLastStep;
+      await stopRecording();
+      return;
+    }
+
+    if (isLastStep) {
+      await completeSession();
+      return;
+    }
+
+    if (voicePhase !== 'ready') {
+      return;
+    }
+
+    await startRecording();
+  };
 
   const loadSession = async () => {
     if (!scenarioId) {
@@ -580,17 +1361,38 @@ export function SocialSessionPage() {
         socialTrainingApi.startSocialSession({ jobType, scenarioId }),
       ]);
 
-      let voiceSessionData = null;
-      try {
-        voiceSessionData = await socialTrainingApi.prepareSocialVoiceSession(sessionData.sessionId);
-      } catch {
-        voiceSessionData = null;
-      }
-
-      setScenario(normalizeSocialScenario(scenarioDetail, voiceSessionData));
+      setScenario(normalizeSocialScenario(scenarioDetail));
       setSession(sessionData);
+      setVoicePhase('ready');
+      currentUserMessageIdRef.current = null;
+      currentAiMessageIdRef.current = null;
+      const openingMessage = getSocialScenarioOpeningMessage(scenarioDetail);
+      setChatDialogues([
+        {
+          id: 'opening',
+          speaker: 'AI',
+          speakerName: scenarioDetail?.npcName || '상대',
+          message: openingMessage,
+        },
+      ]);
       setStep(0);
       setStatus('ready');
+
+      try {
+        const openingAudio = await socialTrainingApi.prepareSocialOpeningAudio(scenarioId);
+        if (openingAudio?.script) {
+          upsertChatDialogue('opening', {
+            speaker: 'AI',
+            speakerName: scenarioDetail?.npcName || '상대',
+            message: openingAudio.script,
+          });
+        }
+        if (openingAudio?.audioAssetStatus === 'READY') {
+          await playOpeningRequest(openingAudio.audioUrl);
+        }
+      } catch {
+        // Opening audio is helpful but not required to continue the training.
+      }
     } catch (requestError) {
       setError(getErrorMessage(requestError, '사회성 훈련을 시작하지 못했습니다.'));
       setStatus('error');
@@ -602,10 +1404,55 @@ export function SocialSessionPage() {
   }, [scenarioId]);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      isCleaningUpRef.current = true;
+      cleanupVoiceSession();
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => undefined);
+        audioContextRef.current = null;
+      }
+      if (openingAudioRef.current) {
+        openingAudioRef.current.pause();
+        openingAudioRef.current = null;
+      }
+      if (openingAudioObjectUrlRef.current) {
+        URL.revokeObjectURL(openingAudioObjectUrlRef.current);
+        openingAudioObjectUrlRef.current = '';
+      }
+      if (aiSpeakingStopTimerRef.current) {
+        window.clearTimeout(aiSpeakingStopTimerRef.current);
+        aiSpeakingStopTimerRef.current = null;
+      }
+      isCleaningUpRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (chatThreadRef.current) {
       chatThreadRef.current.scrollTop = chatThreadRef.current.scrollHeight;
     }
   }, [visibleDialogues.length]);
+
+  const socialVoiceActionLabel = isLastStep
+    ? voicePhase === 'recording'
+      ? '녹음 종료'
+      : status === 'saving'
+        ? '저장 중'
+        : voicePhase === 'connecting'
+          ? '연결 중'
+          : voicePhase === 'processing'
+            ? '듣는 중'
+            : '결과 보기'
+    : voicePhase === 'recording'
+      ? '녹음 종료'
+      : voicePhase === 'connecting'
+        ? '연결 중'
+        : voicePhase === 'processing'
+          ? '듣는 중'
+          : '말하기';
 
   const completeSession = async () => {
     if (!session?.sessionId) {
@@ -620,6 +1467,7 @@ export function SocialSessionPage() {
       const result = await socialTrainingApi.completeSocialSession(session.sessionId, {
         dialogLogs,
       });
+      cleanupVoiceSession();
       navigate('/training/social/result', {
         state: {
           sessionId: session.sessionId,
@@ -677,19 +1525,39 @@ export function SocialSessionPage() {
                 ))}
               </div>
               <div className="training-actions social-mic-actions">
-                {!isLastStep ? (
-                  <button type="button" onClick={() => setStep((currentStep) => currentStep + 1)} aria-label="말하기">
-                    말하기
-                  </button>
-                ) : (
-                  <button type="button" onClick={completeSession} disabled={status === 'saving'} aria-label="결과 보기">
-                    {status === 'saving' ? '저장 중' : '결과 보기'}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className={`social-mic-button ${voicePhase === 'recording' ? 'is-recording' : ''}`}
+                  onClick={handleVoiceButtonClick}
+                  disabled={
+                    status === 'saving' ||
+                    voicePhase === 'connecting' ||
+                    voicePhase === 'processing' ||
+                    (voicePhase !== 'ready' && voicePhase !== 'recording')
+                  }
+                  aria-label={socialVoiceActionLabel}
+                >
+                  <span>{socialVoiceActionLabel}</span>
+                </button>
+                <button
+                  type="button"
+                  className="social-end-button"
+                  onClick={completeSession}
+                  disabled={
+                    status === 'saving' ||
+                    voicePhase === 'connecting' ||
+                    voicePhase === 'recording' ||
+                    voicePhase === 'processing'
+                  }
+                  aria-label="대화 종료 및 피드백 받기"
+                >
+                  <span>{status === 'saving' ? '저장 중' : '종료'}</span>
+                </button>
               </div>
+              {voiceStatusText ? <p className="social-voice-status">{voiceStatusText}</p> : null}
               <aside className="social-video-profile">
-                <div className="social-video-avatar">
-                  <img src={characterImg} alt="" />
+                <div className={`social-video-avatar ${shouldAnimateAiCharacter ? 'is-ai-speaking' : ''}`}>
+                  <SocialAiCharacter speaking={shouldAnimateAiCharacter} />
                 </div>
               </aside>
             </div>
@@ -929,7 +1797,6 @@ export function SafetySessionPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const scenarioId = location.state?.scenarioId;
-  const category = location.state?.category;
   const [sessionId, setSessionId] = useState(null);
   const [scene, setScene] = useState(null);
   const [status, setStatus] = useState('loading');

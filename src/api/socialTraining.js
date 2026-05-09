@@ -27,6 +27,18 @@ export const prepareSocialVoiceSession = async (sessionId) => {
   return unwrapTrainingData(response);
 };
 
+export const prepareSocialOpeningAudio = async (scenarioId) => {
+  const response = await client.post(`/api/trainings/social/scenarios/${scenarioId}/opening-audio`, {});
+  return unwrapTrainingData(response);
+};
+
+export const getSocialOpeningAudioBlob = async (audioUrl) => {
+  const response = await client.get(audioUrl, {
+    responseType: 'blob',
+  });
+  return response.data;
+};
+
 export const completeSocialSession = async (sessionId, payload) => {
   const response = await client.post(`/api/trainings/social/sessions/${sessionId}/complete`, payload);
   return unwrapTrainingData(response);

@@ -6038,13 +6038,83 @@
   height: 458px;
   margin: 0 auto 18px;
   overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .social-video-avatar img {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: contain;
   object-position: center bottom;
+  transform-origin: 50% 42%;
+}
+
+.social-video-avatar.is-ai-speaking img {
+  animation: social-avatar-speaking 220ms ease-in-out infinite;
+}
+
+.social-character-mouth-svg {
+  position: absolute;
+  left: 50.5%;
+  top: 35.5%;
+  z-index: 2;
+  width: 96px;
+  height: 76px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+.social-character-mouth-cover {
+  fill: #ffd3c3;
+  opacity: 0;
+}
+
+.social-character-mouth-open {
+  fill: #211314;
+  stroke: #171313;
+  stroke-width: 3.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.social-character-mouth-svg.is-speaking {
+  opacity: 1;
+}
+
+.social-character-mouth-svg.is-speaking .social-character-mouth-cover {
+  opacity: 0.92;
+}
+
+.social-character-mouth-svg.is-speaking .social-character-mouth-open {
+  opacity: 1;
+  animation: social-svg-mouth-talk 140ms steps(2, end) infinite;
+}
+
+@keyframes social-svg-mouth-talk {
+  0%,
+  100% {
+    transform: translateY(-2px) scaleY(0.18);
+  }
+
+  50% {
+    transform: translateY(4px) scaleY(1.65);
+  }
+}
+
+@keyframes social-avatar-speaking {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(-0.7deg) scale(1.018);
+  }
 }
 
 .social-video-profile strong {
@@ -7186,6 +7256,11 @@
   box-shadow: 0 14px 24px rgba(36, 74, 102, 0.22);
 }
 
+.social-session-stage .training-actions button.is-recording {
+  background: #d94f4f;
+  box-shadow: 0 14px 24px rgba(217, 79, 79, 0.22);
+}
+
 .social-session-stage .training-actions button::before {
   top: 28px;
   width: 24px;
@@ -7202,6 +7277,52 @@
 .social-session-stage .training-actions button span {
   top: 112px;
   color: #244a66;
+}
+
+.social-session-stage .training-actions button.is-recording span {
+  color: #d94f4f;
+}
+
+.social-session-stage .training-actions .social-end-button {
+  position: absolute;
+  left: 126px;
+  top: 22px;
+  width: 104px;
+  min-width: 104px;
+  height: 48px;
+  border: 3px solid #d7e3ec;
+  border-radius: 999px;
+  background: #fffefb;
+  color: #244a66;
+  box-shadow: 0 8px 18px rgba(36, 74, 102, 0.12);
+}
+
+.social-session-stage .training-actions .social-end-button::before,
+.social-session-stage .training-actions .social-end-button::after {
+  content: none;
+}
+
+.social-session-stage .training-actions .social-end-button span {
+  top: 50%;
+  color: #244a66;
+  font-size: 18px;
+  transform: translate(-50%, -50%);
+}
+
+.social-session-stage .training-actions .social-end-button:disabled {
+  opacity: 0.56;
+}
+
+.social-session-stage .social-voice-status {
+  position: absolute;
+  left: 50%;
+  bottom: 86px;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #5f6b63;
+  white-space: nowrap;
 }
 
 /* Safety scenario list aligned with social scenario cards */
