@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../api';
 import homeIcon from '../../assets/sidebar_home.png';
+import myInfoIcon from '../../assets/sidebar_myinfo.png';
 import noteIcon from '../../assets/sidebar_note.png';
 import './Sidebar.css';
 
 const navItems = [
   { key: 'main', label: '홈', path: '/main', icon: homeIcon },
   { key: 'history', label: '기록', path: '/training-history', icon: noteIcon },
-  { key: 'mypage', label: '내 정보', path: '/mypage', icon: noteIcon },
+  { key: 'mypage', label: '내 정보', path: '/mypage', icon: myInfoIcon },
 ];
 
 function Sidebar({ activeKey = 'main' }) {
