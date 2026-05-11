@@ -222,9 +222,25 @@ const toDocumentAnswerRequest = (question, answerValue) => {
   };
 };
 
-const hasDocumentAnswerDetails = (result) => {
-  const items = result?.answers || result?.results || [];
-  return items.some((item) => item.questionText || item.userAnswer);
+const normalizeSafetyResult = (detail, fallback = null) => {
+  if (!detail) {
+    return fallback;
+  }
+
+  return {
+    ...fallback,
+    ...detail,
+    correct:
+      detail.correct ??
+      fallback?.correct ??
+      (typeof detail.score === 'number' ? detail.score >= 70 : undefined),
+    feedback: detail.feedback?.summary || detail.feedback || fallback?.feedback,
+    effectText: detail.feedback?.detailText || detail.effectText || fallback?.effectText,
+    feedbackImageUrl: detail.feedbackImageUrl || fallback?.feedbackImageUrl,
+    feedbackImageAlt: detail.feedbackImageAlt || fallback?.feedbackImageAlt,
+    latestSceneImageUrl: detail.latestSceneImageUrl || fallback?.latestSceneImageUrl,
+    latestSceneImageAlt: detail.latestSceneImageAlt || fallback?.latestSceneImageAlt,
+  };
 };
 
 const getLearningScenarioIndex = (scenarios) => {
@@ -1998,7 +2014,8 @@ export function SafetyResultPage() {
     setStatus('loading');
     setError('');
     try {
-      setResult(await safetyTrainingApi.getSafetySessionDetail(sessionId));
+      const detail = await safetyTrainingApi.getSafetySessionDetail(sessionId);
+      setResult((currentResult) => normalizeSafetyResult(detail, currentResult));
       setStatus('ready');
     } catch (requestError) {
       setError(getErrorMessage(requestError, '\uACB0\uACFC\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.'));
@@ -2006,7 +2023,7 @@ export function SafetyResultPage() {
     }
   };
   useEffect(() => {
-    if (!result || (sessionId && !hasDocumentAnswerDetails(result))) {
+    if (!result || (sessionId && !result.feedbackImageUrl && !result.latestSceneImageUrl)) {
       loadResult();
     }
   }, [sessionId]);
