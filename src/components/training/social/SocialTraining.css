@@ -216,6 +216,15 @@
   line-height: 1.35;
 }
 
+.social-tutorial-box,
+.social-instruction-box,
+.social-message-bubble,
+.social-result-tutorial,
+.social-feedback-box {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 .social-conversation-log {
   position: absolute;
   left: 456px;
