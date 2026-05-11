@@ -17,6 +17,11 @@ export const goToNextSafetyScene = async (sessionId, payload) => {
   return unwrapTrainingData(response);
 };
 
+export const advanceSafetyScene = async (sessionId, payload) => {
+  const response = await client.post(`/api/trainings/safety/sessions/${sessionId}/advance-scene`, payload);
+  return unwrapTrainingData(response);
+};
+
 export const completeSafetySession = async (sessionId) => {
   const response = await client.post(`/api/trainings/safety/sessions/${sessionId}/complete`, {});
   return unwrapTrainingData(response);

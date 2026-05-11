@@ -1,6 +1,6 @@
 import MockAdapter from 'axios-mock-adapter';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import client from '../client';
+import client, { resolveApiAssetUrl } from '../client';
 import {
   getTrainingProgress,
   getTrainingProgressSummary,
@@ -17,6 +17,7 @@ import {
   startSocialSession,
 } from '../socialTraining';
 import {
+  advanceSafetyScene,
   completeSafetySession,
   getSafetyScenarios,
   getSafetySessionDetail,
@@ -86,15 +87,28 @@ describe('training API wrappers', () => {
     );
   });
 
+  it('resolves backend training asset URLs against the API base URL', () => {
+    expect(resolveApiAssetUrl('/trainings/safety/sex-education/scenario-01/story-01.png')).toBe(
+      'http://localhost/trainings/safety/sex-education/scenario-01/story-01.png',
+    );
+    expect(resolveApiAssetUrl('/mock/trainings/safety/scenes/sample.png')).toBe('/mock/trainings/safety/scenes/sample.png');
+    expect(resolveApiAssetUrl('https://cdn.example.com/story.png')).toBe('https://cdn.example.com/story.png');
+  });
+
   it('calls safety training endpoints and unwraps data', async () => {
     mock.onGet('/api/trainings/safety/scenarios', { params: { category: 'COMMUTE_SAFETY' } }).reply(200, wrapped([{ scenarioId: 1 }]));
     mock.onPost('/api/trainings/safety/sessions', { scenarioId: 1 }).reply(200, wrapped({ sessionId: 20 }));
+    mock.onPost('/api/trainings/safety/sessions/20/advance-scene', { sceneId: 1 }).reply(200, wrapped({ completed: false, nextScene: { sceneId: 2 } }));
     mock.onPost('/api/trainings/safety/sessions/20/next-scene', { sceneId: 1, choiceId: 1 }).reply(200, wrapped({ completed: false, nextScene: { sceneId: 2 } }));
     mock.onPost('/api/trainings/safety/sessions/20/complete', {}).reply(200, wrapped({ completed: true }));
     mock.onGet('/api/trainings/safety/sessions/20/detail').reply(200, wrapped({ score: 80, feedbackImageUrl: '/mock/result.png' }));
 
     await expect(getSafetyScenarios('COMMUTE_SAFETY')).resolves.toEqual([{ scenarioId: 1 }]);
     await expect(startSafetySession({ scenarioId: 1 })).resolves.toEqual({ sessionId: 20 });
+    await expect(advanceSafetyScene(20, { sceneId: 1 })).resolves.toEqual({
+      completed: false,
+      nextScene: { sceneId: 2 },
+    });
     await expect(goToNextSafetyScene(20, { sceneId: 1, choiceId: 1 })).resolves.toEqual({
       completed: false,
       nextScene: { sceneId: 2 },

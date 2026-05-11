@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { documentTrainingApi, safetyTrainingApi, socialTrainingApi, trainingProgressApi } from '../../api';
+import { resolveApiAssetUrl } from '../../api/client';
 import characterImg from '../../assets/Character_JIWOO.png';
 import backArrowImg from '../../assets/back_arrow.png';
 import documentThumbnail from '../../assets/card/document_thumnail.png';
@@ -1797,6 +1798,7 @@ export function SafetySessionPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const scenarioId = location.state?.scenarioId;
+  const category = location.state?.category;
   const [sessionId, setSessionId] = useState(null);
   const [scene, setScene] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -1830,6 +1832,8 @@ export function SafetySessionPage() {
         result: {
           ...completion,
           ...selectedResult,
+          scenarioId,
+          category,
           completed: completion.completed ?? true,
         },
       },
@@ -1837,7 +1841,7 @@ export function SafetySessionPage() {
   };
 
   const selectChoice = async (choiceId) => {
-    if (!sessionId || !scene) {
+    if (!sessionId || !scene || status === 'saving') {
       return;
     }
     setStatus('saving');
@@ -1860,7 +1864,7 @@ export function SafetySessionPage() {
   };
 
   const goNextScene = async () => {
-    if (!sessionId || !scene) {
+    if (!sessionId || !scene || status === 'saving') {
       return;
     }
 
@@ -1868,7 +1872,7 @@ export function SafetySessionPage() {
     setError('');
 
     try {
-      const data = await safetyTrainingApi.goToNextSafetyScene(sessionId, {
+      const data = await safetyTrainingApi.advanceSafetyScene(sessionId, {
         sceneId: scene.sceneId,
       });
 
@@ -1886,7 +1890,7 @@ export function SafetySessionPage() {
   };
 
   const hasChoices = Array.isArray(scene?.choices) && scene.choices.length > 0;
-  const canTapToContinue = false;
+  const canTapToContinue = !hasChoices && status !== 'saving';
   const handleStageContinue = () => {
     if (canTapToContinue) {
       goNextScene();
@@ -1922,7 +1926,7 @@ export function SafetySessionPage() {
           tabIndex={canTapToContinue ? 0 : undefined}
           aria-label={canTapToContinue ? '다음 장면으로 이동' : undefined}
         >
-          <img className="safety-stage-image" src={scene.imageUrl} alt={scene.imageAlt || ''} />
+          <img className="safety-stage-image" src={resolveApiAssetUrl(scene.imageUrl)} alt={scene.imageAlt || ''} />
           {scene.questionText && !hasChoices ? <div className="safety-question-bubble">{scene.questionText}</div> : null}
           {!hasChoices ? (
             <div className="safety-caption">
@@ -1996,7 +2000,7 @@ export function SafetyResultPage() {
         <section className={`safety-result-layout ${result?.correct ? 'is-correct' : 'is-wrong'}`}>
           <img
             className="safety-result-image"
-            src={result?.feedbackImageUrl || result?.latestSceneImageUrl}
+            src={resolveApiAssetUrl(result?.feedbackImageUrl || result?.latestSceneImageUrl)}
             alt={result?.feedbackImageAlt || result?.latestSceneImageAlt || ''}
           />
           <div className="safety-result-content">

@@ -3,6 +3,22 @@ import { tokenStorage } from './tokenStorage';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost';
 
+export const resolveApiAssetUrl = (url) => {
+  if (!url || typeof url !== 'string') {
+    return url;
+  }
+
+  if (/^https?:\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) {
+    return url;
+  }
+
+  if (url.startsWith('/trainings/')) {
+    return `${API_BASE_URL.replace(/\/$/, '')}${url}`;
+  }
+
+  return url;
+};
+
 const client = axios.create({
   baseURL: API_BASE_URL,
   headers: {

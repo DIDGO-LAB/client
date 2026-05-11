@@ -1406,6 +1406,40 @@ export const setupMockApi = () => {
     ];
   });
 
+  mockApi.onPost(/\/api\/trainings\/safety\/sessions\/\d+\/advance-scene$/).reply((config) => {
+    const authError = requireAuth(config);
+    if (authError) {
+      return authError;
+    }
+    const sessionId = Number(config.url.split('/').at(-2));
+    const payload = parseBody(config.data);
+    const session = mockSafetySessions.get(sessionId);
+    if (!session) {
+      return [404, { success: false, error: { code: 'NOT_FOUND', message: '훈련 세션을 찾을 수 없습니다.' } }];
+    }
+    const sceneIndex = session.scenario.scenes.findIndex((item) => item.sceneId === payload.sceneId);
+    const currentIndex = sceneIndex >= 0 ? sceneIndex : session.sceneIndex;
+    const nextSceneIndex = currentIndex + 1;
+    if (nextSceneIndex >= session.scenario.scenes.length) {
+      return [404, { success: false, error: { code: 'NOT_FOUND', message: '다음 장면을 찾을 수 없습니다.' } }];
+    }
+    mockSafetySessions.set(sessionId, {
+      ...session,
+      sceneIndex: nextSceneIndex,
+    });
+    return [
+      200,
+      wrappedTraining({
+        completed: false,
+        nextScene: cloneSafetyScene(
+          session.scenario.scenes[nextSceneIndex],
+          nextSceneIndex === session.scenario.scenes.length - 1,
+        ),
+        result: null,
+      }),
+    ];
+  });
+
   mockApi.onPost(/\/api\/trainings\/safety\/sessions\/\d+\/next-scene$/).reply((config) => {
     const authError = requireAuth(config);
     if (authError) {
