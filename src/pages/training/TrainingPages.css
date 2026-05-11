@@ -7470,6 +7470,17 @@
   color: #6a625b;
 }
 
+.document-result-detail-list {
+  width: min(760px, 100%);
+  max-height: 420px;
+  margin-top: 28px;
+  padding: 4px 12px 4px 0;
+  display: grid;
+  gap: 16px;
+  overflow-y: auto;
+  text-align: left;
+}
+
 .document-result-actions {
   margin-top: 36px;
 }

@@ -1637,9 +1637,12 @@ export const setupMockApi = () => {
     const results = session.questions.map((question) => {
       const answer = payload.answers?.find((item) => item.questionId === question.questionId);
       const correct = answer?.choiceId === question.correctChoiceId;
+      const selectedChoice = question.choices?.find((choice) => choice.choiceId === answer?.choiceId);
 
       return {
         questionId: question.questionId,
+        questionText: question.questionText,
+        userAnswer: selectedChoice?.text || answer?.userAnswer || null,
         correct,
         correctAnswer: question.correctAnswer,
         explanation: question.explanation,
@@ -1697,7 +1700,7 @@ export const setupMockApi = () => {
             return {
               questionId: result.questionId,
               questionText: question?.questionText,
-              userAnswer: null,
+              userAnswer: result.userAnswer,
               correctAnswer: result.correctAnswer,
               correct: result.correct,
               explanation: result.explanation,

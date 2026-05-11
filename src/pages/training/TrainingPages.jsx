@@ -36,6 +36,9 @@ const toDialogLogs = (dialogues) =>
     content: getSocialDialogueContent(dialogue),
   }));
 
+const hasUserDialogLog = (dialogLogs) =>
+  dialogLogs.some((dialogue) => dialogue.speaker === 'USER' && dialogue.content.trim());
+
 const getSocialOpeningScript = (voiceSession) =>
   voiceSession?.opening?.script || voiceSession?.openingScript || '';
 
@@ -219,6 +222,11 @@ const toDocumentAnswerRequest = (question, answerValue) => {
   };
 };
 
+const hasDocumentAnswerDetails = (result) => {
+  const items = result?.answers || result?.results || [];
+  return items.some((item) => item.questionText || item.userAnswer);
+};
+
 const getLearningScenarioIndex = (scenarios) => {
   const explicitIndex = scenarios.findIndex(
     (scenario) =>
@@ -327,11 +335,16 @@ const looksCorruptedKoreanText = (value) =>
     (value.match(/\?/g) || []).length >= 2);
 
 const readableText = (value, fallback) => {
-  if (!value || looksCorruptedKoreanText(value)) {
+  const text =
+    value && typeof value === 'object'
+      ? value.summary || value.detailText || value.message || value.text
+      : value;
+
+  if (!text || looksCorruptedKoreanText(text)) {
     return fallback;
   }
 
-  return value;
+  return text;
 };
 
 function TrainingShell({ activeKey = 'main', fullScreen = false, children }) {
@@ -1464,7 +1477,13 @@ export function SocialSessionPage() {
     setError('');
 
     try {
-      const dialogLogs = toDialogLogs(visibleDialogues);
+      const dialogLogs = toDialogLogs(chatDialogues);
+      if (!hasUserDialogLog(dialogLogs)) {
+        setError('대화 기록이 없어 피드백을 생성할 수 없습니다. 먼저 음성으로 대화를 진행해주세요.');
+        setStatus('ready');
+        return;
+      }
+
       const result = await socialTrainingApi.completeSocialSession(session.sessionId, {
         dialogLogs,
       });
@@ -1637,7 +1656,7 @@ export function SocialResultPage() {
           <div className="social-result-score">{status === 'ready' ? `${result?.score ?? 90}점` : '확인 중'}</div>
           <div className="social-result-feedback">
             <strong>AI 피드백</strong>
-            <p>{status === 'ready' ? result?.feedback?.summary || result?.feedbackSummary || result?.feedback || '필요한 정보를 다시 확인하고 정리하는 흐름이 좋았습니다.' : '피드백을 불러오는 중입니다.'}</p>
+            <p>{status === 'ready' ? readableText(result?.feedback?.summary || result?.feedbackSummary || result?.feedback, '필요한 정보를 다시 확인하고 정리하는 흐름이 좋았습니다.') : '피드백을 불러오는 중입니다.'}</p>
           </div>
           <div className="social-result-recommendation">
             <strong>추천 답변</strong>
@@ -1987,7 +2006,7 @@ export function SafetyResultPage() {
     }
   };
   useEffect(() => {
-    if (!result) {
+    if (!result || (sessionId && !hasDocumentAnswerDetails(result))) {
       loadResult();
     }
   }, [sessionId]);
@@ -2006,8 +2025,8 @@ export function SafetyResultPage() {
           <div className="safety-result-content">
             <div className="safety-result-summary">
               <strong>{result?.title || (result?.correct ? '\uC798\uD588\uC5B4\uC694!' : '\uB2E4\uC2DC \uC0DD\uAC01\uD574\uBCFC\uAE4C\uC694?')}</strong>
-              <p>{result?.resultText || result?.feedback}</p>
-              <span>{result?.effectText || result?.feedback}</span>
+              <p>{readableText(result?.resultText || result?.feedback, '선택 결과를 확인해 주세요.')}</p>
+              <span>{readableText(result?.effectText || result?.feedback, '상황을 보고 안전한 선택을 연습했습니다.')}</span>
             </div>
             <div className="safety-result-actions">
               <button
@@ -2491,6 +2510,31 @@ export function DocumentResultPage() {
                 );
                 })}
               </div>
+              {resultItems.length > 0 ? (
+                <div className="document-result-detail-list">
+                  {resultItems.map((item, index) => (
+                    <article className={`document-history-answer ${item.correct ? 'is-correct' : 'is-wrong'}`} key={item.questionId || index}>
+                      <div className="document-history-answer-head">
+                        <span>{index + 1}</span>
+                        <em>{item.correct ? '정답' : '오답'}</em>
+                        <strong>{item.correct ? '맞혔어요' : '다시 확인해요'}</strong>
+                      </div>
+                      <h2>{item.questionText || `문제 ${index + 1}`}</h2>
+                      <dl>
+                        <div>
+                          <dt>내 답</dt>
+                          <dd>{item.userAnswer || '응답 없음'}</dd>
+                        </div>
+                        <div>
+                          <dt>정답</dt>
+                          <dd>{item.correctAnswer}</dd>
+                        </div>
+                      </dl>
+                      <p>{item.explanation || '해설이 준비되지 않았습니다.'}</p>
+                    </article>
+                  ))}
+                </div>
+              ) : null}
               <div className="document-result-actions">
                 <button type="button" onClick={() => navigate('/training/document/session', { state: { level: resultLevel } })}>
                   다시 연습하기
@@ -2857,7 +2901,7 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
                 <div>
                   <span>{formatHistoryDate(session.completedAt)}</span>
                   <strong>{session.scenarioTitle || '안전 대처 훈련'}</strong>
-                  <p>{session.feedbackSummary || '위험한 상황에서 나를 지키는 선택을 연습했습니다.'}</p>
+                  <p>{readableText(session.feedbackSummary, '위험한 상황에서 나를 지키는 선택을 연습했습니다.')}</p>
                 </div>
                 <div className="safety-history-card-meta">
                   <em>{getSafetyTypeLabel(session.category)}</em>
@@ -2875,7 +2919,7 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
             <strong>{hasSessions ? `${detail?.score ?? selectedSession?.score ?? 0}점` : '-'}</strong>
           </div>
           <h2>{selectedSession?.scenarioTitle || detail?.title || (hasSessions ? '안전 대처 훈련' : '첫 안전 훈련을 시작해 볼까요')}</h2>
-          <p>{detail?.feedback?.summary || detail?.feedback || selectedSession?.feedbackSummary || (hasSessions ? '상세 기록에서 선택한 행동을 확인해 보세요.' : '훈련을 완료하면 안전한 선택과 다시 볼 선택이 여기에 표시됩니다.')}</p>
+          <p>{readableText(detail?.feedback?.summary || detail?.feedback || selectedSession?.feedbackSummary, hasSessions ? '상세 기록에서 선택한 행동을 확인해 보세요.' : '훈련을 완료하면 안전한 선택과 다시 볼 선택이 여기에 표시됩니다.')}</p>
 
           {isLoading ? <div className="safety-history-preview-state">기록 목록을 불러오는 중입니다.</div> : null}
           {!isLoading && detailStatus === 'idle' && hasSessions ? <div className="safety-history-preview-state">기록을 선택하면 상세 내용이 표시됩니다.</div> : null}
@@ -2900,8 +2944,8 @@ function SafetyHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
               ) : null}
               {previewActions.length > 0 ? (
                 <div className="safety-history-preview-actions">
-                  {previewActions.map((action) => (
-                    <div className={action.correct ? 'is-correct' : 'is-wrong'} key={action.sceneId}>
+                  {previewActions.map((action, index) => (
+                    <div className={action.correct ? 'is-correct' : 'is-wrong'} key={`${action.sceneId ?? 'scene'}-${index}`}>
                       <span>{action.correct ? '나를 지키는 선택' : '다시 볼 선택'}</span>
                       <p>{action.selectedChoice || action.situationText}</p>
                     </div>
@@ -2932,8 +2976,8 @@ function SafetyHistoryDetail({ sessionId, summary, onBack, onRetry }) {
   const correctCount = detail?.choiceSummary?.correctCount ?? summary?.correctCount ?? 0;
   const totalCount = detail?.choiceSummary?.totalCount ?? summary?.totalCount ?? detail?.actions?.length ?? 0;
   const actions = detail?.actions || [];
-  const feedbackSummary = detail?.feedback?.summary || detail?.feedback || summary?.feedbackSummary || '위험한 상황에서 나를 지키는 선택을 연습했습니다.';
-  const feedbackDetail = detail?.feedback?.detailText || detail?.effectText || '상황을 다시 보며 어떤 행동이 안전했는지 확인해 보세요.';
+  const feedbackSummary = readableText(detail?.feedback?.summary || detail?.feedback || summary?.feedbackSummary, '위험한 상황에서 나를 지키는 선택을 연습했습니다.');
+  const feedbackDetail = readableText(detail?.feedback?.detailText || detail?.effectText, '상황을 다시 보며 어떤 행동이 안전했는지 확인해 보세요.');
 
   const loadDetail = async () => {
     if (!sessionId) {
@@ -2990,7 +3034,7 @@ function SafetyHistoryDetail({ sessionId, summary, onBack, onRetry }) {
               {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
               {status === 'ready' && actions.length > 0 ? (
                 actions.map((action, index) => (
-                  <article className={`safety-history-action ${action.correct ? 'is-correct' : 'is-wrong'}`} key={action.sceneId}>
+                  <article className={`safety-history-action ${action.correct ? 'is-correct' : 'is-wrong'}`} key={`${action.sceneId ?? 'scene'}-${index}`}>
                     <div className="safety-history-action-head">
                       <span>{index + 1}</span>
                       <em>{action.correct ? '나를 지키는 선택' : '다시 볼 선택'}</em>
@@ -3114,7 +3158,7 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
                 <div>
                   <span>{formatHistoryDate(session.completedAt)}</span>
                   <strong>{session.scenarioTitle || '사회성 훈련'}</strong>
-                  <p>{session.feedbackSummary}</p>
+                  <p>{readableText(session.feedbackSummary, '상황에 맞는 표현을 차분하게 이어갔습니다.')}</p>
                 </div>
                 <div className="social-history-card-meta">
                   <em>{getSocialScoreTypeLabel(session.scoreType)}</em>
@@ -3131,7 +3175,7 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
             <strong>{hasSessions ? `${detail?.score ?? selectedSession?.score ?? 0}점` : '-'}</strong>
           </div>
           <h2>{selectedSession?.scenarioTitle || (hasSessions ? '사회성 훈련' : '첫 훈련을 시작해 볼까요')}</h2>
-          <p>{detail?.feedback?.summary || selectedSession?.feedbackSummary || (hasSessions ? 'AI 피드백을 확인해 보세요.' : '상황별 대화를 연습하면 여기에 복습할 내용이 표시됩니다.')}</p>
+          <p>{readableText(detail?.feedback?.summary || detail?.feedback || selectedSession?.feedbackSummary, hasSessions ? 'AI 피드백을 확인해 보세요.' : '상황별 대화를 연습하면 여기에 복습할 내용이 표시됩니다.')}</p>
           {isLoading ? <div className="social-history-preview-state">기록 목록을 불러오는 중입니다.</div> : null}
           {!isLoading && detailStatus === 'idle' && hasSessions ? <div className="social-history-preview-state">기록을 선택하면 상세 내용이 표시됩니다.</div> : null}
           {!isLoading && !hasSessions ? (
@@ -3150,8 +3194,8 @@ function SocialHistoryList({ sessions, selectedSession, onBack, onSelect, onDeta
           ) : null}
           {!isLoading && detailStatus === 'ready' ? (
             <div className="social-history-preview-dialogues">
-              {previewLogs.map((log) => (
-                <div className={`social-history-bubble ${log.speaker === 'USER' ? 'is-user' : 'is-partner'}`} key={log.turnNo}>
+              {previewLogs.map((log, index) => (
+                <div className={`social-history-bubble ${log.speaker === 'USER' ? 'is-user' : 'is-partner'}`} key={`${log.turnNo ?? 'turn'}-${log.speaker}-${index}`}>
                   <span>{log.speaker === 'USER' ? '나' : '상대'}</span>
                   {log.content}
                 </div>
@@ -3211,7 +3255,7 @@ function SocialHistoryDetail({ sessionId, summary, onBack, onRetry }) {
         <header className="social-history-detail-header">
           <span>{formatHistoryDate(summary?.completedAt)}</span>
           <h1>{summary?.scenarioTitle || '사회성 훈련 복습'}</h1>
-          <p>{detail?.feedback?.summary || summary?.feedbackSummary || '지난 대화의 AI 피드백을 확인해 보세요.'}</p>
+          <p>{readableText(detail?.feedback?.summary || detail?.feedback || summary?.feedbackSummary, '지난 대화의 AI 피드백을 확인해 보세요.')}</p>
         </header>
 
         <div className="social-history-detail-layout">
@@ -3229,8 +3273,8 @@ function SocialHistoryDetail({ sessionId, summary, onBack, onRetry }) {
               {status === 'loading' ? <LoadingBlock /> : null}
               {status === 'error' ? <ErrorBlock message={error} onRetry={loadDetail} /> : null}
               {status === 'ready' && logs.length > 0 ? (
-                logs.map((log) => (
-                  <article className={`social-history-detail-bubble ${log.speaker === 'USER' ? 'is-user' : 'is-partner'}`} key={log.turnNo}>
+                logs.map((log, index) => (
+                  <article className={`social-history-detail-bubble ${log.speaker === 'USER' ? 'is-user' : 'is-partner'}`} key={`${log.turnNo ?? 'turn'}-${log.speaker}-${index}`}>
                     <span>{log.speaker === 'USER' ? '내 말' : '상대방'}</span>
                     <p>{log.content}</p>
                   </article>
@@ -3244,11 +3288,11 @@ function SocialHistoryDetail({ sessionId, summary, onBack, onRetry }) {
             <section className="social-history-coaching">
               <article>
                 <span>AI 피드백</span>
-                <p>{detail?.feedback?.summary || summary?.feedbackSummary || '상황에 맞는 표현을 차분하게 이어갔습니다.'}</p>
+                <p>{readableText(detail?.feedback?.summary || detail?.feedback || summary?.feedbackSummary, '상황에 맞는 표현을 차분하게 이어갔습니다.')}</p>
               </article>
               <article>
                 <span>상세 코칭</span>
-                <p>{detail?.feedback?.detailText || '대화 내용을 다시 보며 어떤 표현이 좋았는지 확인해 보세요.'}</p>
+                <p>{readableText(detail?.feedback?.detailText, '대화 내용을 다시 보며 어떤 표현이 좋았는지 확인해 보세요.')}</p>
               </article>
             </section>
           </div>
