@@ -1,3 +1,4 @@
+import logoImg from '../../assets/logo-cropped.png';
 import './IntroStyles.css';
 
 function StartTypeSelect({ onNext }) {
@@ -6,7 +7,10 @@ function StartTypeSelect({ onNext }) {
       <section className="intro-hero-panel" aria-label="서비스 시작">
         <div className="intro-hero-copy">
           <span className="intro-kicker">취업 준비 훈련 서비스</span>
-          <h1>딛고에 오신 걸 환영합니다</h1>
+          <h1>
+            <img className="intro-title-logo" src={logoImg} alt="딛고" />
+            <span>에 오신 걸 환영합니다</span>
+          </h1>
           <p>내 속도에 맞춰 직장 생활을 연습해요.</p>
         </div>
 

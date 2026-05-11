@@ -22,6 +22,9 @@
   font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
   color: var(--color-ink);
   background: #FFFEFB;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: strict;
 }
 
 * {

@@ -110,7 +110,7 @@
   color: #222;
   font-size: 25px;
   font-weight: 700;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .mypage-input-field {

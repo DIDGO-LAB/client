@@ -286,6 +286,8 @@ const documentLevelSubtitles = {
   5: '여러 문장을 읽고 일의 순서를 정리해요.',
 };
 
+const DOCUMENT_TOTAL_LEVELS = 5;
+
 const documentThemeLabels = {
   ANNOUNCEMENT: '공지사항',
   MANUAL: '매뉴얼',
@@ -2190,21 +2192,27 @@ export function DocumentStartPage() {
 
   const currentLevel = progress?.currentLevel || 1;
   const highestLevel = progress?.highestUnlockedLevel || currentLevel;
-  const levels =
-    progress?.levels?.length > 0
-      ? progress.levels
-      : Array.from({ length: Math.max(highestLevel, 1) }, (_, index) => {
-          const level = index + 1;
-          return {
-            level,
-            subtitle:
-              level === currentLevel
-                ? '지금 이어서 진행하기 좋은 단계입니다.'
-                : documentLevelSubtitles[level] || '이전에 열어둔 단계를 다시 연습합니다.',
-            unlocked: level <= highestLevel,
-            recommended: level === currentLevel,
-          };
-        });
+  const progressLevelMap = new Map(
+    (progress?.levels || []).map((levelInfo) => [Number(levelInfo.level), levelInfo]),
+  );
+  const levels = Array.from({ length: DOCUMENT_TOTAL_LEVELS }, (_, index) => {
+    const level = index + 1;
+    const progressLevel = progressLevelMap.get(level);
+    const unlocked = progressLevel?.unlocked ?? level <= highestLevel;
+
+    return {
+      level,
+      title: `${level}단계`,
+      subtitle:
+        level === currentLevel
+          ? '지금 이어서 진행하기 좋은 단계입니다.'
+          : documentLevelSubtitles[level] || '문서 내용을 차근차근 확인합니다.',
+      completed: false,
+      recommended: level === currentLevel,
+      ...progressLevel,
+      unlocked,
+    };
+  });
   const unlockedLevelCount = levels.filter((levelInfo) => levelInfo.unlocked !== false).length;
 
   return (

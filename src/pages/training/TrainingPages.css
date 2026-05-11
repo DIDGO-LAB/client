@@ -6397,7 +6397,7 @@
   line-height: 1.32;
   white-space: normal;
   word-break: keep-all;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .social-result-left .social-result-bubble {
@@ -6485,7 +6485,7 @@
   font-weight: 800;
   line-height: 1.36;
   word-break: keep-all;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .social-result-recommendation img {
@@ -7119,23 +7119,26 @@
 /* Social session polish */
 .social-session-stage .social-session-brief {
   left: 240px;
-  top: 74px;
+  top: 60px;
   width: 1440px;
-  min-height: 112px;
-  padding: 26px 42px;
+  height: 166px;
+  min-height: 0;
+  padding: 22px 42px;
   border: 3px solid rgba(47, 111, 159, 0.22);
   border-radius: 28px;
   background: #fff;
   box-shadow: 0 14px 34px rgba(47, 111, 159, 0.1);
-  font-size: 32px;
-  line-height: 1.3;
+  align-items: flex-start;
+  overflow-y: auto;
+  font-size: 31px;
+  line-height: 1.28;
 }
 
 .social-session-stage .social-current-dialogue {
   left: 240px;
-  top: 222px;
+  top: 258px;
   width: 1440px;
-  height: 762px;
+  height: 726px;
   padding: 90px 36px 34px;
   border: 3px solid rgba(47, 111, 159, 0.14);
   border-radius: 32px;
@@ -7160,7 +7163,7 @@
 }
 
 .social-video-profile {
-  height: 638px;
+  height: 602px;
   padding: 30px 34px 108px;
   border: 3px solid rgba(47, 111, 159, 0.2);
   border-radius: 28px;
@@ -7179,7 +7182,7 @@
 
 .social-video-avatar {
   width: 410px;
-  height: 468px;
+  height: 430px;
 }
 
 .social-video-profile strong {
@@ -7188,7 +7191,7 @@
 }
 
 .social-video-chat-thread {
-  height: 638px;
+  height: 602px;
   padding: 34px 34px 170px;
   border: 3px solid rgba(126, 140, 108, 0.14);
   border-radius: 28px;
@@ -7323,6 +7326,80 @@
   font-weight: 800;
   color: #5f6b63;
   white-space: nowrap;
+}
+
+.social-session-brief,
+.social-session-stage .dialogue-bubble,
+.social-result-situation,
+.social-result-bubble,
+.social-history-bubble,
+.social-history-detail-bubble {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: strict;
+}
+
+.social-history-list,
+.safety-history-list,
+.document-history-list {
+  min-width: 0;
+  padding: 0 28px 22px 0;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.social-history-card,
+.safety-history-card,
+.document-history-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.social-history-card > div,
+.safety-history-card > div,
+.document-history-card > div {
+  min-width: 0;
+}
+
+.document-history-list {
+  height: 374px;
+}
+
+.document-history-card {
+  min-height: 150px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.document-history-detail-button {
+  height: 64px;
+  margin-top: 18px;
+}
+
+.safety-history-card-meta,
+.document-history-card-meta,
+.social-history-card-meta {
+  align-self: center;
+  gap: 6px;
+}
+
+.safety-history-card-meta em,
+.safety-history-card-meta span,
+.document-history-card-meta em,
+.document-history-card-meta span,
+.social-history-card-meta em {
+  padding: 8px 14px;
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.safety-history-card-meta strong,
+.document-history-card-meta strong,
+.social-history-card-meta strong {
+  font-size: 34px;
+  line-height: 0.98;
 }
 
 /* Safety scenario list aligned with social scenario cards */

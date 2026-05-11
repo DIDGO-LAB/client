@@ -40,6 +40,7 @@
 
 .intro-hero-copy {
   position: relative;
+  z-index: 2;
   left: auto;
   top: auto;
   width: 680px;
@@ -65,6 +66,21 @@
   font-size: 54px;
   font-weight: 800;
   line-height: 1.12;
+}
+
+.intro-hero-copy h1 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.intro-title-logo {
+  width: 128px;
+  height: auto;
+  object-fit: contain;
+  flex: 0 0 auto;
+  transform: translateY(6px);
 }
 
 .intro-hero-copy p,
