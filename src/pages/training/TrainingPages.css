@@ -1453,6 +1453,7 @@
   right: 250px;
   bottom: 334px;
   display: grid;
+  padding-top: 5px;
   grid-template-columns: repeat(2, 1fr);
   gap: 42px;
 }
@@ -1613,21 +1614,21 @@
 }
 
 .safety-session-stage.has-decision-panel .safety-stage-image {
-  left: 92px;
-  top: 175px;
-  width: 1180px;
-  height: 680px;
+  left: 80px;
+  top: 160px;
+  width: 1170px;
+  height: 710px;
 }
 
 .safety-previous-scene-button {
   position: absolute;
   left: 300px;
-  top: 146px;
+  bottom: 370px;
   z-index: 4;
   min-height: 46px;
   padding: 0 22px;
   border: 3px solid rgba(35, 33, 29, 0.16);
-  border-radius: 999px;
+  border-radius: 120px;
   background: rgba(255, 255, 255, 0.95);
   color: var(--color-ink);
   box-shadow: 0 8px 18px rgba(54, 46, 29, 0.12);
@@ -1635,6 +1636,17 @@
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
+}
+
+.safety-session-stage.has-decision-panel .safety-previous-scene-button {
+  left: calc(100% - 72px - 572px);
+  top: 96px;
+  min-height: 50px;
+  padding: 0 26px;
+  border-color: rgba(154, 100, 24, 0.28);
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(54, 46, 29, 0.16);
+  font-size: 19px;
 }
 
 .safety-previous-scene-button:hover {
@@ -1734,11 +1746,11 @@
 
 .safety-decision-panel {
   position: absolute;
-  top: 175px;
-  right: 92px;
-  width: 532px;
-  height: 680px;
-  padding: 26px 28px;
+  top: 154px;
+  right: 72px;
+  width: 572px;
+  height: 716px;
+  padding: 28px 30px;
   border: 3px solid rgba(154, 100, 24, 0.28);
   border-radius: 34px;
   background: rgba(255, 255, 255, 0.96);
@@ -1810,7 +1822,7 @@
   display: grid;
   width: 100%;
   min-height: 0;
-  max-height: 330px;
+  max-height: 352px;
   padding-right: 6px;
   transform: none;
   grid-template-columns: 1fr;
