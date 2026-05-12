@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { tokenStorage } from './tokenStorage';
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://210.96.71.195:8081';
 
 export const resolveApiAssetUrl = (url) => {
   if (!url || typeof url !== 'string') {

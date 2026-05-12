@@ -53,11 +53,41 @@ const extractSocialCounterpartRequest = (text) => {
     .filter(Boolean);
 
   if (quotedMatches.length > 0) {
-    return quotedMatches[quotedMatches.length - 1];
+    return cleanSocialOpeningRequest(quotedMatches[quotedMatches.length - 1]);
   }
 
-  return value;
+  const reportedMatches = [
+    ...value.matchAll(
+      /(?:^|[.!?。！？]\s*)(?:[^.!?。！？]{0,30}?(?:이|가|은|는)\s+)?(.{2,100}?)(?:라고|하고)\s*(?:말|요청|부탁|지시|물)/g,
+    ),
+  ]
+    .map((match) => match[1]?.trim())
+    .filter(Boolean);
+
+  if (reportedMatches.length > 0) {
+    return cleanSocialOpeningRequest(reportedMatches[reportedMatches.length - 1]);
+  }
+
+  const requestSentenceMatches = [
+    ...value.matchAll(/([^.!?。！？]{2,120}?(?:주세요|부탁|요청|말했습니다|물었습니다)[^.!?。！？]*)[.!?。！？]?/g),
+  ]
+    .map((match) => match[1]?.trim())
+    .filter(Boolean);
+
+  if (requestSentenceMatches.length > 0) {
+    return cleanSocialOpeningRequest(requestSentenceMatches[requestSentenceMatches.length - 1]);
+  }
+
+  return '';
 };
+
+const cleanSocialOpeningRequest = (text) =>
+  String(text || '')
+    .replace(/\s+/g, ' ')
+    .replace(/^(?:.*?)(?:선임|상사|동료|담당자|관리자|반장|고객|손님|직원)(?:이|가|은|는)?\s+/, '')
+    .replace(/\s*(?:라고|하고)\s*(?:말|요청|부탁|지시|물).*$/, '')
+    .replace(/\s*어떻게\s*대답할까요\??$/, '')
+    .trim();
 
 const getSocialScenarioOpeningMessage = (scenario, voiceSession) =>
   extractSocialCounterpartRequest(getSocialOpeningScript(voiceSession)) ||
@@ -644,6 +674,7 @@ export function SocialScenarioPage() {
   const scenarioItemRefs = useRef({});
   const [scenarios, setScenarios] = useState([]);
   const [status, setStatus] = useState('loading');
+  const [generatingAdaptive, setGeneratingAdaptive] = useState(false);
   const [error, setError] = useState('');
   const learningScenarioIndex = scenarios.length > 0 ? getLearningScenarioIndex(scenarios) : -1;
 
@@ -664,6 +695,27 @@ export function SocialScenarioPage() {
   useEffect(() => {
     loadScenarios();
   }, [jobType]);
+
+  const startAdaptiveScenario = async () => {
+    setGeneratingAdaptive(true);
+    setError('');
+
+    try {
+      const scenario = await socialTrainingApi.generateSocialAdaptiveScenario({ jobType });
+      navigate('/training/social/session', {
+        state: {
+          jobType,
+          scenarioId: scenario.scenarioId,
+          adaptiveScenario: scenario,
+        },
+      });
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, '맞춤 훈련을 만들지 못했습니다.'));
+      setStatus((currentStatus) => (currentStatus === 'loading' ? 'error' : currentStatus));
+    } finally {
+      setGeneratingAdaptive(false);
+    }
+  };
 
   useEffect(() => {
     if (status !== 'ready' || learningScenarioIndex < 0) {
@@ -693,8 +745,20 @@ export function SocialScenarioPage() {
         <div className="social-scenario-shell">
           <header className="social-scenario-intro">
             <span>{getSocialJobLabel(jobType)} 생활</span>
-            <h1>어떤 상황을 연습할까요</h1>
-            <p>필요하거나 걱정되는 상황을 골라보세요.</p>
+            <div className="social-scenario-heading-row">
+              <h1>어떤 상황을 연습할까요</h1>
+              <button
+                className="social-adaptive-button"
+                type="button"
+                onClick={startAdaptiveScenario}
+                disabled={generatingAdaptive}
+              >
+                <span>{generatingAdaptive ? '분석 중...' : '맞춤 상황 추천'}</span>
+              </button>
+            </div>
+            <div className="social-scenario-subheading-row">
+              <p>지금 나에게 필요하거나 걱정되는 상황을 하나 골라보세요.</p>
+            </div>
           </header>
           <div className="scenario-list social-scenario-list" ref={scenarioListRef} aria-busy={status === 'loading'}>
             {status === 'loading' ? <LoadingBlock /> : null}

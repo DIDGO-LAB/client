@@ -5920,7 +5920,7 @@
 }
 
 .social-scenario-intro {
-  width: 860px;
+  width: 1180px;
 }
 
 .social-scenario-intro span {
@@ -5936,21 +5936,83 @@
   font-weight: 800;
 }
 
+.social-scenario-heading-row {
+  width: 100%;
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
 .social-scenario-intro h1 {
-  margin: 24px 0 0;
+  margin: 0;
   color: #050505;
   font-size: 44px;
   font-weight: 800;
   line-height: 1.16;
 }
 
+.social-scenario-subheading-row {
+  width: 100%;
+  margin-top: 10px;
+}
+
 .social-scenario-intro p {
-  margin: 18px 0 0;
+  margin: 0;
   color: #5d5d5d;
   font-size: 22px;
   font-weight: 700;
   line-height: 1.4;
 }
+
+.social-adaptive-button {
+  position: relative;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  min-width: 156px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 2px solid #b9cad8;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #244a66;
+  box-shadow: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0;
+  outline: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.social-adaptive-button::before {
+  content: none;
+}
+
+.social-adaptive-button::after {
+  content: none;
+}
+
+.social-adaptive-button:hover:not(:disabled) {
+  background: #f4f9fd;
+  border-color: #8fb0c8;
+}
+
+.social-adaptive-button:focus-visible {
+  outline: 4px solid rgba(47, 111, 159, 0.28);
+  outline-offset: 4px;
+}
+
+.social-adaptive-button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
 
 .social-scenario-list,
 .training-content-full .social-scenario-list {

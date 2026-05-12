@@ -22,6 +22,11 @@ export const startSocialSession = async (payload) => {
   return unwrapTrainingData(response);
 };
 
+export const generateSocialAdaptiveScenario = async (payload) => {
+  const response = await client.post('/api/trainings/social/adaptive-scenarios', payload);
+  return unwrapTrainingData(response);
+};
+
 export const prepareSocialVoiceSession = async (sessionId) => {
   const response = await client.post(`/api/trainings/social/sessions/${sessionId}/voice/prepare`, {});
   return unwrapTrainingData(response);
